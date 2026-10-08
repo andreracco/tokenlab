@@ -1,7 +1,9 @@
 import { useState, type CSSProperties, type KeyboardEvent } from "react";
 import { colorValueSchema, getAliasTargets, parseTokenInput, presetOptions, presetSpecs, resolveColorToken, resolveCssValue, type ProjectDocument, type ResolvedTokenValue, type Token, type TokenMode } from "./domain/tokens";
+import { diffProjects, type ProjectSnapshot } from "./domain/projects";
 import { useTokenLabStore } from "./app/store";
 import { componentRegistry, consumersForToken, type ComponentKey } from "./preview/registry";
+import { useWorkspacePersistence } from "./persistence/useWorkspacePersistence";
 import styles from "./App.module.css";
 
 type PreviewStyle = CSSProperties & {
@@ -34,13 +36,17 @@ export function App() {
   const execute = useTokenLabStore((state) => state.execute);
   const undo = useTokenLabStore((state) => state.undo);
   const redo = useTokenLabStore((state) => state.redo);
+  const snapshots = useTokenLabStore((state) => state.snapshots);
+  const captureSnapshot = useTokenLabStore((state) => state.captureSnapshot);
+  const restoreSnapshot = useTokenLabStore((state) => state.restoreSnapshot);
+  const saveStatus = useWorkspacePersistence();
   const [inspectEnabled, setInspectEnabled] = useState(true);
   const [mode, setMode] = useState<TokenMode>("light");
   const [canvasView, setCanvasView] = useState<"app" | "specimens">("app");
   const [selectedComponentKey, setSelectedComponentKey] = useState<ComponentKey | null>(null);
+  const [comparisonSnapshotId, setComparisonSnapshotId] = useState<string | null>(null);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
-  const primaryColor = resolveColorToken(document, "action.primary.background", mode);
   const preset = presetSpecs[document.presetId];
   const consumers = consumersForToken(selectedTokenId);
   const selectedComponent = componentRegistry.find((component) => component.key === selectedComponentKey);
@@ -49,26 +55,8 @@ export function App() {
     setSelectedComponentKey(key);
     selectToken(component.tokenIds[0]);
   };
-  const previewStyle: PreviewStyle = {
-    "--tl-preview-action-primary-background": primaryColor,
-    "--tl-preview-action-primary-foreground": resolveCssValue(document, "action.primary.foreground", mode),
-    "--tl-preview-font-family": resolveCssValue(document, "typography.body.family", mode),
-    "--tl-preview-font-size": resolveCssValue(document, "typography.body.size", mode),
-    "--tl-preview-font-weight": resolveCssValue(document, "typography.body.weight", mode),
-    "--tl-preview-strong-weight": resolveCssValue(document, "typography.strong.weight", mode),
-    "--tl-preview-line-height": resolveCssValue(document, "typography.body.line-height", mode),
-    "--tl-preview-content-padding": resolveCssValue(document, "layout.content.padding", mode),
-    "--tl-preview-card-padding": resolveCssValue(document, "space.medium", mode),
-    "--tl-preview-card-gap": resolveCssValue(document, "layout.card.gap", mode),
-    "--tl-preview-control-radius": resolveCssValue(document, "component.control.radius", mode),
-    "--tl-preview-card-radius": resolveCssValue(document, "component.card.radius", mode),
-    "--tl-preview-card-shadow": resolveCssValue(document, "component.card.shadow", mode),
-    "--tl-preview-surface": resolveCssValue(document, "surface.page", mode),
-    "--tl-preview-panel": resolveCssValue(document, "surface.panel", mode),
-    "--tl-preview-border": resolveCssValue(document, "border.default", mode),
-    "--tl-preview-text": resolveCssValue(document, "text.primary", mode),
-    "--tl-preview-muted": resolveCssValue(document, "text.muted", mode),
-  };
+  const previewStyle = createPreviewStyle(document, mode);
+  const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
 
   return (
     <div className={styles.app}>
@@ -81,10 +69,11 @@ export function App() {
           </div>
         </div>
         <div className={styles.headerActions}>
-          <span className={styles.savedStatus}><span aria-hidden="true">●</span> Saved locally</span>
+          <span className={styles.savedStatus}><span aria-hidden="true">●</span> {saveStatus}</span>
           <button className={styles.secondaryButton} disabled={history.length === 0} onClick={undo}>Undo</button>
           <button className={styles.secondaryButton} disabled={future.length === 0} onClick={redo}>Redo</button>
-          <button className={styles.secondaryButton} disabled title="Available in a later milestone">Compare</button>
+          <button className={styles.secondaryButton} onClick={() => captureSnapshot(`Baseline ${snapshots.length + 1}`)}>Snapshot</button>
+          <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => setComparisonSnapshotId(snapshots.at(-1)?.id ?? null)}>Compare</button>
           <button className={styles.primaryStudioButton} disabled title="Available in a later milestone">Export</button>
         </div>
       </header>
@@ -141,7 +130,7 @@ export function App() {
               </button>
             </div>
           </div>
-          {canvasView === "app" ? <FormaPreview
+          {comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); }} /> : canvasView === "app" ? <FormaPreview
               inspectEnabled={inspectEnabled}
               highlightedComponents={consumers.map((consumer) => consumer.key)}
               selectedComponentKey={selectedComponentKey}
@@ -182,6 +171,42 @@ export function App() {
       </main>
     </div>
   );
+}
+
+function createPreviewStyle(document: ProjectDocument, mode: TokenMode): PreviewStyle {
+  return {
+    "--tl-preview-action-primary-background": resolveColorToken(document, "action.primary.background", mode),
+    "--tl-preview-action-primary-foreground": resolveCssValue(document, "action.primary.foreground", mode),
+    "--tl-preview-font-family": resolveCssValue(document, "typography.body.family", mode),
+    "--tl-preview-font-size": resolveCssValue(document, "typography.body.size", mode),
+    "--tl-preview-font-weight": resolveCssValue(document, "typography.body.weight", mode),
+    "--tl-preview-strong-weight": resolveCssValue(document, "typography.strong.weight", mode),
+    "--tl-preview-line-height": resolveCssValue(document, "typography.body.line-height", mode),
+    "--tl-preview-content-padding": resolveCssValue(document, "layout.content.padding", mode),
+    "--tl-preview-card-padding": resolveCssValue(document, "space.medium", mode),
+    "--tl-preview-card-gap": resolveCssValue(document, "layout.card.gap", mode),
+    "--tl-preview-control-radius": resolveCssValue(document, "component.control.radius", mode),
+    "--tl-preview-card-radius": resolveCssValue(document, "component.card.radius", mode),
+    "--tl-preview-card-shadow": resolveCssValue(document, "component.card.shadow", mode),
+    "--tl-preview-surface": resolveCssValue(document, "surface.page", mode),
+    "--tl-preview-panel": resolveCssValue(document, "surface.panel", mode),
+    "--tl-preview-border": resolveCssValue(document, "border.default", mode),
+    "--tl-preview-text": resolveCssValue(document, "text.primary", mode),
+    "--tl-preview-muted": resolveCssValue(document, "text.muted", mode),
+  };
+}
+
+function ComparisonView({ snapshot, snapshots, current, mode, onSelect, onClose, onRestore }: { snapshot: ProjectSnapshot; snapshots: ProjectSnapshot[]; current: ProjectDocument; mode: TokenMode; onSelect: (id: string) => void; onClose: () => void; onRestore: () => void }) {
+  const changes = diffProjects(snapshot.document, current);
+  return <div className={styles.comparison}>
+    <div className={styles.comparisonHeader}><select aria-label="Comparison baseline" value={snapshot.id} onChange={(event) => onSelect(event.target.value)}>{snapshots.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select><span>{changes.length} token changes</span><button onClick={onRestore}>Restore baseline</button><button onClick={onClose}>Close</button></div>
+    <div className={styles.comparisonGrid}><ComparisonPreview label={snapshot.name} style={createPreviewStyle(snapshot.document, mode)} /><ComparisonPreview label="Current" style={createPreviewStyle(current, mode)} /></div>
+    <div className={styles.diffList}>{changes.length === 0 ? <p>No token changes.</p> : changes.map((change) => <div key={`${change.path}-${change.mode}`}><code>{change.path}</code><span>{change.mode}</span><del>{change.before}</del><ins>{change.after}</ins></div>)}</div>
+  </div>;
+}
+
+function ComparisonPreview({ label, style }: { label: string; style: PreviewStyle }) {
+  return <div className={styles.comparisonPreview} style={style}><strong>{label}</strong><div><h2>Projects</h2><p>Plan, track, and ship your team’s best work.</p><article><span>In progress</span><h3>Design system</h3><p>Build reusable foundations for Forma.</p></article><button>Create project</button></div></div>;
 }
 
 function TokenRow({ token, value, selected, onSelect }: { token: Token; value: string; selected: boolean; onSelect: () => void }) {

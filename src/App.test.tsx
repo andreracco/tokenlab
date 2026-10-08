@@ -12,6 +12,7 @@ beforeEach(() => {
     selectedTokenId: "color.brand.600",
     history: [],
     future: [],
+    snapshots: [],
   });
 });
 
@@ -66,5 +67,20 @@ describe("TokenLab first slice", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Inspect Mobile app refresh project card" }));
     expect(screen.getByText("Project card tokens")).toBeTruthy();
+  });
+
+  it("compares against a snapshot and restores it as one undoable action", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Snapshot" }));
+    fireEvent.change(screen.getByLabelText("Light value"), { target: { value: "#C2415D" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    fireEvent.click(screen.getByRole("button", { name: "Compare" }));
+
+    expect(screen.getByText("1 token changes")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Restore baseline" }));
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#3157D5");
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#C2415D");
   });
 });

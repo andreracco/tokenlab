@@ -145,6 +145,21 @@
 .specimenTabs button, .specimenMenu button, .specimenDialog > div button { padding: 7px 10px; border: 0; border-radius: var(--tl-preview-control-radius); background: transparent; color: var(--forma-text); font-size: 9px; }
 .specimenDialog { max-width: 360px; padding: 18px; display: grid; gap: 12px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); box-shadow: var(--tl-preview-card-shadow); }
 .specimenDialog > div { display: flex; justify-content: flex-end; gap: 7px; }
+.comparison { flex: 1; min-height: 0; padding: 18px; overflow: auto; }
+.comparisonHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: var(--studio-muted); font-size: 11px; }
+.comparisonHeader select, .comparisonHeader button { min-height: 32px; padding: 0 9px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; font-size: 11px; }
+.comparisonHeader span { margin-right: auto; }
+.comparisonGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.comparisonPreview { padding: 14px; border: 1px solid var(--tl-preview-border); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-surface); color: var(--tl-preview-text); font-family: var(--tl-preview-font-family); }
+.comparisonPreview > strong { display: block; margin-bottom: 12px; color: var(--tl-preview-muted); font-size: 10px; text-transform: uppercase; }
+.comparisonPreview > div { padding: var(--tl-preview-content-padding); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); }
+.comparisonPreview h2 { margin: 0; font-weight: var(--tl-preview-strong-weight); }.comparisonPreview p { color: var(--tl-preview-muted); }
+.comparisonPreview article { margin: 14px 0; padding: var(--tl-preview-card-padding); border: 1px solid var(--tl-preview-border); border-radius: var(--tl-preview-card-radius); box-shadow: var(--tl-preview-card-shadow); }
+.comparisonPreview article span { color: var(--tl-preview-action-primary-background); font-size: 9px; }.comparisonPreview article h3 { margin: 6px 0; }
+.comparisonPreview button { min-height: 34px; padding: 0 12px; border: 0; border-radius: var(--tl-preview-control-radius); background: var(--tl-preview-action-primary-background); color: var(--tl-preview-action-primary-foreground); }
+.diffList { margin-top: 14px; border: 1px solid var(--studio-border); border-radius: 9px; background: var(--studio-panel); overflow: hidden; }
+.diffList > div { padding: 9px 11px; display: grid; grid-template-columns: minmax(160px, 1fr) 42px 1fr 1fr; gap: 10px; border-bottom: 1px solid var(--studio-border); align-items: center; font-size: 10px; }
+.diffList code { overflow: hidden; text-overflow: ellipsis; }.diffList del { color: #9c4a4a; }.diffList ins { color: #327351; text-decoration: none; }.diffList p { padding: 4px 12px; color: var(--studio-muted); font-size: 11px; }
 
 @media (max-width: 1100px) {
   .workspace { height: auto; min-height: calc(100vh - 64px); grid-template-columns: 220px minmax(0, 1fr); }
@@ -161,6 +176,7 @@
   .canvasToolbar, .canvasToolbar > div { flex-wrap: wrap; }
   .previewStage { padding: 12px; }
   .inspectorPanel { grid-column: auto; }
+  .comparisonGrid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
