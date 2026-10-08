@@ -9,6 +9,7 @@ import { useWorkspacePersistence } from "./persistence/useWorkspacePersistence";
 import styles from "./App.module.css";
 
 type PreviewStyle = CSSProperties & {
+  "--tl-preview-viewport-width"?: string;
   "--tl-preview-action-primary-background": string;
   "--tl-preview-action-primary-foreground": string;
   "--tl-preview-font-family": string;
@@ -45,6 +46,7 @@ export function App() {
   const saveStatus = useWorkspacePersistence();
   const [inspectEnabled, setInspectEnabled] = useState(true);
   const [mode, setMode] = useState<TokenMode>("light");
+  const [previewWidth, setPreviewWidth] = useState<720 | 960 | 1280>(1280);
   const [canvasView, setCanvasView] = useState<"app" | "specimens">("app");
   const [selectedComponentKey, setSelectedComponentKey] = useState<ComponentKey | null>(null);
   const [comparisonSnapshotId, setComparisonSnapshotId] = useState<string | null>(null);
@@ -67,7 +69,7 @@ export function App() {
     setMobilePanel("inspector");
     setInspectorOpen(true);
   };
-  const previewStyle = createPreviewStyle(document, mode);
+  const previewStyle = { ...createPreviewStyle(document, mode), "--tl-preview-viewport-width": `${previewWidth}px` };
   const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
   const contrastResults = checkContrast(document, mode);
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
@@ -150,7 +152,8 @@ export function App() {
             </div>
             <div className={styles.canvasControls}>
               <select className={styles.modeSelect} aria-label="Preview mode" value={mode} onChange={(event) => setMode(event.target.value as TokenMode)}><option value="light">Light</option><option value="dark">Dark</option></select>
-              <span>{preset.name} · Desktop 1280</span>
+              <select className={styles.modeSelect} aria-label="Preview width" value={previewWidth} onChange={(event) => setPreviewWidth(Number(event.target.value) as typeof previewWidth)}><option value={1280}>Desktop 1280</option><option value={960}>Compact 960</option><option value={720}>Narrow 720</option></select>
+              <span>{preset.name}</span>
               <button className={styles.inspectorDrawerButton} aria-expanded={inspectorOpen} aria-controls="token-inspector" onClick={() => setInspectorOpen(true)}>Open inspector</button>
               <button
                 className={inspectEnabled ? styles.inspectActive : styles.inspectButton}

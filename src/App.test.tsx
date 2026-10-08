@@ -93,6 +93,8 @@ describe("TokenLab first slice", () => {
 
     fireEvent.change(screen.getByLabelText("Preview mode"), { target: { value: "dark" } });
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-surface")).toBe("#15171C");
+    fireEvent.change(screen.getByLabelText("Preview width"), { target: { value: "720" } });
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-viewport-width")).toBe("720px");
   });
 
   it("opens the create project dialog when inspection is off", () => {
