@@ -374,6 +374,7 @@ function SpecimenPreview({ style }: { style: PreviewStyle }) {
 
 function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, selectedComponentKey, onInspect, onCreateProject, style }: { createdProjects: { id: string; name: string }[]; inspectEnabled: boolean; highlightedComponents: ComponentKey[]; selectedComponentKey: ComponentKey | null; onInspect: (key: ComponentKey) => void; onCreateProject: (name: string) => void; style: PreviewStyle }) {
   const createProjectDialog = useRef<HTMLDialogElement>(null);
+  const createProjectButton = useRef<HTMLButtonElement>(null);
   const primarySelected = highlightedComponents.includes("primary-button") || selectedComponentKey === "primary-button";
   const cardSelected = highlightedComponents.includes("project-card") || selectedComponentKey === "project-card";
 
@@ -397,6 +398,7 @@ function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, 
             <div className={styles.pageHeading}>
               <div><span className={styles.breadcrumb}>Workspace / Projects</span><h1>Projects</h1><p>Plan, track, and ship your team’s best work.</p></div>
               <button
+                ref={createProjectButton}
                 className={`${styles.formaPrimary} ${inspectEnabled && primarySelected ? styles.inspected : ""}`}
                 onClick={() => inspectEnabled ? onInspect("primary-button") : createProjectDialog.current?.showModal()}
                 aria-label={inspectEnabled ? "Create project; inspect action.primary.background" : "Create project"}
@@ -416,7 +418,7 @@ function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, 
             <div className={styles.emptyStatePanel}><span aria-hidden="true">◇</span><div><strong>No archived projects</strong><p>Archived work will appear here when you need it.</p></div><button>View active projects</button></div>
           </div>
         </div>
-        <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title" onClose={(event) => event.currentTarget.querySelector("form")?.reset()}>
+        <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title" onClose={(event) => { event.currentTarget.querySelector("form")?.reset(); createProjectButton.current?.focus(); }}>
           <form method="dialog" onSubmit={(event) => { const name = String(new FormData(event.currentTarget).get("projectName") ?? "").trim(); if (name) onCreateProject(name); event.currentTarget.reset(); }}>
             <h2 id="create-project-title">Create project</h2>
             <p>Start with a clear name and an owner.</p>

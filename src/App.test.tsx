@@ -114,10 +114,13 @@ describe("TokenLab first slice", () => {
     fireEvent.click(screen.getByRole("button", { name: "Inspect on" }));
     const dialog = screen.getByRole("heading", { name: "Create project", hidden: true }).closest("dialog")!;
     dialog.showModal = () => { dialog.open = true; };
+    const opener = screen.getByRole("button", { name: "Create project" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Create project" }));
+    fireEvent.click(opener);
 
     expect(dialog.open).toBe(true);
+    fireEvent(dialog, new Event("close"));
+    expect(document.activeElement).toBe(opener);
     fireEvent.change(screen.getByRole("textbox", { name: "Project name" }), { target: { value: "Client portal" } });
     fireEvent.submit(dialog.querySelector("form")!);
     expect(screen.getByRole("heading", { name: "Client portal" })).toBeTruthy();
