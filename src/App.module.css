@@ -9,6 +9,7 @@
 .headerActions { gap: 8px; }
 .savedStatus { margin-right: 8px; color: var(--studio-muted); font-size: 12px; }
 .savedStatus span { color: #3b9b69; font-size: 9px; margin-right: 5px; }
+.contrastStatus { color: var(--studio-muted); font-size: 11px; }
 .secondaryButton, .primaryStudioButton, .iconButton, .inspectButton, .inspectActive { min-height: 34px; padding: 0 12px; border-radius: 7px; border: 1px solid var(--studio-border); background: #fff; font-size: 12px; font-weight: 650; cursor: pointer; }
 .primaryStudioButton { border-color: #242424; background: #242424; color: white; }
 .workspace { height: calc(100vh - 64px); display: grid; grid-template-columns: 240px minmax(540px, 1fr) 320px; }
@@ -129,6 +130,10 @@
 .registryToken { width: 100%; margin-top: 6px; padding: 8px; display: flex; justify-content: space-between; gap: 8px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; text-align: left; cursor: pointer; }
 .registryToken code { overflow: hidden; font-size: 9px; text-overflow: ellipsis; }
 .projectCard.inspected { outline: 3px solid #e38b2c; outline-offset: 2px; cursor: pointer; }
+.contrastList { margin-top: 9px; display: grid; gap: 6px; }
+.contrastList > div { padding: 8px; display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; font-size: 10px; }
+.contrastList span { display: flex; flex-direction: column; }.contrastList small { color: var(--studio-muted); font-size: 8px; }.contrastList > div > small { grid-column: 2; }
+.contrastPass strong { color: #327351; }.contrastFail { border-color: #d9a1a1 !important; }.contrastFail strong { color: #9c3e3e; }
 .specimenRoot { padding: var(--tl-preview-content-padding); display: block; background: var(--tl-preview-surface); overflow: auto; }
 .specimenRoot > header { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 18px; border-bottom: 1px solid var(--forma-line); font-size: 16px; font-weight: var(--tl-preview-strong-weight); }
 .specimenRoot > header small, .specimenRoot section > h2 { color: var(--forma-muted); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
@@ -160,6 +165,14 @@
 .diffList { margin-top: 14px; border: 1px solid var(--studio-border); border-radius: 9px; background: var(--studio-panel); overflow: hidden; }
 .diffList > div { padding: 9px 11px; display: grid; grid-template-columns: minmax(160px, 1fr) 42px 1fr 1fr; gap: 10px; border-bottom: 1px solid var(--studio-border); align-items: center; font-size: 10px; }
 .diffList code { overflow: hidden; text-overflow: ellipsis; }.diffList del { color: #9c4a4a; }.diffList ins { color: #327351; text-decoration: none; }.diffList p { padding: 4px 12px; color: var(--studio-muted); font-size: 11px; }
+.exportPanel { flex: 1; min-height: 0; padding: 28px; overflow: auto; }
+.exportHeader { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.exportHeader h2 { margin: 6px 0; font-size: 22px; }.exportHeader p { margin: 0; color: var(--studio-muted); font-size: 12px; }.exportHeader button { min-height: 32px; padding: 0 10px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; }
+.exportGrid { margin-top: 24px; display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 10px; }
+.exportCard { padding: 14px; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; border: 1px solid var(--studio-border); border-radius: 9px; background: var(--studio-panel); }
+.exportCard code { font-size: 11px; }.exportCard small { color: var(--studio-muted); font-size: 9px; }.exportCard button { grid-column: 1 / -1; min-height: 32px; border: 0; border-radius: 7px; background: var(--studio-text); color: #fff; }
+.usageExample { margin-top: 16px; padding: 14px; display: grid; gap: 7px; border: 1px solid var(--studio-border); border-radius: 9px; background: #fff; font-size: 11px; }.usageExample code { padding: 10px; border-radius: 6px; background: #f0eee8; }
+.importControl { width: fit-content; margin-top: 16px; padding: 10px 12px; display: block; border: 1px solid var(--studio-border); border-radius: 8px; background: #fff; font-size: 11px; font-weight: 700; cursor: pointer; }.importControl input { display: block; margin-top: 8px; font-size: 10px; }.importError { min-height: 24px; padding-top: 6px; color: #9c3e3e; font-size: 10px; }
 
 @media (max-width: 1100px) {
   .workspace { height: auto; min-height: calc(100vh - 64px); grid-template-columns: 220px minmax(0, 1fr); }
@@ -177,6 +190,7 @@
   .previewStage { padding: 12px; }
   .inspectorPanel { grid-column: auto; }
   .comparisonGrid { grid-template-columns: 1fr; }
+  .exportGrid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

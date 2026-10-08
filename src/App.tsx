@@ -1,6 +1,8 @@
-import { useState, type CSSProperties, type KeyboardEvent } from "react";
+import { useState, type CSSProperties, type ChangeEvent, type KeyboardEvent } from "react";
 import { colorValueSchema, getAliasTargets, parseTokenInput, presetOptions, presetSpecs, resolveColorToken, resolveCssValue, type ProjectDocument, type ResolvedTokenValue, type Token, type TokenMode } from "./domain/tokens";
 import { diffProjects, type ProjectSnapshot } from "./domain/projects";
+import { checkContrast } from "./domain/contrast";
+import { buildExports, parseProjectFile, type ExportArtifact } from "./domain/exports";
 import { useTokenLabStore } from "./app/store";
 import { componentRegistry, consumersForToken, type ComponentKey } from "./preview/registry";
 import { useWorkspacePersistence } from "./persistence/useWorkspacePersistence";
@@ -39,12 +41,14 @@ export function App() {
   const snapshots = useTokenLabStore((state) => state.snapshots);
   const captureSnapshot = useTokenLabStore((state) => state.captureSnapshot);
   const restoreSnapshot = useTokenLabStore((state) => state.restoreSnapshot);
+  const hydrate = useTokenLabStore((state) => state.hydrate);
   const saveStatus = useWorkspacePersistence();
   const [inspectEnabled, setInspectEnabled] = useState(true);
   const [mode, setMode] = useState<TokenMode>("light");
   const [canvasView, setCanvasView] = useState<"app" | "specimens">("app");
   const [selectedComponentKey, setSelectedComponentKey] = useState<ComponentKey | null>(null);
   const [comparisonSnapshotId, setComparisonSnapshotId] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
   const preset = presetSpecs[document.presetId];
@@ -57,6 +61,8 @@ export function App() {
   };
   const previewStyle = createPreviewStyle(document, mode);
   const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
+  const contrastResults = checkContrast(document, mode);
+  const contrastFailures = contrastResults.filter((result) => !result.passes).length;
 
   return (
     <div className={styles.app}>
@@ -70,11 +76,12 @@ export function App() {
         </div>
         <div className={styles.headerActions}>
           <span className={styles.savedStatus}><span aria-hidden="true">●</span> {saveStatus}</span>
+          <span className={styles.contrastStatus}>{contrastFailures === 0 ? "Contrast checks pass" : `${contrastFailures} contrast pairs need attention`}</span>
           <button className={styles.secondaryButton} disabled={history.length === 0} onClick={undo}>Undo</button>
           <button className={styles.secondaryButton} disabled={future.length === 0} onClick={redo}>Redo</button>
           <button className={styles.secondaryButton} onClick={() => captureSnapshot(`Baseline ${snapshots.length + 1}`)}>Snapshot</button>
           <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => setComparisonSnapshotId(snapshots.at(-1)?.id ?? null)}>Compare</button>
-          <button className={styles.primaryStudioButton} disabled title="Available in a later milestone">Export</button>
+          <button className={styles.primaryStudioButton} onClick={() => { setComparisonSnapshotId(null); setExportOpen(true); }}>Export</button>
         </div>
       </header>
 
@@ -130,7 +137,7 @@ export function App() {
               </button>
             </div>
           </div>
-          {comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); }} /> : canvasView === "app" ? <FormaPreview
+          {exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={() => setExportOpen(false)} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); setExportOpen(false); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); }} /> : canvasView === "app" ? <FormaPreview
               inspectEnabled={inspectEnabled}
               highlightedComponents={consumers.map((consumer) => consumer.key)}
               selectedComponentKey={selectedComponentKey}
@@ -167,10 +174,36 @@ export function App() {
               <span>›</span>
             </button>)}
           </div>}
+          <div className={styles.inspectorSection}><span className={styles.eyebrow}>Contrast checks · {mode}</span><div className={styles.contrastList}>{contrastResults.map((result) => <div key={result.id} className={result.passes ? styles.contrastPass : styles.contrastFail}><span>{result.label}<small>{result.component}</small></span><strong>{result.ratio}:1</strong><small>{result.passes ? "Pass" : `Needs ${result.threshold}:1`}</small></div>)}</div></div>
         </aside>
       </main>
     </div>
   );
+}
+
+function ExportPanel({ document, snapshots, onClose, onImport }: { document: ProjectDocument; snapshots: ProjectSnapshot[]; onClose: () => void; onImport: (workspace: { document: ProjectDocument; snapshots: ProjectSnapshot[] }) => void }) {
+  const [error, setError] = useState("");
+  const artifacts = buildExports(document, snapshots);
+  const importProject = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try { onImport(parseProjectFile(await file.text())); } catch (reason) { setError(reason instanceof Error ? reason.message : "Couldn't import this project."); }
+  };
+
+  return <div className={styles.exportPanel}><div className={styles.exportHeader}><div><span className={styles.eyebrow}>Export system</span><h2>Production-ready token files</h2><p>Aliases and stable token ordering are preserved.</p></div><button onClick={onClose}>Close</button></div><div className={styles.exportGrid}>{artifacts.map((artifact) => <div className={styles.exportCard} key={artifact.filename}><code>{artifact.filename}</code><small>{formatBytes(artifact.content)}</small><button onClick={() => downloadArtifact(artifact)}>Download</button></div>)}</div><div className={styles.usageExample}><strong>CSS usage</strong><code>{`.button { background: var(--action-primary-background); }`}</code></div><label className={styles.importControl}>Import TokenLab project<input type="file" accept="application/json,.json" onChange={importProject} /></label><div className={styles.importError} role="status">{error}</div></div>;
+}
+
+function downloadArtifact(artifact: ExportArtifact) {
+  const url = URL.createObjectURL(new Blob([artifact.content], { type: artifact.mimeType }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = artifact.filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function formatBytes(content: string) {
+  return `${new Blob([content]).size.toLocaleString()} bytes`;
 }
 
 function createPreviewStyle(document: ProjectDocument, mode: TokenMode): PreviewStyle {

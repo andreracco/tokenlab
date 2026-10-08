@@ -83,4 +83,12 @@ describe("TokenLab first slice", () => {
     fireEvent.click(screen.getByRole("button", { name: "Undo" }));
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#C2415D");
   });
+
+  it("shows downloadable production formats", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    expect(screen.getByText("tokenlab.css")).toBeTruthy();
+    expect(screen.getByText("tokenlab.light.tokens.json")).toBeTruthy();
+    expect(screen.getByText("tokenlab.project.json")).toBeTruthy();
+  });
 });
