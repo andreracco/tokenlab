@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type KeyboardEvent } from "react";
-import { colorValueSchema, presetOptions, presetSpecs, resolveColorToken, resolveCssValue, type Token, type TokenMode } from "./domain/tokens";
+import { colorValueSchema, getAliasTargets, parseTokenInput, presetOptions, presetSpecs, resolveColorToken, resolveCssValue, type ProjectDocument, type ResolvedTokenValue, type Token, type TokenMode } from "./domain/tokens";
 import { useTokenLabStore } from "./app/store";
+import { componentRegistry, consumersForToken, type ComponentKey } from "./preview/registry";
 import styles from "./App.module.css";
 
 type PreviewStyle = CSSProperties & {
@@ -28,16 +29,26 @@ export function App() {
   const document = useTokenLabStore((state) => state.document);
   const selectedTokenId = useTokenLabStore((state) => state.selectedTokenId);
   const history = useTokenLabStore((state) => state.history);
+  const future = useTokenLabStore((state) => state.future);
   const selectToken = useTokenLabStore((state) => state.selectToken);
   const execute = useTokenLabStore((state) => state.execute);
   const undo = useTokenLabStore((state) => state.undo);
+  const redo = useTokenLabStore((state) => state.redo);
   const [inspectEnabled, setInspectEnabled] = useState(true);
   const [mode, setMode] = useState<TokenMode>("light");
   const [canvasView, setCanvasView] = useState<"app" | "specimens">("app");
+  const [selectedComponentKey, setSelectedComponentKey] = useState<ComponentKey | null>(null);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
   const primaryColor = resolveColorToken(document, "action.primary.background", mode);
   const preset = presetSpecs[document.presetId];
+  const consumers = consumersForToken(selectedTokenId);
+  const selectedComponent = componentRegistry.find((component) => component.key === selectedComponentKey);
+  const selectComponent = (key: ComponentKey) => {
+    const component = componentRegistry.find((candidate) => candidate.key === key)!;
+    setSelectedComponentKey(key);
+    selectToken(component.tokenIds[0]);
+  };
   const previewStyle: PreviewStyle = {
     "--tl-preview-action-primary-background": primaryColor,
     "--tl-preview-action-primary-foreground": resolveCssValue(document, "action.primary.foreground", mode),
@@ -72,6 +83,7 @@ export function App() {
         <div className={styles.headerActions}>
           <span className={styles.savedStatus}><span aria-hidden="true">●</span> Saved locally</span>
           <button className={styles.secondaryButton} disabled={history.length === 0} onClick={undo}>Undo</button>
+          <button className={styles.secondaryButton} disabled={future.length === 0} onClick={redo}>Redo</button>
           <button className={styles.secondaryButton} disabled title="Available in a later milestone">Compare</button>
           <button className={styles.primaryStudioButton} disabled title="Available in a later milestone">Export</button>
         </div>
@@ -83,7 +95,7 @@ export function App() {
             <div><span>Token library</span><small>{document.tokens.length} tokens</small></div>
             <button className={styles.iconButton} aria-label="Search tokens" disabled>⌕</button>
           </div>
-          <div className={styles.categoryLabel}>Colors</div>
+          <div className={styles.categoryLabel}>All tokens</div>
           <div className={styles.tokenList}>
             {document.tokens.map((token) => (
               <TokenRow
@@ -91,7 +103,7 @@ export function App() {
                 token={token}
                 value={resolveCssValue(document, token.id, mode)}
                 selected={token.id === selectedTokenId}
-                onSelect={() => selectToken(token.id)}
+                onSelect={() => { setSelectedComponentKey(null); selectToken(token.id); }}
               />
             ))}
           </div>
@@ -131,8 +143,9 @@ export function App() {
           </div>
           {canvasView === "app" ? <FormaPreview
               inspectEnabled={inspectEnabled}
-              selectedTokenId={selectedTokenId}
-              onInspect={() => selectToken("action.primary.background")}
+              highlightedComponents={consumers.map((consumer) => consumer.key)}
+              selectedComponentKey={selectedComponentKey}
+              onInspect={selectComponent}
               style={previewStyle}
             /> : <SpecimenPreview style={previewStyle} />}
         </section>
@@ -151,16 +164,19 @@ export function App() {
               initialValue={resolveColorToken(document, selectedToken.id, mode)}
               onApply={(value) => execute({ type: "set-color", tokenId: selectedToken.id, mode, value })}
             />
-          ) : selectedToken.values[mode]?.kind === "reference" || selectedToken.values.light.kind === "reference" ? (
-            <AliasInspector token={selectedToken} mode={mode} resolvedValue={resolveCssValue(document, selectedToken.id, mode)} onSelectTarget={selectToken} />
-          ) : <ReadOnlyInspector value={resolveCssValue(document, selectedToken.id, mode)} />}
-          {(selectedToken.id === "color.brand.600" || selectedToken.id === "action.primary.background") && <div className={styles.inspectorSection}>
+          ) : (selectedToken.values[mode] ?? selectedToken.values.light).kind === "literal" ? (
+            <ValueEditor key={`${selectedToken.id}-${mode}-${resolveCssValue(document, selectedToken.id, mode)}`} token={selectedToken} mode={mode} initialValue={resolveCssValue(document, selectedToken.id, mode)} onApply={(value) => execute({ type: "set-token-value", tokenId: selectedToken.id, mode, value })} />
+          ) : (
+            <AliasEditor document={document} token={selectedToken} mode={mode} resolvedValue={resolveCssValue(document, selectedToken.id, mode)} onApply={(targetId) => execute({ type: "set-token-reference", tokenId: selectedToken.id, mode, targetId })} />
+          )}
+          {selectedComponent && <div className={styles.inspectorSection}><span className={styles.eyebrow}>{selectedComponent.label} tokens</span>{selectedComponent.tokenIds.map((tokenId) => <button className={styles.registryToken} key={tokenId} onClick={() => selectToken(tokenId)}><code>{tokenId}</code><span>›</span></button>)}</div>}
+          {consumers.length > 0 && <div className={styles.inspectorSection}>
             <span className={styles.eyebrow}>Used by</span>
-            <button className={styles.usageRow} onClick={() => selectToken("action.primary.background")}>
+            {consumers.map((consumer) => <button className={styles.usageRow} key={consumer.key} onClick={() => selectComponent(consumer.key)}>
               <span className={styles.componentGlyph}>▣</span>
-              <span><strong>Primary button</strong><small>Forma · Projects header</small></span>
+              <span><strong>{consumer.label}</strong><small>Forma · {consumer.location}</small></span>
               <span>›</span>
-            </button>
+            </button>)}
           </div>}
         </aside>
       </main>
@@ -211,22 +227,35 @@ function ColorEditor({ initialValue, mode, onApply }: { initialValue: string; mo
   );
 }
 
-function ReadOnlyInspector({ value }: { value: string }) {
-  return <div className={styles.editor}><span className={styles.fieldLabel}>Resolved value</span><div className={styles.readOnlyValue}>{value}</div></div>;
+function ValueEditor({ token, mode, initialValue, onApply }: { token: Token; mode: TokenMode; initialValue: string; onApply: (value: ResolvedTokenValue) => void }) {
+  const [draft, setDraft] = useState(initialValue);
+  let parsed: ResolvedTokenValue | undefined;
+  let error = "";
+  try { parsed = parseTokenInput(token.type, draft); } catch (reason) { error = reason instanceof Error ? reason.message : "Invalid value."; }
+
+  return <div className={styles.editor}>
+    <label htmlFor="token-value">{mode === "light" ? "Light" : "Dark"} value</label>
+    {token.type === "fontFamily"
+      ? <select id="token-value" className={styles.valueInput} value={draft} onChange={(event) => setDraft(event.target.value)}><option>Inter</option><option>Georgia</option><option>Avenir Next</option></select>
+      : <input id="token-value" className={styles.valueInput} value={draft} aria-invalid={Boolean(error)} onChange={(event) => setDraft(event.target.value)} />}
+    <div className={styles.validationSlot} role="status">{error}</div>
+    <div className={styles.editorActions}><button className={styles.secondaryButton} onClick={() => setDraft(initialValue)}>Cancel</button><button className={styles.primaryStudioButton} disabled={!parsed || draft === initialValue} onClick={() => parsed && onApply(parsed)}>Apply</button></div>
+  </div>;
 }
 
-function AliasInspector({ token, mode, resolvedValue, onSelectTarget }: { token: Token; mode: TokenMode; resolvedValue: string; onSelectTarget: (tokenId: string) => void }) {
+function AliasEditor({ document, token, mode, resolvedValue, onApply }: { document: ProjectDocument; token: Token; mode: TokenMode; resolvedValue: string; onApply: (targetId: string) => void }) {
   const value = token.values[mode] ?? token.values.light;
+  const initialTarget = value.kind === "reference" ? value.tokenId : "";
+  const [draft, setDraft] = useState(initialTarget);
+  const targets = getAliasTargets(document, token.id);
   if (value.kind !== "reference") return null;
 
   return (
     <div className={styles.editor}>
-      <span className={styles.fieldLabel}>Alias target</span>
-      <button className={styles.aliasTarget} onClick={() => onSelectTarget(value.tokenId)}>
-        <span className={styles.swatch} style={{ backgroundColor: resolvedValue }} />
-        <code>{value.tokenId}</code><span>›</span>
-      </button>
+      <label htmlFor="alias-target">Alias target</label>
+      <select id="alias-target" className={styles.valueInput} value={draft} onChange={(event) => setDraft(event.target.value)}>{targets.map((target) => <option key={target.id} value={target.id}>{target.path}</option>)}</select>
       <div className={styles.resolvedRow}><span>Resolved value</span><code>{resolvedValue}</code></div>
+      <div className={styles.editorActions}><button className={styles.secondaryButton} onClick={() => setDraft(value.tokenId)}>Cancel</button><button className={styles.primaryStudioButton} disabled={draft === value.tokenId} onClick={() => onApply(draft)}>Apply</button></div>
     </div>
   );
 }
@@ -246,8 +275,9 @@ function SpecimenPreview({ style }: { style: PreviewStyle }) {
   );
 }
 
-function FormaPreview({ inspectEnabled, selectedTokenId, onInspect, style }: { inspectEnabled: boolean; selectedTokenId: string; onInspect: () => void; style: PreviewStyle }) {
-  const primarySelected = selectedTokenId === "action.primary.background" || selectedTokenId === "color.brand.600";
+function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponentKey, onInspect, style }: { inspectEnabled: boolean; highlightedComponents: ComponentKey[]; selectedComponentKey: ComponentKey | null; onInspect: (key: ComponentKey) => void; style: PreviewStyle }) {
+  const primarySelected = highlightedComponents.includes("primary-button") || selectedComponentKey === "primary-button";
+  const cardSelected = highlightedComponents.includes("project-card") || selectedComponentKey === "project-card";
 
   return (
     <div className={styles.previewStage}>
@@ -270,7 +300,7 @@ function FormaPreview({ inspectEnabled, selectedTokenId, onInspect, style }: { i
               <div><span className={styles.breadcrumb}>Workspace / Projects</span><h1>Projects</h1><p>Plan, track, and ship your team’s best work.</p></div>
               <button
                 className={`${styles.formaPrimary} ${inspectEnabled && primarySelected ? styles.inspected : ""}`}
-                onClick={inspectEnabled ? onInspect : undefined}
+                onClick={inspectEnabled ? () => onInspect("primary-button") : undefined}
                 aria-label={inspectEnabled ? "Create project; inspect action.primary.background" : "Create project"}
               >
                 <span>＋</span> Create project
@@ -279,9 +309,9 @@ function FormaPreview({ inspectEnabled, selectedTokenId, onInspect, style }: { i
             </div>
             <div className={styles.projectToolbar}><label>⌕ <input aria-label="Search projects" placeholder="Search projects" /></label><button>All statuses⌄</button><button>Last updated⌄</button><span>8 projects</span></div>
             <div className={styles.projectGrid}>
-              <ProjectCard title="Mobile app refresh" category="Product" progress={72} color="#E9A23B" members={["MS", "JL", "AK"]} />
-              <ProjectCard title="Q4 campaign" category="Marketing" progress={48} color="#D7648B" members={["OR", "MS"]} />
-              <ProjectCard title="Design system" category="Design" progress={86} color="#5A69C8" members={["AK", "JL", "OR"]} />
+              <ProjectCard title="Mobile app refresh" category="Product" progress={72} color="#E9A23B" members={["MS", "JL", "AK"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />
+              <ProjectCard title="Q4 campaign" category="Marketing" progress={48} color="#D7648B" members={["OR", "MS"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />
+              <ProjectCard title="Design system" category="Design" progress={86} color="#5A69C8" members={["AK", "JL", "OR"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />
             </div>
             <div className={styles.activityPanel}><div><strong>Recent activity</strong><span>View all</span></div><p><span className={styles.avatar}>JL</span><span><strong>Jon Lee</strong> completed “Review navigation patterns”<small>Mobile app refresh · 18 minutes ago</small></span></p><p><span className={styles.avatar}>AK</span><span><strong>Ana Kim</strong> uploaded 3 files<small>Design system · 1 hour ago</small></span></p></div>
           </div>
@@ -291,10 +321,10 @@ function FormaPreview({ inspectEnabled, selectedTokenId, onInspect, style }: { i
   );
 }
 
-function ProjectCard({ title, category, progress, color, members }: { title: string; category: string; progress: number; color: string; members: string[] }) {
+function ProjectCard({ title, category, progress, color, members, inspectEnabled, selected, onInspect }: { title: string; category: string; progress: number; color: string; members: string[]; inspectEnabled: boolean; selected: boolean; onInspect: () => void }) {
   return (
-    <article className={styles.projectCard}>
-      <div><span className={styles.projectIcon} style={{ background: color }}>{title[0]}</span><button aria-label={`${title} menu`}>•••</button></div>
+    <article className={`${styles.projectCard} ${inspectEnabled && selected ? styles.inspected : ""}`} role={inspectEnabled ? "button" : undefined} aria-label={inspectEnabled ? `Inspect ${title} project card` : undefined} tabIndex={inspectEnabled ? 0 : undefined} onClick={inspectEnabled ? onInspect : undefined} onKeyDown={inspectEnabled ? (event) => { if (event.key === "Enter" || event.key === " ") onInspect(); } : undefined}>
+      <div><span className={styles.projectIcon} style={{ background: color }}>{title[0]}</span><span aria-hidden="true">•••</span></div>
       <h2>{title}</h2><p>{category}</p>
       <div className={styles.progressLabel}><span>Progress</span><strong>{progress}%</strong></div>
       <div className={styles.progressTrack}><span style={{ width: `${progress}%`, background: color }} /></div>

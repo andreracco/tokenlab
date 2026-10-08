@@ -11,6 +11,7 @@ beforeEach(() => {
     document: initialProject,
     selectedTokenId: "color.brand.600",
     history: [],
+    future: [],
   });
 });
 
@@ -26,6 +27,9 @@ describe("TokenLab first slice", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Undo" }));
     expect(preview.style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#3157D5");
+
+    fireEvent.click(screen.getByRole("button", { name: "Redo" }));
+    expect(preview.style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#C2415D");
   });
 
   it("switches presets as one undoable document change", () => {
@@ -50,5 +54,17 @@ describe("TokenLab first slice", () => {
 
     fireEvent.change(screen.getByLabelText("Preview mode"), { target: { value: "dark" } });
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-surface")).toBe("#15171C");
+  });
+
+  it("edits a dimension token and inspects registered card dependencies", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /space\.medium/i }));
+    fireEvent.change(screen.getByLabelText("Light value"), { target: { value: "20px" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-card-padding")).toBe("20px");
+
+    fireEvent.click(screen.getByRole("button", { name: "Inspect Mobile app refresh project card" }));
+    expect(screen.getByText("Project card tokens")).toBeTruthy();
   });
 });

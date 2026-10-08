@@ -95,6 +95,8 @@ export type ResolvedTokenValue = string | number | z.infer<typeof dimensionValue
 
 export type TokenCommand =
   | { type: "set-color"; tokenId: string; mode: TokenMode; value: string }
+  | { type: "set-token-value"; tokenId: string; mode: TokenMode; value: ResolvedTokenValue }
+  | { type: "set-token-reference"; tokenId: string; mode: TokenMode; targetId: string }
   | { type: "select-preset"; presetId: PresetId };
 
 type PresetSpec = {
@@ -229,6 +231,31 @@ export function applyCommand(document: ProjectDocument, command: TokenCommand): 
     });
   }
 
+  if (command.type === "set-token-reference") {
+    const token = document.tokens.find((candidate) => candidate.id === command.tokenId);
+    const target = document.tokens.find((candidate) => candidate.id === command.targetId);
+    if (!token || !target || token.type !== target.type) throw new Error("Alias target must have a compatible type.");
+
+    return projectSchema.parse({
+      ...document,
+      updatedAt: new Date().toISOString(),
+      tokens: document.tokens.map((candidate) => candidate.id === token.id
+        ? { ...candidate, values: { ...candidate.values, [command.mode]: { kind: "reference", tokenId: target.id } } }
+        : candidate),
+    });
+  }
+
+  if (command.type === "set-token-value") {
+    if (!document.tokens.some((candidate) => candidate.id === command.tokenId)) throw new Error(`Unknown token: ${command.tokenId}`);
+    return projectSchema.parse({
+      ...document,
+      updatedAt: new Date().toISOString(),
+      tokens: document.tokens.map((candidate) => candidate.id === command.tokenId
+        ? { ...candidate, values: { ...candidate.values, [command.mode]: { kind: "literal", value: command.value } } }
+        : candidate),
+    });
+  }
+
   const value = colorValueSchema.parse(command.value).toUpperCase();
   const token = document.tokens.find((candidate) => candidate.id === command.tokenId);
 
@@ -283,4 +310,26 @@ export function resolveCssValue(document: ProjectDocument, tokenId: string, mode
     return `${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${shadow.spread}px ${shadow.color}`;
   }
   return String(value);
+}
+
+export function parseTokenInput(type: Token["type"], input: string): ResolvedTokenValue {
+  if (type === "color") return colorValueSchema.parse(input).toUpperCase();
+  if (type === "fontFamily") return fontFamilyValueSchema.parse(input);
+  if (type === "fontWeight") return z.coerce.number().int().min(100).max(900).parse(input);
+  if (type === "number") return z.coerce.number().parse(input);
+  if (type === "dimension") {
+    const match = input.trim().match(/^(-?\d+(?:\.\d+)?)(px|rem)$/);
+    if (!match) throw new Error("Use a number followed by px or rem.");
+    return dimensionValueSchema.parse({ value: Number(match[1]), unit: match[2] });
+  }
+
+  const match = input.trim().match(/^(-?\d+(?:\.\d+)?)px\s+(-?\d+(?:\.\d+)?)px\s+(\d+(?:\.\d+)?)px\s+(-?\d+(?:\.\d+)?)px\s+(#[0-9a-fA-F]{6})$/);
+  if (!match) throw new Error("Use: xpx ypx blurpx spreadpx #RRGGBB.");
+  return shadowValueSchema.parse({ offsetX: Number(match[1]), offsetY: Number(match[2]), blur: Number(match[3]), spread: Number(match[4]), color: match[5].toUpperCase() });
+}
+
+// ponytail: primitive-only alias targets avoid cycles; broaden when chained alias editing is needed.
+export function getAliasTargets(document: ProjectDocument, tokenId: string): Token[] {
+  const token = document.tokens.find((candidate) => candidate.id === tokenId);
+  return token ? document.tokens.filter((candidate) => candidate.id !== token.id && candidate.layer === "primitive" && candidate.type === token.type) : [];
 }

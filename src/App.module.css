@@ -111,6 +111,8 @@
 .colorField input[type="color"] { width: 38px; height: 36px; padding: 3px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; }
 .colorField input[type="text"], .colorField input:not([type]) { min-width: 0; padding: 0 10px; border: 1px solid var(--studio-border); border-radius: 7px; background: white; font: 12px ui-monospace, SFMono-Regular, monospace; }
 .colorField input[aria-invalid="true"] { border-color: #b84e4e; }
+.valueInput { width: 100%; min-height: 36px; padding: 0 10px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; color: var(--studio-text); font: 11px ui-monospace, monospace; }
+.valueInput[aria-invalid="true"] { border-color: #b84e4e; }
 .validationSlot { min-height: 25px; padding-top: 5px; color: #a13c3c; font-size: 10px; }
 .editorActions { display: flex; justify-content: flex-end; gap: 7px; }
 .aliasTarget { width: 100%; margin-top: 8px; padding: 9px; display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 8px; border: 1px solid var(--studio-border); border-radius: 8px; background: white; text-align: left; cursor: pointer; }
@@ -124,6 +126,9 @@
 .usageRow > span:nth-child(2) { display: flex; flex-direction: column; gap: 2px; }
 .usageRow strong { font-size: 11px; }
 .usageRow small { color: var(--studio-muted); font-size: 9px; }
+.registryToken { width: 100%; margin-top: 6px; padding: 8px; display: flex; justify-content: space-between; gap: 8px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; text-align: left; cursor: pointer; }
+.registryToken code { overflow: hidden; font-size: 9px; text-overflow: ellipsis; }
+.projectCard.inspected { outline: 3px solid #e38b2c; outline-offset: 2px; cursor: pointer; }
 .specimenRoot { padding: var(--tl-preview-content-padding); display: block; background: var(--tl-preview-surface); overflow: auto; }
 .specimenRoot > header { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 18px; border-bottom: 1px solid var(--forma-line); font-size: 16px; font-weight: var(--tl-preview-strong-weight); }
 .specimenRoot > header small, .specimenRoot section > h2 { color: var(--forma-muted); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }

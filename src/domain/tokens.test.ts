@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyCommand, initialProject, presetOptions, projectSchema, resolveColorToken, resolveCssValue, resolveToken } from "./tokens";
+import { applyCommand, initialProject, parseTokenInput, presetOptions, projectSchema, resolveColorToken, resolveCssValue, resolveToken } from "./tokens";
 
 describe("token commands", () => {
   it("updates a primitive, resolves its alias, and leaves the original document intact", () => {
@@ -76,5 +76,13 @@ describe("token commands", () => {
     });
 
     expect(resolveToken(document, "layout.gap")).toEqual({ value: 16, unit: "px" });
+  });
+
+  it("parses editor values and commits compatible aliases", () => {
+    expect(parseTokenInput("dimension", "1.5rem")).toEqual({ value: 1.5, unit: "rem" });
+    expect(parseTokenInput("shadow", "0px 4px 12px 0px #112233")).toEqual({ offsetX: 0, offsetY: 4, blur: 12, spread: 0, color: "#112233" });
+
+    const edited = applyCommand(initialProject, { type: "set-token-reference", tokenId: "action.primary.background", mode: "light", targetId: "color.neutral.text" });
+    expect(resolveColorToken(edited, "action.primary.background")).toBe("#20242A");
   });
 });
