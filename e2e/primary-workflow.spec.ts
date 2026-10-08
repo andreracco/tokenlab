@@ -27,5 +27,10 @@ test("edits, compares, and exports a token system", async ({ page }) => {
   await page.getByText("tokenlab.css", { exact: true }).locator("..").getByRole("button", { name: "Download" }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe("tokenlab.css");
-  await expect.poll(async () => readFile(await download.path(), "utf8")).toContain("--action-primary-background: var(--color-brand-600)");
+  const css = await readFile(await download.path(), "utf8");
+  expect(css).toContain("--action-primary-background: var(--color-brand-600)");
+
+  await page.setContent(`<style>${css}</style><button id="consumer" style="background:var(--action-primary-background);color:var(--action-primary-foreground);border-radius:var(--component-control-radius)">Create project</button>`);
+  await expect(page.locator("#consumer")).toHaveCSS("background-color", "rgb(194, 65, 93)");
+  await expect(page.locator("#consumer")).toHaveCSS("border-radius", "7px");
 });
