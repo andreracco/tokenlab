@@ -57,6 +57,11 @@ describe("TokenLab first slice", () => {
 
     fireEvent.change(search, { target: { value: "missing token" } });
     expect(screen.getByText("No matching tokens.")).toBeTruthy();
+
+    fireEvent.change(search, { target: { value: "" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Token category" }), { target: { value: "shadow" } });
+    expect(screen.getAllByRole("button", { name: /shadow/i })).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: /radius\.control/i })).toBeNull();
   });
 
   it("switches mobile workspace panels and opens selections in the inspector", () => {

@@ -50,6 +50,7 @@ export function App() {
   const [comparisonSnapshotId, setComparisonSnapshotId] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [tokenQuery, setTokenQuery] = useState("");
+  const [tokenType, setTokenType] = useState<"all" | Token["type"]>("all");
   const [snapshotName, setSnapshotName] = useState("");
   const [mobilePanel, setMobilePanel] = useState<"tokens" | "canvas" | "inspector">("canvas");
   const snapshotDialog = useRef<HTMLDialogElement>(null);
@@ -68,7 +69,7 @@ export function App() {
   const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
   const contrastResults = checkContrast(document, mode);
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
-  const visibleTokens = document.tokens.filter((token) => `${token.path} ${token.type}`.toLowerCase().includes(tokenQuery.trim().toLowerCase()));
+  const visibleTokens = document.tokens.filter((token) => (tokenType === "all" || token.type === tokenType) && `${token.path} ${token.type}`.toLowerCase().includes(tokenQuery.trim().toLowerCase()));
 
   return (
     <div className={styles.app}>
@@ -110,7 +111,7 @@ export function App() {
             <div><span>Token library</span><small>{tokenQuery ? `${visibleTokens.length} of ${document.tokens.length}` : document.tokens.length} tokens</small></div>
           </div>
           <label className={styles.tokenSearch}>⌕<input type="search" aria-label="Search tokens" placeholder="Search tokens" value={tokenQuery} onChange={(event) => setTokenQuery(event.target.value)} /></label>
-          <div className={styles.categoryLabel}>All tokens</div>
+          <label className={styles.categoryFilter}>Category<select aria-label="Token category" value={tokenType} onChange={(event) => setTokenType(event.target.value as typeof tokenType)}><option value="all">All tokens</option><option value="color">Colors</option><option value="dimension">Dimensions</option><option value="fontFamily">Font families</option><option value="fontWeight">Font weights</option><option value="number">Numbers</option><option value="shadow">Shadows</option></select></label>
           <div className={styles.tokenList}>
             {visibleTokens.map((token) => (
               <TokenRow
