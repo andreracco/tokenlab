@@ -1,5 +1,5 @@
 import { useRef, useState, type CSSProperties, type ChangeEvent, type KeyboardEvent } from "react";
-import { Bell, Camera, CheckCircle2, CheckSquare2, ChevronRight, Download, Eye, FolderKanban, GitCompareArrows, Grid2X2, Layers3, LayoutDashboard, Plus, Redo2, Search, Sparkles, Undo2, Users, X } from "lucide-react";
+import { ArrowLeft, Bell, Camera, CheckCircle2, CheckSquare2, ChevronRight, Download, Eye, FolderKanban, GitCompareArrows, Grid2X2, History as HistoryIcon, Layers3, LayoutDashboard, MousePointer2, Plus, Redo2, Search, Sparkles, Undo2, Users, X } from "lucide-react";
 import { colorValueSchema, getAliasTargets, parseTokenInput, presetOptions, presetSpecs, resolveColorToken, resolveCssValue, type ProjectDocument, type ResolvedTokenValue, type Token, type TokenMode } from "./domain/tokens";
 import { diffProjects, type ProjectSnapshot } from "./domain/projects";
 import { checkContrast } from "./domain/contrast";
@@ -8,8 +8,6 @@ import { useTokenLabStore } from "./app/store";
 import { componentRegistry, consumersForToken, type ComponentKey } from "./preview/registry";
 import { useWorkspacePersistence } from "./persistence/useWorkspacePersistence";
 import styles from "./App.module.css";
-
-const inspectionHintKey = "tokenlab-inspection-hint-dismissed";
 
 type PreviewStyle = CSSProperties & {
   "--tl-preview-viewport-width"?: string;
@@ -47,19 +45,17 @@ export function App() {
   const restoreSnapshot = useTokenLabStore((state) => state.restoreSnapshot);
   const hydrate = useTokenLabStore((state) => state.hydrate);
   const saveStatus = useWorkspacePersistence();
-  const [inspectEnabled, setInspectEnabled] = useState(true);
+  const [inspectEnabled, setInspectEnabled] = useState(false);
   const [mode, setMode] = useState<TokenMode>("light");
   const [previewWidth, setPreviewWidth] = useState<720 | 960 | 1280>(1280);
-  const [canvasView, setCanvasView] = useState<"app" | "specimens">("app");
+  const [canvasView, setCanvasView] = useState<"app" | "components" | "history">("app");
   const [selectedComponentKey, setSelectedComponentKey] = useState<ComponentKey | null>(null);
   const [comparisonSnapshotId, setComparisonSnapshotId] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [tokenQuery, setTokenQuery] = useState("");
-  const [tokenType, setTokenType] = useState<"all" | Token["type"]>("all");
   const [snapshotName, setSnapshotName] = useState("");
   const [mobilePanel, setMobilePanel] = useState<"tokens" | "canvas" | "inspector">("canvas");
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [hintVisible, setHintVisible] = useState(() => { try { return localStorage.getItem(inspectionHintKey) !== "true"; } catch { return true; } });
   const [createdProjects, setCreatedProjects] = useState<{ id: string; name: string }[]>([]);
   const snapshotDialog = useRef<HTMLDialogElement>(null);
 
@@ -78,8 +74,13 @@ export function App() {
   const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
   const contrastResults = checkContrast(document, mode);
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
-  const visibleTokens = document.tokens.filter((token) => (tokenType === "all" || token.type === tokenType) && `${token.path} ${token.type}`.toLowerCase().includes(tokenQuery.trim().toLowerCase()));
-  const dismissHint = () => { setHintVisible(false); try { localStorage.setItem(inspectionHintKey, "true"); } catch { /* Storage can be unavailable in private contexts. */ } };
+  const visibleTokens = document.tokens.filter((token) => `${token.path} ${token.type}`.toLowerCase().includes(tokenQuery.trim().toLowerCase()));
+  const tokenGroups = [
+    { id: "foundations", label: "Foundations", tokens: visibleTokens.filter((token) => token.layer === "primitive" && !token.path.startsWith("color.error")) },
+    { id: "semantic", label: "Semantic", tokens: visibleTokens.filter((token) => token.layer === "semantic" && !token.path.startsWith("feedback.error")) },
+    { id: "feedback", label: "Feedback", tokens: visibleTokens.filter((token) => token.path.startsWith("color.error") || token.path.startsWith("feedback.error")) },
+  ];
+  const focusedView = exportOpen || canvasView === "history";
 
   return (
     <div className={styles.app}>
@@ -98,8 +99,6 @@ export function App() {
             <button className={styles.iconAction} aria-label="Undo" title="Undo" disabled={history.length === 0} onClick={undo}><Undo2 aria-hidden="true" /></button>
             <button className={styles.iconAction} aria-label="Redo" title="Redo" disabled={future.length === 0} onClick={redo}><Redo2 aria-hidden="true" /></button>
           </span>
-          <button className={styles.secondaryButton} onClick={() => { setSnapshotName(`Baseline ${snapshots.length + 1}`); snapshotDialog.current?.showModal(); }}><Camera aria-hidden="true" />Snapshot</button>
-          <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => { setComparisonSnapshotId(snapshots.at(-1)?.id ?? null); setMobilePanel("canvas"); setInspectorOpen(false); }}><GitCompareArrows aria-hidden="true" />Compare</button>
           <button className={styles.primaryStudioButton} onClick={() => { setComparisonSnapshotId(null); setExportOpen(true); setMobilePanel("canvas"); setInspectorOpen(false); }}><Download aria-hidden="true" />Export</button>
         </div>
       </header>
@@ -113,27 +112,27 @@ export function App() {
         </form>
       </dialog>
 
-      <nav className={styles.mobilePanelNav} aria-label="Mobile workspace">
+      <nav className={`${styles.mobilePanelNav} ${focusedView ? styles.focusedViewHidden : ""}`} aria-label="Mobile workspace">
         {(["tokens", "canvas", "inspector"] as const).map((panel) => <button key={panel} aria-pressed={mobilePanel === panel} onClick={() => setMobilePanel(panel)}>{panel[0].toUpperCase() + panel.slice(1)}</button>)}
       </nav>
 
-      <main className={styles.workspace}>
-        <aside className={`${styles.tokenPanel} ${mobilePanel !== "tokens" ? styles.mobilePanelHidden : ""}`} aria-label="Token library">
+      <main className={`${styles.workspace} ${focusedView ? styles.workspaceFocused : ""}`}>
+        <aside className={`${styles.tokenPanel} ${focusedView ? styles.focusedViewHidden : ""} ${mobilePanel !== "tokens" ? styles.mobilePanelHidden : ""}`} aria-label="Token library">
           <div className={styles.panelHeading}>
             <div><span>Token library</span><small>{tokenQuery ? `${visibleTokens.length} of ${document.tokens.length}` : document.tokens.length} tokens</small></div>
           </div>
           <label className={styles.tokenSearch}><Search aria-hidden="true" /><input type="search" aria-label="Search tokens" placeholder="Search tokens" value={tokenQuery} onChange={(event) => setTokenQuery(event.target.value)} /></label>
-          <label className={styles.categoryFilter}>Category<select aria-label="Token category" value={tokenType} onChange={(event) => setTokenType(event.target.value as typeof tokenType)}><option value="all">All tokens</option><option value="color">Colors</option><option value="dimension">Dimensions</option><option value="fontFamily">Font families</option><option value="fontWeight">Font weights</option><option value="number">Numbers</option><option value="shadow">Shadows</option></select></label>
           <div className={styles.tokenList}>
-            {visibleTokens.map((token) => (
-              <TokenRow
-                key={token.id}
-                token={token}
-                value={resolveCssValue(document, token.id, mode)}
-                selected={token.id === selectedTokenId}
-                onSelect={() => { setSelectedComponentKey(null); selectToken(token.id); setMobilePanel("inspector"); setInspectorOpen(true); }}
-              />
-            ))}
+            {tokenGroups.map((group) => group.tokens.length > 0 && <details className={styles.tokenGroup} key={group.id} open={group.tokens.some((token) => token.id === selectedTokenId)}>
+              <summary><span>{group.label}</span><small>{group.tokens.length}</small></summary>
+              <div>{group.tokens.map((token) => <TokenRow
+                  key={token.id}
+                  token={token}
+                  value={resolveCssValue(document, token.id, mode)}
+                  selected={token.id === selectedTokenId}
+                  onSelect={() => { setSelectedComponentKey(null); selectToken(token.id); setMobilePanel("inspector"); setInspectorOpen(true); }}
+                />)}</div>
+            </details>)}
             {visibleTokens.length === 0 && <p className={styles.emptyTokens}>No matching tokens.</p>}
           </div>
           <div className={styles.presetPicker}>
@@ -154,26 +153,23 @@ export function App() {
             <div>
               <strong>Living Canvas</strong>
               <span className={styles.viewTabs}>
-                <button aria-pressed={canvasView === "app"} className={canvasView === "app" ? styles.activeTab : ""} onClick={() => setCanvasView("app")}>App</button>
-                <button aria-pressed={canvasView === "specimens"} className={canvasView === "specimens" ? styles.activeTab : ""} onClick={() => setCanvasView("specimens")}>Specimens</button>
+                <button aria-pressed={canvasView === "app" && !exportOpen} className={canvasView === "app" && !exportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setComparisonSnapshotId(null); setCanvasView("app"); }}>Preview</button>
+                <button aria-pressed={canvasView === "components" && !exportOpen} className={canvasView === "components" && !exportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setComparisonSnapshotId(null); setCanvasView("components"); }}>Components</button>
+                <button aria-pressed={canvasView === "history" && !exportOpen} className={canvasView === "history" && !exportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setComparisonSnapshotId(null); setCanvasView("history"); }}><HistoryIcon aria-hidden="true" />History</button>
               </span>
             </div>
-            <div className={styles.canvasControls}>
+            {!focusedView && <div className={styles.canvasControls}>
               <select className={styles.modeSelect} aria-label="Preview mode" value={mode} onChange={(event) => setMode(event.target.value as TokenMode)}><option value="light">Light</option><option value="dark">Dark</option></select>
               <select className={styles.modeSelect} aria-label="Preview width" value={previewWidth} onChange={(event) => setPreviewWidth(Number(event.target.value) as typeof previewWidth)}><option value={1280}>Desktop 1280</option><option value={960}>Compact 960</option><option value={720}>Narrow 720</option></select>
-              <span>{preset.name}</span>
               <button className={styles.inspectorDrawerButton} aria-expanded={inspectorOpen} aria-controls="token-inspector" onClick={() => setInspectorOpen(true)}>Open inspector</button>
-              <button
-                className={inspectEnabled ? styles.inspectActive : styles.inspectButton}
-                aria-pressed={inspectEnabled}
-                onClick={() => setInspectEnabled((enabled) => !enabled)}
-              >
-                <Eye aria-hidden="true" /> Inspect {inspectEnabled ? "on" : "off"}
-              </button>
-            </div>
+              <span className={styles.interactionModes} aria-label="Preview interaction mode">
+                <button className={!inspectEnabled ? styles.activeInteractionMode : ""} aria-pressed={!inspectEnabled} onClick={() => setInspectEnabled(false)}><MousePointer2 aria-hidden="true" />Interact</button>
+                <button className={inspectEnabled ? styles.activeInteractionMode : ""} aria-pressed={inspectEnabled} onClick={() => setInspectEnabled(true)}><Eye aria-hidden="true" />Inspect</button>
+              </span>
+            </div>}
           </div>
-          {hintVisible && <div className={styles.inspectionHint}><Sparkles aria-hidden="true" /><span>Select an element to reveal its tokens.</span><button aria-label="Dismiss inspection hint" onClick={dismissHint}><X aria-hidden="true" /></button></div>}
-          {exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={() => setExportOpen(false)} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); setExportOpen(false); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); }} /> : canvasView === "app" ? <FormaPreview
+          {inspectEnabled && !focusedView && <div className={styles.inspectNotice}><Sparkles aria-hidden="true" /><span><strong>Inspect mode</strong> — select a preview element to reveal its tokens.</span></div>}
+          {exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={() => setExportOpen(false)} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); setExportOpen(false); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); setCanvasView("app"); }} /> : canvasView === "history" ? <HistoryPanel snapshots={snapshots} onCreate={() => { setSnapshotName(`Baseline ${snapshots.length + 1}`); snapshotDialog.current?.showModal(); }} onCompare={setComparisonSnapshotId} /> : canvasView === "app" ? <FormaPreview
               createdProjects={createdProjects}
               inspectEnabled={inspectEnabled}
               highlightedComponents={consumers.map((consumer) => consumer.key)}
@@ -184,7 +180,7 @@ export function App() {
             /> : <SpecimenPreview style={previewStyle} />}
         </section>
 
-        <aside id="token-inspector" className={`${styles.inspectorPanel} ${!inspectorOpen ? styles.inspectorDrawerClosed : ""} ${mobilePanel !== "inspector" ? styles.mobilePanelHidden : ""}`} aria-label="Token inspector">
+        <aside id="token-inspector" className={`${styles.inspectorPanel} ${focusedView ? styles.focusedViewHidden : ""} ${!inspectorOpen ? styles.inspectorDrawerClosed : ""} ${mobilePanel !== "inspector" ? styles.mobilePanelHidden : ""}`} aria-label="Token inspector">
           <div className={styles.inspectorHeading}>
             <button className={styles.inspectorDrawerClose} onClick={() => setInspectorOpen(false)} aria-label="Close inspector"><X aria-hidden="true" /></button>
             <span className={styles.eyebrow}>Selected token</span>
@@ -204,20 +200,34 @@ export function App() {
           ) : (
             <AliasEditor document={document} token={selectedToken} mode={mode} resolvedValue={resolveCssValue(document, selectedToken.id, mode)} onApply={(targetId) => execute({ type: "set-token-reference", tokenId: selectedToken.id, mode, targetId })} />
           )}
-          {selectedComponent && <div className={styles.inspectorSection}><span className={styles.eyebrow}>{selectedComponent.label} tokens</span>{selectedComponent.tokenIds.map((tokenId) => <button className={styles.registryToken} key={tokenId} onClick={() => selectToken(tokenId)}><code>{tokenId}</code><ChevronRight aria-hidden="true" /></button>)}</div>}
-          {consumers.length > 0 && <div className={styles.inspectorSection}>
-            <span className={styles.eyebrow}>Used by</span>
-            {consumers.map((consumer) => <button className={styles.usageRow} key={consumer.key} onClick={() => selectComponent(consumer.key)}>
+          {selectedComponent && <details className={styles.inspectorDisclosure} open><summary>{selectedComponent.label} tokens <span>{selectedComponent.tokenIds.length}</span></summary><div>{selectedComponent.tokenIds.map((tokenId) => <button className={styles.registryToken} key={tokenId} onClick={() => selectToken(tokenId)}><code>{tokenId}</code><ChevronRight aria-hidden="true" /></button>)}</div></details>}
+          {consumers.length > 0 && <details className={styles.inspectorDisclosure} open>
+            <summary>Used by <span>{consumers.length}</span></summary>
+            <div>{consumers.map((consumer) => <button className={styles.usageRow} key={consumer.key} onClick={() => selectComponent(consumer.key)}>
               <span className={styles.componentGlyph}><Grid2X2 aria-hidden="true" /></span>
               <span><strong>{consumer.label}</strong><small>Forma · {consumer.location}</small></span>
               <ChevronRight aria-hidden="true" />
-            </button>)}
-          </div>}
-          <div className={styles.inspectorSection}><span className={styles.eyebrow}>Contrast checks · {mode}</span><div className={styles.contrastList}>{contrastResults.map((result) => <div key={result.id} className={result.passes ? styles.contrastPass : styles.contrastFail}><span>{result.label}<small>{result.component}</small></span><strong>{result.ratio}:1</strong><small>{result.passes ? "Pass" : `Needs ${result.threshold}:1`}</small></div>)}</div></div>
+            </button>)}</div>
+          </details>}
+          <details className={styles.inspectorDisclosure}><summary>Contrast checks <span>{contrastFailures === 0 ? "Pass" : contrastFailures}</span></summary><div className={styles.contrastList}>{contrastResults.map((result) => <div key={result.id} className={result.passes ? styles.contrastPass : styles.contrastFail}><span>{result.label}<small>{result.component}</small></span><strong>{result.ratio}:1</strong><small>{result.passes ? "Pass" : `Needs ${result.threshold}:1`}</small></div>)}</div></details>
         </aside>
       </main>
     </div>
   );
+}
+
+function HistoryPanel({ snapshots, onCreate, onCompare }: { snapshots: ProjectSnapshot[]; onCreate: () => void; onCompare: (id: string) => void }) {
+  return <div className={styles.focusedPanel}>
+    <div className={styles.focusedHeader}>
+      <div><span className={styles.eyebrow}>Version history</span><h2>Saved baselines</h2><p>Capture a stable point, then compare future token changes against it.</p></div>
+      <button className={styles.primaryStudioButton} onClick={onCreate}><Camera aria-hidden="true" />Save baseline</button>
+    </div>
+    {snapshots.length === 0 ? <div className={styles.historyEmpty}><HistoryIcon aria-hidden="true" /><strong>No saved baselines yet</strong><p>Save one before a design review or a larger token change.</p><button className={styles.primaryStudioButton} onClick={onCreate}><Camera aria-hidden="true" />Save first baseline</button></div> : <div className={styles.historyList}>{snapshots.map((snapshot) => <article key={snapshot.id}>
+      <span className={styles.historyGlyph}><HistoryIcon aria-hidden="true" /></span>
+      <span><strong>{snapshot.name}</strong><small>{new Date(snapshot.createdAt).toLocaleString()}</small></span>
+      <button className={styles.secondaryButton} onClick={() => onCompare(snapshot.id)}><GitCompareArrows aria-hidden="true" />Compare</button>
+    </article>)}</div>}
+  </div>;
 }
 
 function ExportPanel({ document, snapshots, onClose, onImport }: { document: ProjectDocument; snapshots: ProjectSnapshot[]; onClose: () => void; onImport: (workspace: { document: ProjectDocument; snapshots: ProjectSnapshot[] }) => void }) {
@@ -230,7 +240,7 @@ function ExportPanel({ document, snapshots, onClose, onImport }: { document: Pro
     try { onImport(parseProjectFile(await file.text())); } catch (reason) { setError(reason instanceof Error ? reason.message : "Couldn't import this project."); } finally { input.value = ""; }
   };
 
-  return <div className={styles.exportPanel}><div className={styles.exportHeader}><div><span className={styles.eyebrow}>Export system</span><h2>Production-ready token files</h2><p>Aliases and stable token ordering are preserved.</p></div><button onClick={onClose}>Close</button></div><div className={styles.exportGrid}>{artifacts.map((artifact) => <div className={styles.exportCard} key={artifact.filename}><code>{artifact.filename}</code><small>{formatBytes(artifact.content)}</small><button onClick={() => downloadArtifact(artifact)}>Download</button></div>)}</div><div className={styles.usageExample}><strong>CSS usage</strong><code>{`.button { background: var(--action-primary-background); }`}</code></div><label className={styles.importControl}>Import TokenLab project<input type="file" accept="application/json,.json" onChange={importProject} /></label><div className={styles.importError} role="status">{error}</div></div>;
+  return <div className={styles.exportPanel}><div className={styles.exportHeader}><div><span className={styles.eyebrow}>Export system</span><h2>Production-ready token files</h2><p>Aliases and stable token ordering are preserved.</p></div><button onClick={onClose}><ArrowLeft aria-hidden="true" />Back to preview</button></div><div className={styles.exportGrid}>{artifacts.map((artifact) => <div className={styles.exportCard} key={artifact.filename}><code>{artifact.filename}</code><small>{formatBytes(artifact.content)}</small><button onClick={() => downloadArtifact(artifact)}><Download aria-hidden="true" />Download</button></div>)}</div><div className={styles.usageExample}><strong>CSS usage</strong><code>{`.button { background: var(--action-primary-background); }`}</code></div><label className={styles.importControl}>Import TokenLab project<input type="file" accept="application/json,.json" onChange={importProject} /></label><div className={styles.importError} role="status">{error}</div></div>;
 }
 
 function downloadArtifact(artifact: ExportArtifact) {
@@ -273,7 +283,7 @@ function createPreviewStyle(document: ProjectDocument, mode: TokenMode): Preview
 function ComparisonView({ snapshot, snapshots, current, mode, onSelect, onClose, onRestore }: { snapshot: ProjectSnapshot; snapshots: ProjectSnapshot[]; current: ProjectDocument; mode: TokenMode; onSelect: (id: string) => void; onClose: () => void; onRestore: () => void }) {
   const changes = diffProjects(snapshot.document, current);
   return <div className={styles.comparison}>
-    <div className={styles.comparisonHeader}><select aria-label="Comparison baseline" value={snapshot.id} onChange={(event) => onSelect(event.target.value)}>{snapshots.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select><span>{changes.length} token changes</span><button onClick={onRestore}>Restore baseline</button><button onClick={onClose}>Close</button></div>
+    <div className={styles.comparisonHeader}><button onClick={onClose}><ArrowLeft aria-hidden="true" />Back to history</button><select aria-label="Comparison baseline" value={snapshot.id} onChange={(event) => onSelect(event.target.value)}>{snapshots.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}</select><span>{changes.length} token changes</span><button onClick={onRestore}>Restore baseline</button></div>
     <div className={styles.comparisonGrid}><ComparisonPreview label={snapshot.name} style={createPreviewStyle(snapshot.document, mode)} /><ComparisonPreview label="Current" style={createPreviewStyle(current, mode)} /></div>
     <div className={styles.diffList}>{changes.length === 0 ? <p>No token changes.</p> : changes.map((change) => <div key={`${change.path}-${change.mode}`}><code>{change.path}</code><span>{change.mode}</span><del>{change.before}</del><ins>{change.after}</ins></div>)}</div>
   </div>;
@@ -364,12 +374,14 @@ function SpecimenPreview({ style }: { style: PreviewStyle }) {
   return (
     <div className={styles.previewStage}>
       <div className={`${styles.previewRoot} ${styles.specimenRoot}`} style={style} data-testid="preview-root">
-        <header><span>Forma component specimens</span><small>Representative states</small></header>
+        <header><span>Forma components</span><small>Visual reference · examples only</small></header>
+        <div className={styles.specimenExamples} inert>
         <section><h2>Buttons</h2><div className={styles.specimenRow}><button className={styles.formaPrimary}>Primary</button><button className={`${styles.formaPrimary} ${styles.simulatedFocus}`}>Focus</button><button className={styles.formaPrimary} disabled>Disabled</button><button className={styles.formaPrimary}>••• Loading</button></div></section>
         <section><h2>Inputs</h2><div className={styles.specimenRow}><input placeholder="Default input" /><input className={styles.simulatedFocus} defaultValue="Focused value" /><input className={styles.inputError} defaultValue="Invalid value" /><input disabled placeholder="Disabled" /></div></section>
         <section><h2>Cards and badges</h2><div className={styles.specimenRow}><article className={styles.specimenCard}><span className={styles.specimenBadge}>In progress</span><h3>Design system</h3><p>Build reusable foundations for Forma.</p></article><article className={styles.specimenCard}><span className={styles.specimenBadge}>Complete</span><h3>Navigation audit</h3><p>Improve structure and wayfinding.</p></article></div></section>
         <section><h2>Tabs and menu</h2><div className={styles.specimenRow}><div className={styles.specimenTabs}><button>Overview</button><button className={styles.activeTab}>Activity</button><button>Files</button></div><div className={styles.specimenMenu}><button>Edit project</button><button>Duplicate</button><button>Archive</button></div></div></section>
-        <section><h2>Dialog</h2><div className={styles.specimenDialog}><strong>Create project</strong><p>Start with a clear name and an owner.</p><input placeholder="Project name" /><div><button>Cancel</button><button className={styles.formaPrimary}>Create project</button></div></div></section>
+        <section><h2>Modal preview</h2><div className={styles.specimenDialog}><strong>Create project</strong><p>Start with a clear name and an owner.</p><input placeholder="Project name" /><div><button>Cancel</button><button className={styles.formaPrimary}>Create project</button></div></div></section>
+        </div>
       </div>
     </div>
   );

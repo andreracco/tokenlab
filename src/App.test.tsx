@@ -48,8 +48,11 @@ describe("TokenLab first slice", () => {
     expect(screen.getByLabelText("Starting system")).toHaveProperty("value", "product");
   });
 
-  it("filters tokens by path and shows an empty state", () => {
+  it("groups tokens and filters them by path", () => {
     render(<App />);
+    expect(screen.getByText("Foundations")).toBeTruthy();
+    expect(screen.getByText("Semantic")).toBeTruthy();
+    expect(screen.getByText("Feedback")).toBeTruthy();
     const search = screen.getByRole("searchbox", { name: "Search tokens" });
 
     fireEvent.change(search, { target: { value: "radius.control" } });
@@ -58,21 +61,14 @@ describe("TokenLab first slice", () => {
 
     fireEvent.change(search, { target: { value: "missing token" } });
     expect(screen.getByText("No matching tokens.")).toBeTruthy();
-
-    fireEvent.change(search, { target: { value: "" } });
-    fireEvent.change(screen.getByRole("combobox", { name: "Token category" }), { target: { value: "shadow" } });
-    expect(screen.getAllByRole("button", { name: /shadow/i })).toHaveLength(2);
-    expect(screen.queryByRole("button", { name: /radius\.control/i })).toBeNull();
   });
 
-  it("dismisses the first-run inspection hint across reloads", () => {
-    const first = render(<App />);
-    expect(screen.getByText("Select an element to reveal its tokens.")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Dismiss inspection hint" }));
-    first.unmount();
-
+  it("defaults to interaction and clearly labels deliberate inspection", () => {
     render(<App />);
-    expect(screen.queryByText("Select an element to reveal its tokens.")).toBeNull();
+    expect(screen.getByRole("button", { name: "Interact" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.queryByText(/select a preview element/i)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /^Inspect$/ }));
+    expect(screen.getByText(/select a preview element/i)).toBeTruthy();
   });
 
   it("switches mobile workspace panels and opens selections in the inspector", () => {
@@ -95,11 +91,12 @@ describe("TokenLab first slice", () => {
     expect(open.getAttribute("aria-expanded")).toBe("false");
   });
 
-  it("renders specimens and switches the canvas to dark mode", () => {
+  it("renders component examples and switches the canvas to dark mode", () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Specimens" }));
-    expect(screen.getByText("Forma component specimens")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Components" }));
+    expect(screen.getByText("Forma components")).toBeTruthy();
+    expect(screen.getByText("Visual reference · examples only")).toBeTruthy();
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-font-family")).toContain("sans-serif");
 
     fireEvent.change(screen.getByLabelText("Preview mode"), { target: { value: "dark" } });
@@ -108,10 +105,9 @@ describe("TokenLab first slice", () => {
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-viewport-width")).toBe("720px");
   });
 
-  it("opens the create project dialog when inspection is off", () => {
+  it("opens the create project dialog in the default interaction mode", () => {
     render(<App />);
     expect(screen.getByRole("heading", { name: "Projects" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Inspect on" }));
     const dialog = screen.getByRole("heading", { name: "Create project", hidden: true }).closest("dialog")!;
     dialog.showModal = () => { dialog.open = true; };
     const opener = screen.getByRole("button", { name: "Create project" });
@@ -125,8 +121,8 @@ describe("TokenLab first slice", () => {
     fireEvent.submit(dialog.querySelector("form")!);
     expect(screen.getByRole("heading", { name: "Client portal" })).toBeTruthy();
     expect(screen.getByText("4 projects")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Specimens" }));
-    fireEvent.click(screen.getByRole("button", { name: "App" }));
+    fireEvent.click(screen.getByRole("button", { name: "Components" }));
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
     expect(screen.getByRole("heading", { name: "Client portal" })).toBeTruthy();
   });
 
@@ -157,6 +153,7 @@ describe("TokenLab first slice", () => {
     fireEvent.keyDown(screen.getByLabelText("Light value"), { key: "Enter" });
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-card-padding")).toBe("20px");
 
+    fireEvent.click(screen.getByRole("button", { name: /^Inspect$/ }));
     expect(fireEvent.keyDown(screen.getByRole("button", { name: "Inspect Mobile app refresh project card" }), { key: " " })).toBe(false);
     expect(screen.getByText("Project card tokens")).toBeTruthy();
   });
@@ -179,11 +176,14 @@ describe("TokenLab first slice", () => {
     render(<App />);
     const dialog = screen.getByRole("heading", { name: "Name snapshot", hidden: true }).closest("dialog")!;
     dialog.showModal = () => { dialog.open = true; };
-    fireEvent.click(screen.getByRole("button", { name: "Snapshot" }));
+    fireEvent.click(screen.getByRole("button", { name: "History" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save baseline" }));
     fireEvent.change(screen.getByRole("textbox", { name: "Snapshot name" }), { target: { value: "Before brand refresh" } });
     fireEvent.submit(screen.getByRole("button", { name: "Save snapshot" }).closest("form")!);
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
     fireEvent.change(screen.getByLabelText("Light value"), { target: { value: "#C2415D" } });
     fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    fireEvent.click(screen.getByRole("button", { name: "History" }));
     fireEvent.click(screen.getByRole("button", { name: "Compare" }));
 
     expect(screen.getByText("1 token changes")).toBeTruthy();

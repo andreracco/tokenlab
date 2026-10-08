@@ -11,7 +11,7 @@ for (const preset of presets) {
       await page.getByLabel("Starting system").selectOption(preset);
       await page.getByLabel("Preview mode").selectOption(mode);
       await page.getByLabel("Preview width").selectOption("720");
-      await page.getByRole("button", { name: "Inspect on" }).click();
+      await page.getByRole("button", { name: "Inspect", exact: true }).click();
 
       await expect(page.getByTestId("preview-root")).toHaveScreenshot(`${preset}-${mode}.png`, { maxDiffPixelRatio: 0.025 });
     });

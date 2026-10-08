@@ -30,7 +30,7 @@ test("honors reduced-motion preference", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  const durations = await page.getByRole("button", { name: "Snapshot" }).evaluate((button) => {
+  const durations = await page.getByRole("button", { name: "Export" }).evaluate((button) => {
     const style = getComputedStyle(button);
     return [Number.parseFloat(style.animationDuration), Number.parseFloat(style.transitionDuration)];
   });

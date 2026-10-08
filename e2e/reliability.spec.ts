@@ -21,12 +21,15 @@ test("persists committed edits across reloads", async ({ page }) => {
 test("restores a snapshot as one undoable action", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("status").filter({ hasText: "Saved locally" })).toBeVisible();
-  await page.getByRole("button", { name: "Snapshot" }).click();
+  await page.getByRole("button", { name: "History" }).click();
+  await page.getByRole("button", { name: "Save baseline" }).click();
   await page.getByRole("textbox", { name: "Snapshot name" }).fill("Original brand");
   await page.getByRole("button", { name: "Save snapshot" }).click();
+  await page.getByRole("button", { name: "Preview" }).click();
 
   await page.getByRole("textbox", { name: "Light value" }).fill(editedBrand);
   await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "History" }).click();
   await page.getByRole("button", { name: "Compare" }).click();
   await page.getByRole("button", { name: "Restore baseline" }).click();
   await expect(page.getByTestId("preview-root")).toHaveCSS("--tl-preview-action-primary-background", "#3157D5");
@@ -45,7 +48,7 @@ test("retains the current project after a malformed import and permits retry", a
   await page.getByRole("button", { name: "Export" }).click();
   await page.getByLabel("Import TokenLab project").setInputFiles(malformedFile);
   await expect(page.getByText("Project file is not valid JSON.")).toBeVisible();
-  await page.getByRole("button", { name: "Close" }).click();
+  await page.getByRole("button", { name: "Back to preview" }).click();
   await expect(page.getByTestId("preview-root")).toHaveCSS("--tl-preview-action-primary-background", editedBrand);
 
   await page.getByRole("button", { name: "Export" }).click();

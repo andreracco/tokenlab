@@ -15,8 +15,12 @@ test("supports the core edit and dialog flow from the keyboard", async ({ page }
   await page.keyboard.press("Enter");
   await expect(page.getByTestId("preview-root")).toHaveCSS("--tl-preview-action-primary-background", "#3157D5");
 
-  const inspect = page.getByRole("button", { name: "Inspect on" });
+  const inspect = page.getByRole("button", { name: "Inspect", exact: true });
   await inspect.focus();
+  await page.keyboard.press("Enter");
+  await expect(inspect).toHaveAttribute("aria-pressed", "true");
+  const interact = page.getByRole("button", { name: "Interact" });
+  await interact.focus();
   await page.keyboard.press("Enter");
   const createProject = page.getByRole("button", { name: "Create project" });
   await createProject.focus();
