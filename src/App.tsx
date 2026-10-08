@@ -49,6 +49,9 @@ export function App() {
   const [selectedComponentKey, setSelectedComponentKey] = useState<ComponentKey | null>(null);
   const [comparisonSnapshotId, setComparisonSnapshotId] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [tokenQuery, setTokenQuery] = useState("");
+  const [snapshotName, setSnapshotName] = useState("");
+  const snapshotDialog = useRef<HTMLDialogElement>(null);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
   const preset = presetSpecs[document.presetId];
@@ -63,6 +66,7 @@ export function App() {
   const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
   const contrastResults = checkContrast(document, mode);
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
+  const visibleTokens = document.tokens.filter((token) => `${token.path} ${token.type}`.toLowerCase().includes(tokenQuery.trim().toLowerCase()));
 
   return (
     <div className={styles.app}>
@@ -75,25 +79,34 @@ export function App() {
           </div>
         </div>
         <div className={styles.headerActions}>
-          <span className={styles.savedStatus}><span aria-hidden="true">●</span> {saveStatus}</span>
+          <span className={styles.savedStatus} role="status" aria-live="polite"><span aria-hidden="true">●</span> {saveStatus}</span>
           <span className={styles.contrastStatus}>{contrastFailures === 0 ? "Contrast checks pass" : `${contrastFailures} contrast pairs need attention`}</span>
           <button className={styles.secondaryButton} disabled={history.length === 0} onClick={undo}>Undo</button>
           <button className={styles.secondaryButton} disabled={future.length === 0} onClick={redo}>Redo</button>
-          <button className={styles.secondaryButton} onClick={() => captureSnapshot(`Baseline ${snapshots.length + 1}`)}>Snapshot</button>
+          <button className={styles.secondaryButton} onClick={() => { setSnapshotName(`Baseline ${snapshots.length + 1}`); snapshotDialog.current?.showModal(); }}>Snapshot</button>
           <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => setComparisonSnapshotId(snapshots.at(-1)?.id ?? null)}>Compare</button>
           <button className={styles.primaryStudioButton} onClick={() => { setComparisonSnapshotId(null); setExportOpen(true); }}>Export</button>
         </div>
       </header>
 
+      <dialog ref={snapshotDialog} className={styles.studioDialog} aria-labelledby="snapshot-title">
+        <form method="dialog" onSubmit={() => captureSnapshot(snapshotName.trim())}>
+          <h2 id="snapshot-title">Name snapshot</h2>
+          <p>Save the current token system as a comparison baseline.</p>
+          <label>Snapshot name<input autoFocus required value={snapshotName} onChange={(event) => setSnapshotName(event.target.value)} /></label>
+          <div><button type="button" onClick={() => snapshotDialog.current?.close()}>Cancel</button><button className={styles.primaryStudioButton} disabled={!snapshotName.trim()}>Save snapshot</button></div>
+        </form>
+      </dialog>
+
       <main className={styles.workspace}>
         <aside className={styles.tokenPanel} aria-label="Token library">
           <div className={styles.panelHeading}>
-            <div><span>Token library</span><small>{document.tokens.length} tokens</small></div>
-            <button className={styles.iconButton} aria-label="Search tokens" disabled>⌕</button>
+            <div><span>Token library</span><small>{tokenQuery ? `${visibleTokens.length} of ${document.tokens.length}` : document.tokens.length} tokens</small></div>
           </div>
+          <label className={styles.tokenSearch}>⌕<input type="search" aria-label="Search tokens" placeholder="Search tokens" value={tokenQuery} onChange={(event) => setTokenQuery(event.target.value)} /></label>
           <div className={styles.categoryLabel}>All tokens</div>
           <div className={styles.tokenList}>
-            {document.tokens.map((token) => (
+            {visibleTokens.map((token) => (
               <TokenRow
                 key={token.id}
                 token={token}
@@ -102,6 +115,7 @@ export function App() {
                 onSelect={() => { setSelectedComponentKey(null); selectToken(token.id); }}
               />
             ))}
+            {visibleTokens.length === 0 && <p className={styles.emptyTokens}>No matching tokens.</p>}
           </div>
           <div className={styles.presetPicker}>
             <label htmlFor="starting-system">Starting system</label>
@@ -121,8 +135,8 @@ export function App() {
             <div>
               <strong>Living Canvas</strong>
               <span className={styles.viewTabs}>
-                <button className={canvasView === "app" ? styles.activeTab : ""} onClick={() => setCanvasView("app")}>App</button>
-                <button className={canvasView === "specimens" ? styles.activeTab : ""} onClick={() => setCanvasView("specimens")}>Specimens</button>
+                <button aria-pressed={canvasView === "app"} className={canvasView === "app" ? styles.activeTab : ""} onClick={() => setCanvasView("app")}>App</button>
+                <button aria-pressed={canvasView === "specimens"} className={canvasView === "specimens" ? styles.activeTab : ""} onClick={() => setCanvasView("specimens")}>Specimens</button>
               </span>
             </div>
             <div className={styles.canvasControls}>
@@ -291,14 +305,15 @@ function ValueEditor({ token, mode, initialValue, onApply }: { token: Token; mod
   let parsed: ResolvedTokenValue | undefined;
   let error = "";
   try { parsed = parseTokenInput(token.type, draft); } catch (reason) { error = reason instanceof Error ? reason.message : "Invalid value."; }
+  const apply = () => { if (parsed && draft !== initialValue) onApply(parsed); };
 
   return <div className={styles.editor}>
     <label htmlFor="token-value">{mode === "light" ? "Light" : "Dark"} value</label>
     {token.type === "fontFamily"
       ? <select id="token-value" className={styles.valueInput} value={draft} onChange={(event) => setDraft(event.target.value)}><option>Inter</option><option>Georgia</option><option>Avenir Next</option></select>
-      : <input id="token-value" className={styles.valueInput} value={draft} aria-invalid={Boolean(error)} onChange={(event) => setDraft(event.target.value)} />}
+      : <input id="token-value" className={styles.valueInput} value={draft} aria-invalid={Boolean(error)} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Escape") setDraft(initialValue); if (event.key === "Enter") apply(); }} onBlur={(event) => { if (!(event.relatedTarget instanceof Element && event.relatedTarget.closest(`.${styles.editor}`))) apply(); }} />}
     <div className={styles.validationSlot} role="status">{error}</div>
-    <div className={styles.editorActions}><button className={styles.secondaryButton} onClick={() => setDraft(initialValue)}>Cancel</button><button className={styles.primaryStudioButton} disabled={!parsed || draft === initialValue} onClick={() => parsed && onApply(parsed)}>Apply</button></div>
+    <div className={styles.editorActions}><button className={styles.secondaryButton} onClick={() => setDraft(initialValue)}>Cancel</button><button className={styles.primaryStudioButton} disabled={!parsed || draft === initialValue} onClick={apply}>Apply</button></div>
   </div>;
 }
 
@@ -391,7 +406,7 @@ function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponent
 
 function ProjectCard({ title, category, progress, color, members, inspectEnabled, selected, onInspect }: { title: string; category: string; progress: number; color: string; members: string[]; inspectEnabled: boolean; selected: boolean; onInspect: () => void }) {
   return (
-    <article className={`${styles.projectCard} ${inspectEnabled && selected ? styles.inspected : ""}`} role={inspectEnabled ? "button" : undefined} aria-label={inspectEnabled ? `Inspect ${title} project card` : undefined} tabIndex={inspectEnabled ? 0 : undefined} onClick={inspectEnabled ? onInspect : undefined} onKeyDown={inspectEnabled ? (event) => { if (event.key === "Enter" || event.key === " ") onInspect(); } : undefined}>
+    <article className={`${styles.projectCard} ${inspectEnabled && selected ? styles.inspected : ""}`} role={inspectEnabled ? "button" : undefined} aria-label={inspectEnabled ? `Inspect ${title} project card` : undefined} tabIndex={inspectEnabled ? 0 : undefined} onClick={inspectEnabled ? onInspect : undefined} onKeyDown={inspectEnabled ? (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onInspect(); } } : undefined}>
       <div><span className={styles.projectIcon} style={{ background: color }}>{title[0]}</span><span aria-hidden="true">•••</span></div>
       <h2>{title}</h2><p>{category}</p>
       <div className={styles.progressLabel}><span>Progress</span><strong>{progress}%</strong></div>

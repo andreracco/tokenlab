@@ -12,6 +12,8 @@
 .contrastStatus { color: var(--studio-muted); font-size: 11px; }
 .secondaryButton, .primaryStudioButton, .iconButton, .inspectButton, .inspectActive { min-height: 34px; padding: 0 12px; border-radius: 7px; border: 1px solid var(--studio-border); background: #fff; font-size: 12px; font-weight: 650; cursor: pointer; }
 .primaryStudioButton { border-color: #242424; background: #242424; color: white; }
+.studioDialog { width: min(380px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--studio-border); border-radius: 10px; background: var(--studio-panel); color: var(--studio-text); box-shadow: 0 20px 60px rgba(36, 36, 36, .2); }
+.studioDialog::backdrop { background: rgba(36, 36, 36, .4); }.studioDialog form { padding: 22px; display: grid; gap: 12px; }.studioDialog h2, .studioDialog p { margin: 0; }.studioDialog h2 { font-size: 18px; }.studioDialog p { color: var(--studio-muted); font-size: 12px; }.studioDialog label { display: grid; gap: 6px; color: var(--studio-muted); font-size: 11px; font-weight: 650; }.studioDialog input { min-height: 36px; padding: 0 10px; border: 1px solid var(--studio-border); border-radius: 7px; }.studioDialog form > div { display: flex; justify-content: flex-end; gap: 7px; }.studioDialog form > div button { min-height: 34px; padding: 0 12px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; }.studioDialog form > div .primaryStudioButton { border-color: #242424; background: #242424; }
 .workspace { height: calc(100vh - 64px); display: grid; grid-template-columns: 240px minmax(540px, 1fr) 320px; }
 .tokenPanel, .inspectorPanel { background: var(--studio-panel); overflow: auto; }
 .tokenPanel { border-right: 1px solid var(--studio-border); }
@@ -19,8 +21,12 @@
 .panelHeading { height: 64px; padding: 0 16px; justify-content: space-between; border-bottom: 1px solid var(--studio-border); }
 .panelHeading > div { flex-direction: column; align-items: flex-start; gap: 3px; font-size: 14px; font-weight: 700; }
 .iconButton { width: 32px; padding: 0; font-size: 18px; }
+.tokenSearch { margin: 12px 12px 0; padding: 0 9px; display: flex; align-items: center; gap: 6px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; color: var(--studio-muted); font-size: 12px; }
+.tokenSearch input { width: 100%; min-width: 0; min-height: 34px; border: 0; outline: 0; background: transparent; font-size: 11px; }
+.tokenSearch:focus-within { outline: 2px solid var(--studio-accent); outline-offset: 2px; }
 .categoryLabel { padding: 20px 16px 8px; color: var(--studio-muted); font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
 .tokenList { padding: 0 8px; display: grid; gap: 3px; }
+.emptyTokens { margin: 12px 8px; color: var(--studio-muted); font-size: 11px; }
 .tokenRow { width: 100%; min-height: 58px; padding: 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: center; text-align: left; cursor: pointer; }
 .tokenRow:hover { background: #f1efe9; }
 .tokenRowSelected { border-color: #b9c4ef; background: #eef1fb; }

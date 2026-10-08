@@ -47,6 +47,18 @@ describe("TokenLab first slice", () => {
     expect(screen.getByLabelText("Starting system")).toHaveProperty("value", "product");
   });
 
+  it("filters tokens by path and shows an empty state", () => {
+    render(<App />);
+    const search = screen.getByRole("searchbox", { name: "Search tokens" });
+
+    fireEvent.change(search, { target: { value: "radius.control" } });
+    expect(screen.getByRole("button", { name: /radius\.control/i })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /color\.brand\.600/i })).toBeNull();
+
+    fireEvent.change(search, { target: { value: "missing token" } });
+    expect(screen.getByText("No matching tokens.")).toBeTruthy();
+  });
+
   it("renders specimens and switches the canvas to dark mode", () => {
     render(<App />);
 
@@ -61,7 +73,7 @@ describe("TokenLab first slice", () => {
   it("opens the create project dialog when inspection is off", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: "Inspect on" }));
-    const dialog = screen.getByRole("dialog", { hidden: true }) as HTMLDialogElement;
+    const dialog = screen.getByRole("heading", { name: "Create project", hidden: true }).closest("dialog")!;
     dialog.showModal = () => { dialog.open = true; };
 
     fireEvent.click(screen.getByRole("button", { name: "Create project" }));
@@ -75,21 +87,40 @@ describe("TokenLab first slice", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /space\.medium/i }));
     fireEvent.change(screen.getByLabelText("Light value"), { target: { value: "20px" } });
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    fireEvent.keyDown(screen.getByLabelText("Light value"), { key: "Enter" });
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-card-padding")).toBe("20px");
 
-    fireEvent.click(screen.getByRole("button", { name: "Inspect Mobile app refresh project card" }));
+    expect(fireEvent.keyDown(screen.getByRole("button", { name: "Inspect Mobile app refresh project card" }), { key: " " })).toBe(false);
     expect(screen.getByText("Project card tokens")).toBeTruthy();
+  });
+
+  it("cancels numeric drafts with Escape and commits them on blur", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /space\.medium/i }));
+    const input = screen.getByLabelText("Light value");
+
+    fireEvent.change(input, { target: { value: "20px" } });
+    fireEvent.keyDown(input, { key: "Escape" });
+    expect(input).toHaveProperty("value", "14px");
+
+    fireEvent.change(input, { target: { value: "18px" } });
+    fireEvent.blur(input);
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-card-padding")).toBe("18px");
   });
 
   it("compares against a snapshot and restores it as one undoable action", () => {
     render(<App />);
+    const dialog = screen.getByRole("heading", { name: "Name snapshot", hidden: true }).closest("dialog")!;
+    dialog.showModal = () => { dialog.open = true; };
     fireEvent.click(screen.getByRole("button", { name: "Snapshot" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Snapshot name" }), { target: { value: "Before brand refresh" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save snapshot" }).closest("form")!);
     fireEvent.change(screen.getByLabelText("Light value"), { target: { value: "#C2415D" } });
     fireEvent.click(screen.getByRole("button", { name: "Apply" }));
     fireEvent.click(screen.getByRole("button", { name: "Compare" }));
 
     expect(screen.getByText("1 token changes")).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Before brand refresh" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Restore baseline" }));
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#3157D5");
 

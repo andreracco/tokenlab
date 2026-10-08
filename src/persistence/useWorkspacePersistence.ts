@@ -7,7 +7,7 @@ export function useWorkspacePersistence() {
   const snapshots = useTokenLabStore((state) => state.snapshots);
   const hydrate = useTokenLabStore((state) => state.hydrate);
   const [ready, setReady] = useState(false);
-  const [status, setStatus] = useState(persistenceAvailable ? "Loading local draft…" : "Local save unavailable");
+  const [status, setStatus] = useState(persistenceAvailable ? "Loading local draft…" : "Local save unavailable — download your project");
 
   useEffect(() => {
     if (!persistenceAvailable) return;
@@ -29,7 +29,7 @@ export function useWorkspacePersistence() {
     const timeout = window.setTimeout(() => {
       saveWorkspace({ document, snapshots })
         .then(() => setStatus("Saved locally"))
-        .catch(() => setStatus("Couldn't save — keep this tab open"));
+        .catch(() => setStatus("Couldn't save — download your project"));
     }, 350);
     return () => window.clearTimeout(timeout);
   }, [document, ready, snapshots]);
