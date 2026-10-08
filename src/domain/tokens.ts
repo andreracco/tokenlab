@@ -128,7 +128,7 @@ export const presetSpecs: Record<PresetId, PresetSpec> = {
     values: {
       brand: ["#A34B32", "#D9876F"], canvas: ["#FFFCF7", "#211D19"], panel: ["#FFFFFF", "#2B2520"],
       border: ["#E7DED2", "#4A4037"], text: ["#2D2925", "#F7F0E8"], muted: ["#796F65", "#BFB2A5"],
-      spacing: [12, 17, 34], radius: [3, 4], fontFamily: "Georgia", fontSize: 10, weights: [400, 700], lineHeight: 1.55,
+      spacing: [12, 17, 34], radius: [3, 4], fontFamily: "Georgia", fontSize: 14, weights: [400, 700], lineHeight: 1.55,
       shadow: { offsetX: 0, offsetY: 1, blur: 0, spread: 0, color: "#E7DED2" },
     },
   },
@@ -138,8 +138,8 @@ export const presetSpecs: Record<PresetId, PresetSpec> = {
     description: "Balanced, clear, and familiar.",
     values: {
       brand: ["#3157D5", "#7592F3"], canvas: ["#FBFBFC", "#15171C"], panel: ["#FFFFFF", "#20232A"],
-      border: ["#E4E7EB", "#353A44"], text: ["#20242A", "#F4F5F7"], muted: ["#727985", "#AAB0BA"],
-      spacing: [10, 14, 28], radius: [7, 9], fontFamily: "Inter", fontSize: 10, weights: [500, 750], lineHeight: 1.45,
+      border: ["#E4E7EB", "#353A44"], text: ["#20242A", "#F4F5F7"], muted: ["#6B7280", "#AAB0BA"],
+      spacing: [10, 14, 28], radius: [7, 9], fontFamily: "Inter", fontSize: 14, weights: [500, 700], lineHeight: 1.45,
       shadow: { offsetX: 0, offsetY: 0, blur: 0, spread: 0, color: "#E4E7EB" },
     },
   },
@@ -150,7 +150,7 @@ export const presetSpecs: Record<PresetId, PresetSpec> = {
     values: {
       brand: ["#8B3FD1", "#C58AF2"], canvas: ["#FCF9FF", "#19131E"], panel: ["#FFFFFF", "#281D30"],
       border: ["#E8DDF0", "#4A3658"], text: ["#281D30", "#F9F2FD"], muted: ["#7C6788", "#C2AECF"],
-      spacing: [9, 13, 24], radius: [12, 16], fontFamily: "Avenir Next", fontSize: 10, weights: [500, 800], lineHeight: 1.4,
+      spacing: [9, 13, 24], radius: [12, 16], fontFamily: "Avenir Next", fontSize: 14, weights: [500, 800], lineHeight: 1.4,
       shadow: { offsetX: 0, offsetY: 8, blur: 24, spread: 0, color: "#E8DDF0" },
     },
   },

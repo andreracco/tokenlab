@@ -438,7 +438,7 @@ function ProjectCard({ title, category, progress, color, members, inspectEnabled
       <h2>{title}</h2><p>{category}</p>
       <div className={styles.progressLabel}><span>Progress</span><strong>{progress}%</strong></div>
       <div className={styles.progressTrack}><span style={{ width: `${progress}%`, background: color }} /></div>
-      <div className={styles.cardFooter}><div>{members.map((member) => <span className={styles.avatar} key={member}>{member}</span>)}</div><span>Updated today</span></div>
+      <div className={styles.cardFooter}><div>{members.map((member) => <span className={styles.avatar} key={member}>{member}</span>)}</div><span>Today</span></div>
     </article>
   );
 }

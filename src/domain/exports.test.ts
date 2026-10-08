@@ -6,7 +6,9 @@ import { initialProject } from "./tokens";
 describe("shipping formats", () => {
   it("calculates registered contrast pairs", () => {
     expect(contrastRatio("#000000", "#FFFFFF")).toBe(21);
-    expect(checkContrast(initialProject, "light")).toHaveLength(4);
+    const checks = checkContrast(initialProject, "light");
+    expect(checks).toHaveLength(4);
+    expect(checks.every((check) => check.passes)).toBe(true);
   });
 
   it("exports deterministic CSS and DTCG aliases", () => {
