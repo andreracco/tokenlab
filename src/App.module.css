@@ -112,6 +112,8 @@
 .activityPanel p { margin: 13px 0 0; gap: 9px; font-size: 8px; }
 .activityPanel p > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .activityPanel p small { color: var(--forma-muted); }
+.emptyStatePanel { margin-top: 16px; padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 10px; border: 1px dashed var(--forma-line); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); }
+.emptyStatePanel > span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--tl-preview-surface); color: var(--forma-muted); }.emptyStatePanel strong { font-size: 9px; }.emptyStatePanel p { margin: 2px 0 0; color: var(--forma-muted); font-size: 8px; }.emptyStatePanel button { padding: 7px 9px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-control-radius); background: var(--tl-preview-panel); color: var(--forma-text); font-size: 8px; }
 .createProjectDialog { width: min(360px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); color: var(--forma-text); box-shadow: 0 18px 50px rgba(39, 38, 34, .22); font-family: var(--tl-preview-font-family); }
 .createProjectDialog::backdrop { background: rgba(23, 24, 28, .45); }
 .createProjectDialog form { padding: 20px; display: grid; gap: 12px; }

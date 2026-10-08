@@ -411,6 +411,7 @@ function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponent
               {createdProjects.map((project) => <ProjectCard key={project.id} title={project.name} category="New project" progress={0} color="#6F7785" members={["MS"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />)}
             </div>
             <div className={styles.activityPanel}><div><strong>Recent activity</strong><span>View all</span></div><p><span className={styles.avatar}>JL</span><span><strong>Jon Lee</strong> completed “Review navigation patterns”<small>Mobile app refresh · 18 minutes ago</small></span></p><p><span className={styles.avatar}>AK</span><span><strong>Ana Kim</strong> uploaded 3 files<small>Design system · 1 hour ago</small></span></p></div>
+            <div className={styles.emptyStatePanel}><span aria-hidden="true">◇</span><div><strong>No archived projects</strong><p>Archived work will appear here when you need it.</p></div><button>View active projects</button></div>
           </div>
         </div>
         <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title">

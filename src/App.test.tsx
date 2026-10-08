@@ -110,6 +110,7 @@ describe("TokenLab first slice", () => {
 
   it("opens the create project dialog when inspection is off", () => {
     render(<App />);
+    expect(screen.getByText("No archived projects")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Inspect on" }));
     const dialog = screen.getByRole("heading", { name: "Create project", hidden: true }).closest("dialog")!;
     dialog.showModal = () => { dialog.open = true; };
