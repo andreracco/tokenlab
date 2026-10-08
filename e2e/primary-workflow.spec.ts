@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 
 test("edits, compares, and exports a token system", async ({ page }) => {
   await page.goto("/");
@@ -21,4 +22,10 @@ test("edits, compares, and exports a token system", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Production-ready token files" })).toBeVisible();
   await expect(page.getByText("tokenlab.css", { exact: true })).toBeVisible();
   await expect(page.getByText("tokenlab.project.json", { exact: true })).toBeVisible();
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByText("tokenlab.css", { exact: true }).locator("..").getByRole("button", { name: "Download" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("tokenlab.css");
+  await expect.poll(async () => readFile(await download.path(), "utf8")).toContain("--action-primary-background: var(--color-brand-600)");
 });
