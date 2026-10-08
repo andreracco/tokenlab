@@ -1,4 +1,4 @@
-import { projectSchema, type ProjectDocument, type Token, type TokenMode } from "./tokens";
+import { projectSchema, upgradeProject, type ProjectDocument, type Token, type TokenMode } from "./tokens";
 import type { ProjectSnapshot } from "./projects";
 
 export type ExportArtifact = { filename: string; mimeType: string; content: string };
@@ -44,12 +44,12 @@ export function exportProject(document: ProjectDocument, snapshots: ProjectSnaps
 export function parseProjectFile(input: string): { document: ProjectDocument; snapshots: ProjectSnapshot[] } {
   const data = JSON.parse(input) as { format?: unknown; version?: unknown; document?: unknown; snapshots?: unknown };
   if (data.format !== "tokenlab" || data.version !== 1) throw new Error("Unsupported TokenLab project file.");
-  const document = projectSchema.parse(data.document);
+  const document = upgradeProject(projectSchema.parse(data.document));
   if (!Array.isArray(data.snapshots)) throw new Error("Project snapshots must be an array.");
   const snapshots = data.snapshots.map((snapshot) => {
     const candidate = snapshot as Partial<ProjectSnapshot>;
     if (typeof candidate.id !== "string" || typeof candidate.name !== "string" || typeof candidate.createdAt !== "string") throw new Error("Invalid project snapshot.");
-    return { id: candidate.id, name: candidate.name, createdAt: candidate.createdAt, document: projectSchema.parse(candidate.document) };
+    return { id: candidate.id, name: candidate.name, createdAt: candidate.createdAt, document: upgradeProject(projectSchema.parse(candidate.document)) };
   });
   return { document, snapshots };
 }

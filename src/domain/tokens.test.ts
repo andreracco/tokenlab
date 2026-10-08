@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyCommand, initialProject, parseTokenInput, presetOptions, projectSchema, resolveColorToken, resolveCssValue, resolveToken } from "./tokens";
+import { applyCommand, initialProject, parseTokenInput, presetOptions, projectSchema, resolveColorToken, resolveCssValue, resolveToken, upgradeProject } from "./tokens";
 
 describe("token commands", () => {
   it("updates a primitive, resolves its alias, and leaves the original document intact", () => {
@@ -84,5 +84,18 @@ describe("token commands", () => {
 
     const edited = applyCommand(initialProject, { type: "set-token-reference", tokenId: "action.primary.background", mode: "light", targetId: "color.neutral.text" });
     expect(resolveColorToken(edited, "action.primary.background")).toBe("#20242A");
+  });
+
+  it("upgrades older drafts without replacing saved token values", () => {
+    const legacyDocument = projectSchema.parse({
+      ...initialProject,
+      tokens: initialProject.tokens
+        .filter((token) => !token.id.startsWith("color.error") && !token.id.startsWith("feedback.error"))
+        .map((token) => token.id === "color.brand.600" ? { ...token, values: { ...token.values, light: { kind: "literal" as const, value: "#C2415D" } } } : token),
+    });
+
+    const upgraded = upgradeProject(legacyDocument);
+    expect(resolveColorToken(upgraded, "color.brand.600")).toBe("#C2415D");
+    expect(resolveColorToken(upgraded, "feedback.error.text")).toBe("#B42318");
   });
 });

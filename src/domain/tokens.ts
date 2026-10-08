@@ -223,6 +223,12 @@ export const initialProject = projectSchema.parse({
   tokens: createPresetTokens(presetSpecs.product),
 });
 
+export function upgradeProject(document: ProjectDocument): ProjectDocument {
+  const tokenIds = new Set(document.tokens.map((token) => token.id));
+  const missingTokens = createPresetTokens(presetSpecs[document.presetId]).filter((token) => !tokenIds.has(token.id));
+  return missingTokens.length === 0 ? document : projectSchema.parse({ ...document, tokens: [...document.tokens, ...missingTokens] });
+}
+
 export function applyCommand(document: ProjectDocument, command: TokenCommand): ProjectDocument {
   if (command.type === "select-preset") {
     const preset = presetSpecs[command.presetId];

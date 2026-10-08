@@ -1,4 +1,4 @@
-import { projectSchema, type ProjectDocument } from "../domain/tokens";
+import { projectSchema, upgradeProject, type ProjectDocument } from "../domain/tokens";
 import type { ProjectSnapshot } from "../domain/projects";
 
 export type SavedWorkspace = { document: ProjectDocument; snapshots: ProjectSnapshot[] };
@@ -13,7 +13,10 @@ export async function loadWorkspace(): Promise<SavedWorkspace | null> {
   if (!persistenceAvailable) return null;
   const record = await request(openDatabase(), (database) => database.transaction(storeName).objectStore(storeName).get(workspaceKey));
   if (!record) return null;
-  return { document: projectSchema.parse(record.document), snapshots: record.snapshots ?? [] };
+  return {
+    document: upgradeProject(projectSchema.parse(record.document)),
+    snapshots: (record.snapshots ?? []).map((snapshot: ProjectSnapshot) => ({ ...snapshot, document: upgradeProject(projectSchema.parse(snapshot.document)) })),
+  };
 }
 
 export async function saveWorkspace(workspace: SavedWorkspace): Promise<void> {
