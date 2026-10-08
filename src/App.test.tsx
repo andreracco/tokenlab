@@ -1,0 +1,44 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { useTokenLabStore } from "./app/store";
+import { initialProject } from "./domain/tokens";
+import { App } from "./App";
+
+afterEach(cleanup);
+
+beforeEach(() => {
+  useTokenLabStore.setState({
+    document: initialProject,
+    selectedTokenId: "color.brand.600",
+    history: [],
+  });
+});
+
+describe("TokenLab first slice", () => {
+  it("applies a color to the preview and restores it with undo", () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("Light value"), { target: { value: "#C2415D" } });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+
+    const preview = screen.getByTestId("preview-root");
+    expect(preview.style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#C2415D");
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(preview.style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#3157D5");
+  });
+
+  it("switches presets as one undoable document change", () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText("Starting system"), { target: { value: "editorial" } });
+
+    const preview = screen.getByTestId("preview-root");
+    expect(preview.style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#A34B32");
+    expect(preview.style.getPropertyValue("--tl-preview-font-family")).toContain("Georgia");
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(preview.style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#3157D5");
+    expect(screen.getByLabelText("Starting system")).toHaveProperty("value", "product");
+  });
+});

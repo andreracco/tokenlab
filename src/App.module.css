@@ -1,0 +1,143 @@
+.app { min-height: 100vh; background: var(--studio-bg); color: var(--studio-text); }
+.header { height: 64px; padding: 0 20px; border-bottom: 1px solid var(--studio-border); background: #fffefa; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.brandBlock, .brandBlock > div, .headerActions, .panelHeading, .panelHeading > div, .canvasToolbar, .canvasToolbar > div, .canvasControls, .pageHeading, .projectToolbar, .projectCard > div:first-child, .progressLabel, .cardFooter, .activityPanel > div, .activityPanel p, .sidebarFooter, .workspaceSwitcher, .formaLogo { display: flex; align-items: center; }
+.brandBlock { gap: 10px; }
+.brandMark { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 9px; background: #242424; color: white; font-size: 12px; font-weight: 750; letter-spacing: -.03em; }
+.brandBlock > div { align-items: flex-start; flex-direction: column; gap: 1px; }
+.brandBlock strong { font-size: 15px; letter-spacing: -.02em; }
+.brandBlock span, .panelHeading small { color: var(--studio-muted); font-size: 12px; }
+.headerActions { gap: 8px; }
+.savedStatus { margin-right: 8px; color: var(--studio-muted); font-size: 12px; }
+.savedStatus span { color: #3b9b69; font-size: 9px; margin-right: 5px; }
+.secondaryButton, .primaryStudioButton, .iconButton, .inspectButton, .inspectActive { min-height: 34px; padding: 0 12px; border-radius: 7px; border: 1px solid var(--studio-border); background: #fff; font-size: 12px; font-weight: 650; cursor: pointer; }
+.primaryStudioButton { border-color: #242424; background: #242424; color: white; }
+.workspace { height: calc(100vh - 64px); display: grid; grid-template-columns: 240px minmax(540px, 1fr) 320px; }
+.tokenPanel, .inspectorPanel { background: var(--studio-panel); overflow: auto; }
+.tokenPanel { border-right: 1px solid var(--studio-border); }
+.inspectorPanel { border-left: 1px solid var(--studio-border); }
+.panelHeading { height: 64px; padding: 0 16px; justify-content: space-between; border-bottom: 1px solid var(--studio-border); }
+.panelHeading > div { flex-direction: column; align-items: flex-start; gap: 3px; font-size: 14px; font-weight: 700; }
+.iconButton { width: 32px; padding: 0; font-size: 18px; }
+.categoryLabel { padding: 20px 16px 8px; color: var(--studio-muted); font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
+.tokenList { padding: 0 8px; display: grid; gap: 3px; }
+.tokenRow { width: 100%; min-height: 58px; padding: 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: center; text-align: left; cursor: pointer; }
+.tokenRow:hover { background: #f1efe9; }
+.tokenRowSelected { border-color: #b9c4ef; background: #eef1fb; }
+.tokenRow > span:nth-child(2) { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.tokenRow strong { font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.tokenRow small { color: var(--studio-muted); font-size: 10px; overflow: hidden; text-overflow: ellipsis; }
+.tokenRow code { grid-column: 2; color: var(--studio-muted); font-size: 10px; }
+.swatch { width: 28px; height: 28px; border: 1px solid rgba(0,0,0,.12); border-radius: 7px; }
+.presetPicker { margin-top: 20px; padding: 16px; border-top: 1px solid var(--studio-border); display: grid; gap: 7px; }
+.presetPicker label { color: var(--studio-muted); font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+.presetPicker select { width: 100%; min-height: 36px; padding: 0 9px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; color: var(--studio-text); font-size: 12px; }
+.presetPicker small { min-height: 28px; color: var(--studio-muted); font-size: 10px; line-height: 1.4; }
+.canvasPanel { min-width: 0; background: #e9e7e1; display: flex; flex-direction: column; overflow: hidden; }
+.canvasToolbar { min-height: 64px; padding: 0 16px; justify-content: space-between; border-bottom: 1px solid var(--studio-border); background: var(--studio-panel); }
+.canvasToolbar > div:first-child { gap: 20px; }
+.canvasToolbar strong { font-size: 14px; }
+.viewTabs { display: flex; gap: 4px; }
+.viewTabs button { padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; font-size: 12px; cursor: pointer; }
+.viewTabs .activeTab { background: #e8e5de; font-weight: 700; }
+.canvasControls { gap: 12px; color: var(--studio-muted); font-size: 11px; }
+.inspectButton, .inspectActive { min-height: 30px; }
+.inspectActive { border-color: #9eaee8; background: #e9edfb; color: #2647b4; }
+.previewStage { flex: 1; min-height: 0; padding: 24px; overflow: auto; }
+
+/* Forma variables below are fixed preview-fixture constants; only the prefixed TokenLab variable is editable. */
+.previewRoot { --forma-text: #20242a; --forma-muted: #727985; --forma-line: #e4e7eb; min-width: 720px; min-height: 650px; display: grid; grid-template-columns: 178px 1fr; overflow: hidden; border: 1px solid #d5d3ce; border-radius: var(--tl-preview-radius); background: #fff; color: var(--forma-text); box-shadow: 0 18px 50px rgba(39, 38, 34, .08); font-family: var(--tl-preview-font-family); }
+.formaSidebar { padding: 20px 12px 14px; display: flex; flex-direction: column; background: var(--tl-preview-sidebar); border-right: 1px solid var(--forma-line); }
+.formaLogo { gap: 8px; padding: 0 6px 18px; font-size: 15px; font-weight: 800; }
+.formaLogo > span { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 7px; background: var(--tl-preview-action-primary-background); color: #fff; font-size: 12px; }
+.workspaceSwitcher { width: 100%; padding: 9px; gap: 7px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-radius); background: #fff; text-align: left; }
+.workspaceSwitcher > span:nth-child(2), .sidebarFooter > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; font-size: 10px; font-weight: 700; }
+.workspaceSwitcher small, .sidebarFooter small { color: var(--forma-muted); font-size: 8px; font-weight: 500; }
+.avatar { width: 25px; height: 25px; flex: 0 0 auto; display: inline-grid; place-items: center; border-radius: 50%; background: #e2e6f4; color: #495687; font-size: 8px; font-weight: 800; }
+.formaSidebar nav { margin-top: 22px; display: grid; gap: 3px; }
+.formaSidebar nav a { padding: 9px 10px; display: grid; grid-template-columns: 18px 1fr auto; align-items: center; border-radius: 6px; color: #5d6470; font-size: 10px; text-decoration: none; }
+.formaSidebar nav a:hover, .formaSidebar nav .navSelected { background: #eaedf5; color: #293257; font-weight: 700; }
+.formaSidebar nav small { min-width: 17px; padding: 2px 5px; border-radius: 8px; background: #dfe3ef; text-align: center; }
+.sidebarFooter { margin-top: auto; padding: 12px 4px 0; gap: 7px; border-top: 1px solid var(--forma-line); }
+.sidebarFooter button { border: 0; background: transparent; font-size: 9px; }
+.formaMain { min-width: 0; background: var(--tl-preview-surface); }
+.formaTopbar { height: 58px; padding: 0 22px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; border-bottom: 1px solid var(--forma-line); background: #fff; }
+.formaTopbar label { width: 220px; margin-right: auto; padding: 7px 10px; border: 1px solid var(--forma-line); border-radius: 7px; color: var(--forma-muted); font-size: 10px; }
+.formaTopbar input, .projectToolbar input { width: calc(100% - 18px); border: 0; outline: 0; background: transparent; font-size: 9px; }
+.formaTopbar button { border: 0; background: transparent; }
+.formaContent { padding: var(--tl-preview-content-padding); }
+.pageHeading { align-items: flex-end; justify-content: space-between; gap: 20px; }
+.breadcrumb { color: var(--forma-muted); font-size: 8px; }
+.pageHeading h1 { margin: 6px 0 4px; font-size: 23px; letter-spacing: -.04em; }
+.pageHeading p { margin: 0; color: var(--forma-muted); font-size: 10px; }
+.formaPrimary { position: relative; min-height: 34px; padding: 0 13px; border: 0; border-radius: var(--tl-preview-radius); background: var(--tl-preview-action-primary-background); color: white; font-size: 10px; font-weight: 750; cursor: pointer; }
+.formaPrimary > span { margin-right: 5px; }
+.formaPrimary.inspected { outline: 3px solid #e38b2c; outline-offset: 3px; }
+.formaPrimary small { position: absolute; right: -3px; bottom: -25px; z-index: 2; padding: 4px 6px; border-radius: 4px; background: #282724; color: white; font: 7px ui-monospace, monospace; white-space: nowrap; }
+.projectToolbar { margin: 27px 0 14px; gap: 7px; }
+.projectToolbar label { width: 170px; padding: 7px 9px; border: 1px solid var(--forma-line); border-radius: 6px; color: var(--forma-muted); font-size: 9px; }
+.projectToolbar button { padding: 7px 9px; border: 1px solid var(--forma-line); border-radius: 6px; background: #fff; color: #555c67; font-size: 8px; }
+.projectToolbar > span { margin-left: auto; color: var(--forma-muted); font-size: 8px; }
+.projectGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--tl-preview-card-gap); }
+.projectCard { min-width: 0; padding: var(--tl-preview-card-padding); border: 1px solid var(--forma-line); border-radius: var(--tl-preview-radius); background: #fff; box-shadow: var(--tl-preview-card-shadow); }
+.projectCard > div:first-child, .progressLabel, .cardFooter { justify-content: space-between; }
+.projectIcon { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px; color: white; font-size: 10px; font-weight: 800; }
+.projectCard button { border: 0; background: transparent; color: var(--forma-muted); font-size: 8px; }
+.projectCard h2 { margin: 15px 0 3px; overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.projectCard p { margin: 0 0 17px; color: var(--forma-muted); font-size: 8px; }
+.progressLabel { color: var(--forma-muted); font-size: 8px; }
+.progressLabel strong { color: var(--forma-text); }
+.progressTrack { height: 4px; margin: 6px 0 15px; overflow: hidden; border-radius: 4px; background: #edeef1; }
+.progressTrack span { height: 100%; display: block; border-radius: inherit; }
+.cardFooter { padding-top: 12px; border-top: 1px solid var(--forma-line); color: var(--forma-muted); font-size: 7px; }
+.cardFooter > div { display: flex; }
+.cardFooter .avatar { width: 21px; height: 21px; margin-right: -5px; border: 2px solid white; font-size: 6px; }
+.activityPanel { margin-top: 16px; padding: 15px 17px; border: 1px solid var(--forma-line); border-radius: 9px; background: white; }
+.activityPanel > div { justify-content: space-between; font-size: 10px; }
+.activityPanel > div span { color: var(--tl-preview-action-primary-background); font-size: 8px; font-weight: 700; }
+.activityPanel p { margin: 13px 0 0; gap: 9px; font-size: 8px; }
+.activityPanel p > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.activityPanel p small { color: var(--forma-muted); }
+.inspectorHeading { padding: 20px 18px 16px; border-bottom: 1px solid var(--studio-border); display: grid; gap: 6px; }
+.inspectorHeading strong { font: 600 13px ui-monospace, SFMono-Regular, monospace; overflow-wrap: anywhere; }
+.eyebrow, .fieldLabel { color: var(--studio-muted); font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+.layerBadge { width: fit-content; padding: 3px 6px; border-radius: 5px; background: #ebe8e1; color: #63615c; font-size: 9px; }
+.description { margin: 0; padding: 16px 18px 0; color: var(--studio-muted); font-size: 12px; line-height: 1.5; }
+.editor { padding: 18px; border-bottom: 1px solid var(--studio-border); }
+.editor label { display: block; margin-bottom: 7px; color: var(--studio-muted); font-size: 11px; font-weight: 650; }
+.colorField { display: grid; grid-template-columns: 38px 1fr; gap: 7px; }
+.colorField input[type="color"] { width: 38px; height: 36px; padding: 3px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; }
+.colorField input[type="text"], .colorField input:not([type]) { min-width: 0; padding: 0 10px; border: 1px solid var(--studio-border); border-radius: 7px; background: white; font: 12px ui-monospace, SFMono-Regular, monospace; }
+.colorField input[aria-invalid="true"] { border-color: #b84e4e; }
+.validationSlot { min-height: 25px; padding-top: 5px; color: #a13c3c; font-size: 10px; }
+.editorActions { display: flex; justify-content: flex-end; gap: 7px; }
+.aliasTarget { width: 100%; margin-top: 8px; padding: 9px; display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 8px; border: 1px solid var(--studio-border); border-radius: 8px; background: white; text-align: left; cursor: pointer; }
+.aliasTarget code { overflow: hidden; font-size: 10px; text-overflow: ellipsis; }
+.resolvedRow { margin-top: 12px; display: flex; justify-content: space-between; color: var(--studio-muted); font-size: 10px; }
+.resolvedRow code { color: var(--studio-text); }
+.inspectorSection { padding: 18px; }
+.usageRow { width: 100%; margin-top: 9px; padding: 10px; display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; border: 1px solid var(--studio-border); border-radius: 8px; background: white; text-align: left; cursor: pointer; }
+.componentGlyph { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; background: #ece9e3; }
+.usageRow > span:nth-child(2) { display: flex; flex-direction: column; gap: 2px; }
+.usageRow strong { font-size: 11px; }
+.usageRow small { color: var(--studio-muted); font-size: 9px; }
+
+@media (max-width: 1100px) {
+  .workspace { height: auto; min-height: calc(100vh - 64px); grid-template-columns: 220px minmax(0, 1fr); }
+  .inspectorPanel { grid-column: 1 / -1; border-top: 1px solid var(--studio-border); border-left: 0; }
+  .presetPicker { margin-top: 8px; }
+}
+
+@media (max-width: 760px) {
+  .header { height: auto; padding: 12px; align-items: flex-start; }
+  .savedStatus, .headerActions button[title] { display: none; }
+  .workspace { grid-template-columns: 1fr; }
+  .tokenPanel { max-height: 260px; border-right: 0; border-bottom: 1px solid var(--studio-border); }
+  .canvasToolbar { align-items: flex-start; padding: 12px; gap: 12px; }
+  .canvasToolbar, .canvasToolbar > div { flex-wrap: wrap; }
+  .previewStage { padding: 12px; }
+  .inspectorPanel { grid-column: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
