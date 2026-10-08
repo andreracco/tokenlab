@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:browsers": "playwright test --config playwright.cross-browser.config.ts"
   },
   "dependencies": {
     "react": "19.3.0",
