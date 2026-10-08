@@ -19,5 +19,6 @@ describe("shipping formats", () => {
     const restored = parseProjectFile(exportProject(initialProject, []));
     expect(restored.document).toEqual(initialProject);
     expect(() => parseProjectFile('{"format":"other"}')).toThrow("Unsupported TokenLab project file");
+    expect(() => parseProjectFile("{")).toThrow("Project file is not valid JSON.");
   });
 });

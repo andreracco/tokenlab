@@ -42,7 +42,8 @@ export function exportProject(document: ProjectDocument, snapshots: ProjectSnaps
 }
 
 export function parseProjectFile(input: string): { document: ProjectDocument; snapshots: ProjectSnapshot[] } {
-  const data = JSON.parse(input) as { format?: unknown; version?: unknown; document?: unknown; snapshots?: unknown };
+  let data: { format?: unknown; version?: unknown; document?: unknown; snapshots?: unknown };
+  try { data = JSON.parse(input) as typeof data; } catch { throw new Error("Project file is not valid JSON."); }
   if (data.format !== "tokenlab" || data.version !== 1) throw new Error("Unsupported TokenLab project file.");
   const document = upgradeProject(projectSchema.parse(data.document));
   if (!Array.isArray(data.snapshots)) throw new Error("Project snapshots must be an array.");

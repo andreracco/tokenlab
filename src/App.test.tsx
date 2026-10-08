@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useTokenLabStore } from "./app/store";
 import { initialProject } from "./domain/tokens";
@@ -148,5 +148,17 @@ describe("TokenLab first slice", () => {
     expect(screen.getByText("tokenlab.css")).toBeTruthy();
     expect(screen.getByText("tokenlab.light.tokens.json")).toBeTruthy();
     expect(screen.getByText("tokenlab.project.json")).toBeTruthy();
+  });
+
+  it("preserves the project after a malformed import and allows retrying the file", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    const input = screen.getByLabelText("Import TokenLab project") as HTMLInputElement;
+
+    fireEvent.change(input, { target: { files: [{ text: async () => "{" }] } });
+
+    expect(await screen.findByText("Project file is not valid JSON.")).toBeTruthy();
+    await waitFor(() => expect(input.value).toBe(""));
+    expect(useTokenLabStore.getState().document).toEqual(initialProject);
   });
 });

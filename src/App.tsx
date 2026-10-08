@@ -206,9 +206,10 @@ function ExportPanel({ document, snapshots, onClose, onImport }: { document: Pro
   const [error, setError] = useState("");
   const artifacts = buildExports(document, snapshots);
   const importProject = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
-    try { onImport(parseProjectFile(await file.text())); } catch (reason) { setError(reason instanceof Error ? reason.message : "Couldn't import this project."); }
+    try { onImport(parseProjectFile(await file.text())); } catch (reason) { setError(reason instanceof Error ? reason.message : "Couldn't import this project."); } finally { input.value = ""; }
   };
 
   return <div className={styles.exportPanel}><div className={styles.exportHeader}><div><span className={styles.eyebrow}>Export system</span><h2>Production-ready token files</h2><p>Aliases and stable token ordering are preserved.</p></div><button onClick={onClose}>Close</button></div><div className={styles.exportGrid}>{artifacts.map((artifact) => <div className={styles.exportCard} key={artifact.filename}><code>{artifact.filename}</code><small>{formatBytes(artifact.content)}</small><button onClick={() => downloadArtifact(artifact)}>Download</button></div>)}</div><div className={styles.usageExample}><strong>CSS usage</strong><code>{`.button { background: var(--action-primary-background); }`}</code></div><label className={styles.importControl}>Import TokenLab project<input type="file" accept="application/json,.json" onChange={importProject} /></label><div className={styles.importError} role="status">{error}</div></div>;
