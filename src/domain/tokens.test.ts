@@ -98,4 +98,28 @@ describe("token commands", () => {
     expect(resolveColorToken(upgraded, "color.brand.600")).toBe("#C2415D");
     expect(resolveColorToken(upgraded, "feedback.error.text")).toBe("#B42318");
   });
+
+  it("refreshes only the untouched legacy product typography defaults", () => {
+    const legacyDocument = projectSchema.parse({
+      ...initialProject,
+      tokens: initialProject.tokens.map((token) => {
+        const oldValues: Record<string, unknown> = {
+          "font.size.body": { value: 10, unit: "px" },
+          "font.weight.strong": 750,
+          "color.neutral.muted": "#727985",
+        };
+        return token.id in oldValues
+          ? { ...token, values: { ...token.values, light: { kind: "literal" as const, value: oldValues[token.id] } } }
+          : token;
+      }),
+    });
+
+    const upgraded = upgradeProject(legacyDocument);
+    expect(resolveCssValue(upgraded, "typography.body.size")).toBe("14px");
+    expect(resolveCssValue(upgraded, "typography.strong.weight")).toBe("700");
+    expect(resolveColorToken(upgraded, "text.muted")).toBe("#6B7280");
+
+    const customized = applyCommand(legacyDocument, { type: "set-token-value", tokenId: "font.size.body", mode: "light", value: { value: 11, unit: "px" } });
+    expect(resolveCssValue(upgradeProject(customized), "typography.strong.weight")).toBe("750");
+  });
 });

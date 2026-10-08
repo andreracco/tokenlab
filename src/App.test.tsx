@@ -67,12 +67,12 @@ describe("TokenLab first slice", () => {
 
   it("dismisses the first-run inspection hint across reloads", () => {
     const first = render(<App />);
-    expect(screen.getByText("Select anything to see what styles it.")).toBeTruthy();
+    expect(screen.getByText("Select an element to reveal its tokens.")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Dismiss inspection hint" }));
     first.unmount();
 
     render(<App />);
-    expect(screen.queryByText("Select anything to see what styles it.")).toBeNull();
+    expect(screen.queryByText("Select an element to reveal its tokens.")).toBeNull();
   });
 
   it("switches mobile workspace panels and opens selections in the inspector", () => {
@@ -110,7 +110,7 @@ describe("TokenLab first slice", () => {
 
   it("opens the create project dialog when inspection is off", () => {
     render(<App />);
-    expect(screen.getByText("No archived projects")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Projects" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Inspect on" }));
     const dialog = screen.getByRole("heading", { name: "Create project", hidden: true }).closest("dialog")!;
     dialog.showModal = () => { dialog.open = true; };
@@ -124,10 +124,29 @@ describe("TokenLab first slice", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "Project name" }), { target: { value: "Client portal" } });
     fireEvent.submit(dialog.querySelector("form")!);
     expect(screen.getByRole("heading", { name: "Client portal" })).toBeTruthy();
-    expect(screen.getByText("9 projects")).toBeTruthy();
+    expect(screen.getByText("4 projects")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Specimens" }));
     fireEvent.click(screen.getByRole("button", { name: "App" }));
     expect(screen.getByRole("heading", { name: "Client portal" })).toBeTruthy();
+  });
+
+  it("makes preview navigation, search, filters, and notifications interactive", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Overview" }));
+    expect(screen.getByRole("heading", { name: "Overview" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "View projects" }));
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Search projects" }), { target: { value: "missing" } });
+    expect(screen.getByText("No matching projects")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+    expect(screen.getByText("3 projects")).toBeTruthy();
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Project status" }), { target: { value: "review" } });
+    expect(screen.getByText("1 project")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Notifications" }));
+    expect(screen.getByText("Design system moved to review")).toBeTruthy();
   });
 
   it("edits a dimension token and inspects registered card dependencies", () => {

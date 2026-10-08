@@ -1,4 +1,5 @@
 import { useRef, useState, type CSSProperties, type ChangeEvent, type KeyboardEvent } from "react";
+import { Bell, Camera, CheckCircle2, CheckSquare2, ChevronRight, Download, Eye, FolderKanban, GitCompareArrows, Grid2X2, Layers3, LayoutDashboard, Plus, Redo2, Search, Sparkles, Undo2, Users, X } from "lucide-react";
 import { colorValueSchema, getAliasTargets, parseTokenInput, presetOptions, presetSpecs, resolveColorToken, resolveCssValue, type ProjectDocument, type ResolvedTokenValue, type Token, type TokenMode } from "./domain/tokens";
 import { diffProjects, type ProjectSnapshot } from "./domain/projects";
 import { checkContrast } from "./domain/contrast";
@@ -84,20 +85,22 @@ export function App() {
     <div className={styles.app}>
       <header className={styles.header}>
         <div className={styles.brandBlock}>
-          <div className={styles.brandMark}>TL</div>
+          <div className={styles.brandMark}><Layers3 aria-hidden="true" /></div>
           <div>
             <strong>TokenLab</strong>
             <span>{document.name}</span>
           </div>
         </div>
         <div className={styles.headerActions}>
-          <span className={styles.savedStatus} role="status" aria-live="polite"><span aria-hidden="true">●</span> {saveStatus}</span>
+          <span className={styles.savedStatus} role="status" aria-live="polite"><CheckCircle2 aria-hidden="true" /> {saveStatus}</span>
           <span className={styles.contrastStatus}>{contrastFailures === 0 ? "Contrast checks pass" : `${contrastFailures} contrast pairs need attention`}</span>
-          <button className={styles.secondaryButton} disabled={history.length === 0} onClick={undo}>Undo</button>
-          <button className={styles.secondaryButton} disabled={future.length === 0} onClick={redo}>Redo</button>
-          <button className={styles.secondaryButton} onClick={() => { setSnapshotName(`Baseline ${snapshots.length + 1}`); snapshotDialog.current?.showModal(); }}>Snapshot</button>
-          <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => { setComparisonSnapshotId(snapshots.at(-1)?.id ?? null); setMobilePanel("canvas"); setInspectorOpen(false); }}>Compare</button>
-          <button className={styles.primaryStudioButton} onClick={() => { setComparisonSnapshotId(null); setExportOpen(true); setMobilePanel("canvas"); setInspectorOpen(false); }}>Export</button>
+          <span className={styles.historyActions}>
+            <button className={styles.iconAction} aria-label="Undo" title="Undo" disabled={history.length === 0} onClick={undo}><Undo2 aria-hidden="true" /></button>
+            <button className={styles.iconAction} aria-label="Redo" title="Redo" disabled={future.length === 0} onClick={redo}><Redo2 aria-hidden="true" /></button>
+          </span>
+          <button className={styles.secondaryButton} onClick={() => { setSnapshotName(`Baseline ${snapshots.length + 1}`); snapshotDialog.current?.showModal(); }}><Camera aria-hidden="true" />Snapshot</button>
+          <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => { setComparisonSnapshotId(snapshots.at(-1)?.id ?? null); setMobilePanel("canvas"); setInspectorOpen(false); }}><GitCompareArrows aria-hidden="true" />Compare</button>
+          <button className={styles.primaryStudioButton} onClick={() => { setComparisonSnapshotId(null); setExportOpen(true); setMobilePanel("canvas"); setInspectorOpen(false); }}><Download aria-hidden="true" />Export</button>
         </div>
       </header>
 
@@ -119,7 +122,7 @@ export function App() {
           <div className={styles.panelHeading}>
             <div><span>Token library</span><small>{tokenQuery ? `${visibleTokens.length} of ${document.tokens.length}` : document.tokens.length} tokens</small></div>
           </div>
-          <label className={styles.tokenSearch}>⌕<input type="search" aria-label="Search tokens" placeholder="Search tokens" value={tokenQuery} onChange={(event) => setTokenQuery(event.target.value)} /></label>
+          <label className={styles.tokenSearch}><Search aria-hidden="true" /><input type="search" aria-label="Search tokens" placeholder="Search tokens" value={tokenQuery} onChange={(event) => setTokenQuery(event.target.value)} /></label>
           <label className={styles.categoryFilter}>Category<select aria-label="Token category" value={tokenType} onChange={(event) => setTokenType(event.target.value as typeof tokenType)}><option value="all">All tokens</option><option value="color">Colors</option><option value="dimension">Dimensions</option><option value="fontFamily">Font families</option><option value="fontWeight">Font weights</option><option value="number">Numbers</option><option value="shadow">Shadows</option></select></label>
           <div className={styles.tokenList}>
             {visibleTokens.map((token) => (
@@ -165,11 +168,11 @@ export function App() {
                 aria-pressed={inspectEnabled}
                 onClick={() => setInspectEnabled((enabled) => !enabled)}
               >
-                Inspect {inspectEnabled ? "on" : "off"}
+                <Eye aria-hidden="true" /> Inspect {inspectEnabled ? "on" : "off"}
               </button>
             </div>
           </div>
-          {hintVisible && <div className={styles.inspectionHint}><span>Select anything to see what styles it.</span><button aria-label="Dismiss inspection hint" onClick={dismissHint}>×</button></div>}
+          {hintVisible && <div className={styles.inspectionHint}><Sparkles aria-hidden="true" /><span>Select an element to reveal its tokens.</span><button aria-label="Dismiss inspection hint" onClick={dismissHint}><X aria-hidden="true" /></button></div>}
           {exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={() => setExportOpen(false)} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); setExportOpen(false); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); }} /> : canvasView === "app" ? <FormaPreview
               createdProjects={createdProjects}
               inspectEnabled={inspectEnabled}
@@ -183,7 +186,7 @@ export function App() {
 
         <aside id="token-inspector" className={`${styles.inspectorPanel} ${!inspectorOpen ? styles.inspectorDrawerClosed : ""} ${mobilePanel !== "inspector" ? styles.mobilePanelHidden : ""}`} aria-label="Token inspector">
           <div className={styles.inspectorHeading}>
-            <button className={styles.inspectorDrawerClose} onClick={() => setInspectorOpen(false)} aria-label="Close inspector">×</button>
+            <button className={styles.inspectorDrawerClose} onClick={() => setInspectorOpen(false)} aria-label="Close inspector"><X aria-hidden="true" /></button>
             <span className={styles.eyebrow}>Selected token</span>
             <strong>{selectedToken.path}</strong>
             <span className={styles.layerBadge}>{selectedToken.layer}</span>
@@ -201,13 +204,13 @@ export function App() {
           ) : (
             <AliasEditor document={document} token={selectedToken} mode={mode} resolvedValue={resolveCssValue(document, selectedToken.id, mode)} onApply={(targetId) => execute({ type: "set-token-reference", tokenId: selectedToken.id, mode, targetId })} />
           )}
-          {selectedComponent && <div className={styles.inspectorSection}><span className={styles.eyebrow}>{selectedComponent.label} tokens</span>{selectedComponent.tokenIds.map((tokenId) => <button className={styles.registryToken} key={tokenId} onClick={() => selectToken(tokenId)}><code>{tokenId}</code><span>›</span></button>)}</div>}
+          {selectedComponent && <div className={styles.inspectorSection}><span className={styles.eyebrow}>{selectedComponent.label} tokens</span>{selectedComponent.tokenIds.map((tokenId) => <button className={styles.registryToken} key={tokenId} onClick={() => selectToken(tokenId)}><code>{tokenId}</code><ChevronRight aria-hidden="true" /></button>)}</div>}
           {consumers.length > 0 && <div className={styles.inspectorSection}>
             <span className={styles.eyebrow}>Used by</span>
             {consumers.map((consumer) => <button className={styles.usageRow} key={consumer.key} onClick={() => selectComponent(consumer.key)}>
-              <span className={styles.componentGlyph}>▣</span>
+              <span className={styles.componentGlyph}><Grid2X2 aria-hidden="true" /></span>
               <span><strong>{consumer.label}</strong><small>Forma · {consumer.location}</small></span>
-              <span>›</span>
+              <ChevronRight aria-hidden="true" />
             </button>)}
           </div>}
           <div className={styles.inspectorSection}><span className={styles.eyebrow}>Contrast checks · {mode}</span><div className={styles.contrastList}>{contrastResults.map((result) => <div key={result.id} className={result.passes ? styles.contrastPass : styles.contrastFail}><span>{result.label}<small>{result.component}</small></span><strong>{result.ratio}:1</strong><small>{result.passes ? "Pass" : `Needs ${result.threshold}:1`}</small></div>)}</div></div>
@@ -375,47 +378,79 @@ function SpecimenPreview({ style }: { style: PreviewStyle }) {
 function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, selectedComponentKey, onInspect, onCreateProject, style }: { createdProjects: { id: string; name: string }[]; inspectEnabled: boolean; highlightedComponents: ComponentKey[]; selectedComponentKey: ComponentKey | null; onInspect: (key: ComponentKey) => void; onCreateProject: (name: string) => void; style: PreviewStyle }) {
   const createProjectDialog = useRef<HTMLDialogElement>(null);
   const createProjectButton = useRef<HTMLButtonElement>(null);
+  const [activeSection, setActiveSection] = useState<"overview" | "projects" | "tasks" | "team">("projects");
+  const [projectQuery, setProjectQuery] = useState("");
+  const [projectStatus, setProjectStatus] = useState("all");
+  const [projectSort, setProjectSort] = useState("updated");
+  const [showAllActivity, setShowAllActivity] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const primarySelected = highlightedComponents.includes("primary-button") || selectedComponentKey === "primary-button";
   const cardSelected = highlightedComponents.includes("project-card") || selectedComponentKey === "project-card";
+  const projects = [
+    { id: "mobile-refresh", title: "Mobile app refresh", category: "Product", status: "in-progress", progress: 72, color: "#E9A23B", members: ["MS", "JL", "AK"] },
+    { id: "q4-campaign", title: "Q4 campaign", category: "Marketing", status: "planning", progress: 48, color: "#D7648B", members: ["OR", "MS"] },
+    { id: "design-system", title: "Design system", category: "Design", status: "review", progress: 86, color: "#5A69C8", members: ["AK", "JL", "OR"] },
+    ...createdProjects.map((project) => ({ ...project, title: project.name, category: "New project", status: "planning", progress: 0, color: "#6F7785", members: ["MS"] })),
+  ];
+  const visibleProjects = projects
+    .filter((project) => projectStatus === "all" || project.status === projectStatus)
+    .filter((project) => `${project.title} ${project.category}`.toLowerCase().includes(projectQuery.trim().toLowerCase()))
+    .sort((left, right) => projectSort === "name" ? left.title.localeCompare(right.title) : right.progress - left.progress);
+  const navItems = [
+    { id: "overview" as const, label: "Overview", icon: LayoutDashboard },
+    { id: "projects" as const, label: "Projects", icon: FolderKanban },
+    { id: "tasks" as const, label: "My tasks", icon: CheckSquare2, count: 7 },
+    { id: "team" as const, label: "Team", icon: Users },
+  ];
 
   return (
     <div className={styles.previewStage}>
       <div className={styles.previewRoot} style={style} data-testid="preview-root">
         <aside className={styles.formaSidebar}>
           <div className={styles.formaLogo}><span>F</span> forma</div>
-          <button className={styles.workspaceSwitcher}><span className={styles.avatar}>AC</span><span>Acme Studio<small>Product workspace</small></span><span>⌄</span></button>
+          <div className={styles.workspaceSwitcher}><span className={styles.avatar}>AC</span><span>Acme Studio<small>Product workspace</small></span></div>
           <nav aria-label="Forma navigation">
-            <a href="#overview"><span>⌂</span> Overview</a>
-            <a href="#projects" className={styles.navSelected}><span>▦</span> Projects</a>
-            <a href="#tasks"><span>✓</span> My tasks <small>7</small></a>
-            <a href="#team"><span>♙</span> Team</a>
+            {navItems.map(({ id, label, icon: Icon, count }) => <button key={id} className={activeSection === id ? styles.navSelected : ""} aria-current={activeSection === id ? "page" : undefined} onClick={() => setActiveSection(id)}><Icon aria-hidden="true" /><span>{label}</span>{count && <small>{count}</small>}</button>)}
           </nav>
-          <div className={styles.sidebarFooter}><span className={styles.avatar}>MS</span><span>Maya Santos<small>maya@acme.co</small></span><button aria-label="Account menu">•••</button></div>
+          <div className={styles.sidebarFooter}><span className={styles.avatar}>MS</span><span>Maya Santos<small>maya@acme.co</small></span></div>
         </aside>
         <div className={styles.formaMain}>
-          <div className={styles.formaTopbar}><label>⌕ <input aria-label="Search Forma" placeholder="Search projects and tasks" /></label><button aria-label="Notifications">♢</button><span className={styles.avatar}>MS</span></div>
+          <div className={styles.formaTopbar}>
+            <label><Search aria-hidden="true" /><input aria-label="Search Forma" placeholder="Search projects" value={projectQuery} onFocus={() => setActiveSection("projects")} onChange={(event) => { setProjectQuery(event.target.value); setActiveSection("projects"); }} /></label>
+            <div className={styles.notificationControl}>
+              <button className={styles.formaIconButton} aria-label="Notifications" aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen((open) => !open)}><Bell aria-hidden="true" /><span className={styles.notificationDot} /></button>
+              {notificationsOpen && <div className={styles.notificationPopover}><strong>Notifications</strong><span><CheckCircle2 aria-hidden="true" /> Design system moved to review</span><span><Users aria-hidden="true" /> Ana mentioned you in Q4 campaign</span></div>}
+            </div>
+            <span className={styles.avatar}>MS</span>
+          </div>
           <div className={styles.formaContent}>
-            <div className={styles.pageHeading}>
-              <div><span className={styles.breadcrumb}>Workspace / Projects</span><h1>Projects</h1><p>Plan, track, and ship your team’s best work.</p></div>
-              <button
-                ref={createProjectButton}
-                className={`${styles.formaPrimary} ${inspectEnabled && primarySelected ? styles.inspected : ""}`}
-                onClick={() => inspectEnabled ? onInspect("primary-button") : createProjectDialog.current?.showModal()}
-                aria-label={inspectEnabled ? "Create project; inspect action.primary.background" : "Create project"}
-              >
-                <span>＋</span> Create project
-                {inspectEnabled && primarySelected && <small>action.primary.background</small>}
-              </button>
-            </div>
-            <div className={styles.projectToolbar}><label>⌕ <input aria-label="Search projects" placeholder="Search projects" /></label><button>All statuses⌄</button><button>Last updated⌄</button><span>{8 + createdProjects.length} projects</span></div>
-            <div className={styles.projectGrid}>
-              <ProjectCard title="Mobile app refresh" category="Product" progress={72} color="#E9A23B" members={["MS", "JL", "AK"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />
-              <ProjectCard title="Q4 campaign" category="Marketing" progress={48} color="#D7648B" members={["OR", "MS"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />
-              <ProjectCard title="Design system" category="Design" progress={86} color="#5A69C8" members={["AK", "JL", "OR"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />
-              {createdProjects.map((project) => <ProjectCard key={project.id} title={project.name} category="New project" progress={0} color="#6F7785" members={["MS"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />)}
-            </div>
-            <div className={styles.activityPanel}><div><strong>Recent activity</strong><span>View all</span></div><p><span className={styles.avatar}>JL</span><span><strong>Jon Lee</strong> completed “Review navigation patterns”<small>Mobile app refresh · 18 minutes ago</small></span></p><p><span className={styles.avatar}>AK</span><span><strong>Ana Kim</strong> uploaded 3 files<small>Design system · 1 hour ago</small></span></p></div>
-            <div className={styles.emptyStatePanel}><span aria-hidden="true">◇</span><div><strong>No archived projects</strong><p>Archived work will appear here when you need it.</p></div><button>View active projects</button></div>
+            {activeSection === "projects" && <>
+              <div className={styles.pageHeading}>
+                <div><span className={styles.breadcrumb}>Workspace / Projects</span><h1>Projects</h1><p>Plan, track, and ship your team’s best work.</p></div>
+                <button
+                  ref={createProjectButton}
+                  className={`${styles.formaPrimary} ${inspectEnabled && primarySelected ? styles.inspected : ""}`}
+                  onClick={() => inspectEnabled ? onInspect("primary-button") : createProjectDialog.current?.showModal()}
+                  aria-label={inspectEnabled ? "Create project; inspect action.primary.background" : "Create project"}
+                >
+                  <Plus aria-hidden="true" /> Create project
+                  {inspectEnabled && primarySelected && <small>action.primary.background</small>}
+                </button>
+              </div>
+              <div className={styles.projectToolbar}>
+                <label><Search aria-hidden="true" /><input aria-label="Search projects" placeholder="Search projects" value={projectQuery} onChange={(event) => setProjectQuery(event.target.value)} /></label>
+                <select aria-label="Project status" value={projectStatus} onChange={(event) => setProjectStatus(event.target.value)}><option value="all">All statuses</option><option value="in-progress">In progress</option><option value="planning">Planning</option><option value="review">In review</option></select>
+                <select aria-label="Project sort" value={projectSort} onChange={(event) => setProjectSort(event.target.value)}><option value="updated">Most progressed</option><option value="name">Name</option></select>
+                <span>{visibleProjects.length} {visibleProjects.length === 1 ? "project" : "projects"}</span>
+              </div>
+              {visibleProjects.length > 0 ? <div className={styles.projectGrid}>
+                {visibleProjects.map((project) => <ProjectCard key={project.id} {...project} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />)}
+              </div> : <div className={styles.projectEmpty}><Search aria-hidden="true" /><strong>No matching projects</strong><span>Try a different search or status.</span><button onClick={() => { setProjectQuery(""); setProjectStatus("all"); }}>Clear filters</button></div>}
+              <ActivityPanel expanded={showAllActivity} onToggle={() => setShowAllActivity((expanded) => !expanded)} />
+            </>}
+            {activeSection === "overview" && <OverviewPanel onOpenProjects={() => setActiveSection("projects")} />}
+            {activeSection === "tasks" && <TasksPanel />}
+            {activeSection === "team" && <TeamPanel />}
           </div>
         </div>
         <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title" onClose={(event) => { event.currentTarget.querySelector("form")?.reset(); createProjectButton.current?.focus(); }}>
@@ -431,10 +466,34 @@ function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, 
   );
 }
 
-function ProjectCard({ title, category, progress, color, members, inspectEnabled, selected, onInspect }: { title: string; category: string; progress: number; color: string; members: string[]; inspectEnabled: boolean; selected: boolean; onInspect: () => void }) {
+function ActivityPanel({ expanded, onToggle }: { expanded: boolean; onToggle: () => void }) {
+  const activities = [
+    { initials: "JL", name: "Jon Lee", action: "completed “Review navigation patterns”", meta: "Mobile app refresh · 18 minutes ago" },
+    { initials: "AK", name: "Ana Kim", action: "uploaded 3 files", meta: "Design system · 1 hour ago" },
+    { initials: "OR", name: "Owen Reed", action: "updated campaign milestones", meta: "Q4 campaign · Yesterday" },
+    { initials: "MS", name: "Maya Santos", action: "created a new project brief", meta: "Mobile app refresh · Yesterday" },
+  ];
+  return <div className={styles.activityPanel}><div><strong>Recent activity</strong><button onClick={onToggle}>{expanded ? "Show less" : "View all"}</button></div>{activities.slice(0, expanded ? activities.length : 2).map((activity) => <p key={`${activity.initials}-${activity.action}`}><span className={styles.avatar}>{activity.initials}</span><span><strong>{activity.name}</strong> {activity.action}<small>{activity.meta}</small></span></p>)}</div>;
+}
+
+function OverviewPanel({ onOpenProjects }: { onOpenProjects: () => void }) {
+  return <div className={styles.secondaryPage}><div className={styles.pageHeading}><div><span className={styles.breadcrumb}>Workspace / Overview</span><h1>Overview</h1><p>A clear view of momentum across your workspace.</p></div><button className={styles.formaPrimary} onClick={onOpenProjects}>View projects</button></div><div className={styles.metricGrid}><article><span>Active projects</span><strong>8</strong><small>2 due this week</small></article><article><span>Tasks completed</span><strong>64</strong><small>+12% this month</small></article><article><span>Team velocity</span><strong>92%</strong><small>On track</small></article></div><ActivityPanel expanded={false} onToggle={onOpenProjects} /></div>;
+}
+
+function TasksPanel() {
+  const tasks = [["Review navigation patterns", "Mobile app refresh", "Today"], ["Approve campaign brief", "Q4 campaign", "Tomorrow"], ["Document color decisions", "Design system", "Friday"]];
+  return <div className={styles.secondaryPage}><div className={styles.pageHeading}><div><span className={styles.breadcrumb}>Workspace / My tasks</span><h1>My tasks</h1><p>Focus on what needs your attention next.</p></div></div><div className={styles.taskList}>{tasks.map(([title, project, due], index) => <article key={title}><span className={styles.taskCheck}>{index === 0 && <CheckCircle2 aria-hidden="true" />}</span><span><strong>{title}</strong><small>{project}</small></span><time>{due}</time></article>)}</div></div>;
+}
+
+function TeamPanel() {
+  const members = [["MS", "Maya Santos", "Product lead"], ["AK", "Ana Kim", "Design engineer"], ["JL", "Jon Lee", "Product designer"]];
+  return <div className={styles.secondaryPage}><div className={styles.pageHeading}><div><span className={styles.breadcrumb}>Workspace / Team</span><h1>Team</h1><p>The people shaping Acme Studio.</p></div></div><div className={styles.teamGrid}>{members.map(([initials, name, role]) => <article key={name}><span className={styles.avatar}>{initials}</span><strong>{name}</strong><small>{role}</small><span className={styles.onlineStatus}>Online</span></article>)}</div></div>;
+}
+
+function ProjectCard({ title, category, status, progress, color, members, inspectEnabled, selected, onInspect }: { title: string; category: string; status: string; progress: number; color: string; members: string[]; inspectEnabled: boolean; selected: boolean; onInspect: () => void }) {
   return (
     <article className={`${styles.projectCard} ${inspectEnabled && selected ? styles.inspected : ""}`} role={inspectEnabled ? "button" : undefined} aria-label={inspectEnabled ? `Inspect ${title} project card` : undefined} tabIndex={inspectEnabled ? 0 : undefined} onClick={inspectEnabled ? onInspect : undefined} onKeyDown={inspectEnabled ? (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onInspect(); } } : undefined}>
-      <div><span className={styles.projectIcon} style={{ background: color }}>{title[0]}</span><span aria-hidden="true">•••</span></div>
+      <div><span className={styles.projectIcon} style={{ background: color }}>{title[0]}</span><span className={styles.statusBadge}>{status === "in-progress" ? "In progress" : status === "review" ? "In review" : "Planning"}</span></div>
       <h2>{title}</h2><p>{category}</p>
       <div className={styles.progressLabel}><span>Progress</span><strong>{progress}%</strong></div>
       <div className={styles.progressTrack}><span style={{ width: `${progress}%`, background: color }} /></div>

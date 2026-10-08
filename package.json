@@ -11,10 +11,11 @@
     "test:browsers": "playwright test --config playwright.cross-browser.config.ts"
   },
   "dependencies": {
+    "lucide-react": "1.53.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "zustand": "5.0.15",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "zustand": "5.0.15"
   },
   "devDependencies": {
     "@playwright/test": "1.64.0",

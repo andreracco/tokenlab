@@ -226,7 +226,25 @@ export const initialProject = projectSchema.parse({
 export function upgradeProject(document: ProjectDocument): ProjectDocument {
   const tokenIds = new Set(document.tokens.map((token) => token.id));
   const missingTokens = createPresetTokens(presetSpecs[document.presetId]).filter((token) => !tokenIds.has(token.id));
-  return missingTokens.length === 0 ? document : projectSchema.parse({ ...document, tokens: [...document.tokens, ...missingTokens] });
+  const completeDocument = missingTokens.length === 0
+    ? document
+    : projectSchema.parse({ ...document, tokens: [...document.tokens, ...missingTokens] });
+  const legacyProductDefaults = completeDocument.presetId === "product"
+    && resolveCssValue(completeDocument, "font.size.body") === "10px"
+    && resolveCssValue(completeDocument, "font.weight.strong") === "750"
+    && resolveColorToken(completeDocument, "color.neutral.muted") === "#727985";
+
+  if (!legacyProductDefaults) return completeDocument;
+
+  const currentDefaults = new Map(createPresetTokens(presetSpecs.product).map((token) => [token.id, token.values.light]));
+  const migratedIds = new Set(["font.size.body", "font.weight.strong", "color.neutral.muted"]);
+  const tokens = completeDocument.tokens.map((token) => {
+    const light = currentDefaults.get(token.id);
+    return legacyProductDefaults && migratedIds.has(token.id) && light
+      ? { ...token, values: { ...token.values, light } }
+      : token;
+  });
+  return projectSchema.parse({ ...completeDocument, tokens });
 }
 
 export function applyCommand(document: ProjectDocument, command: TokenCommand): ProjectDocument {
