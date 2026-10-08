@@ -52,9 +52,22 @@ describe("TokenLab first slice", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Specimens" }));
     expect(screen.getByText("Forma component specimens")).toBeTruthy();
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-font-family")).toContain("sans-serif");
 
     fireEvent.change(screen.getByLabelText("Preview mode"), { target: { value: "dark" } });
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-surface")).toBe("#15171C");
+  });
+
+  it("opens the create project dialog when inspection is off", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Inspect on" }));
+    const dialog = screen.getByRole("dialog", { hidden: true }) as HTMLDialogElement;
+    dialog.showModal = () => { dialog.open = true; };
+
+    fireEvent.click(screen.getByRole("button", { name: "Create project" }));
+
+    expect(dialog.open).toBe(true);
+    expect(screen.getByRole("textbox", { name: "Project name" })).toBeTruthy();
   });
 
   it("edits a dimension token and inspects registered card dependencies", () => {

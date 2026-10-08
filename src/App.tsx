@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type ChangeEvent, type KeyboardEvent } from "react";
+import { useRef, useState, type CSSProperties, type ChangeEvent, type KeyboardEvent } from "react";
 import { colorValueSchema, getAliasTargets, parseTokenInput, presetOptions, presetSpecs, resolveColorToken, resolveCssValue, type ProjectDocument, type ResolvedTokenValue, type Token, type TokenMode } from "./domain/tokens";
 import { diffProjects, type ProjectSnapshot } from "./domain/projects";
 import { checkContrast } from "./domain/contrast";
@@ -207,10 +207,11 @@ function formatBytes(content: string) {
 }
 
 function createPreviewStyle(document: ProjectDocument, mode: TokenMode): PreviewStyle {
+  const fontFamily = resolveCssValue(document, "typography.body.family", mode);
   return {
     "--tl-preview-action-primary-background": resolveColorToken(document, "action.primary.background", mode),
     "--tl-preview-action-primary-foreground": resolveCssValue(document, "action.primary.foreground", mode),
-    "--tl-preview-font-family": resolveCssValue(document, "typography.body.family", mode),
+    "--tl-preview-font-family": fontFamily === "Georgia" ? "Georgia, serif" : `${fontFamily}, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`,
     "--tl-preview-font-size": resolveCssValue(document, "typography.body.size", mode),
     "--tl-preview-font-weight": resolveCssValue(document, "typography.body.weight", mode),
     "--tl-preview-strong-weight": resolveCssValue(document, "typography.strong.weight", mode),
@@ -334,6 +335,7 @@ function SpecimenPreview({ style }: { style: PreviewStyle }) {
 }
 
 function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponentKey, onInspect, style }: { inspectEnabled: boolean; highlightedComponents: ComponentKey[]; selectedComponentKey: ComponentKey | null; onInspect: (key: ComponentKey) => void; style: PreviewStyle }) {
+  const createProjectDialog = useRef<HTMLDialogElement>(null);
   const primarySelected = highlightedComponents.includes("primary-button") || selectedComponentKey === "primary-button";
   const cardSelected = highlightedComponents.includes("project-card") || selectedComponentKey === "project-card";
 
@@ -358,7 +360,7 @@ function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponent
               <div><span className={styles.breadcrumb}>Workspace / Projects</span><h1>Projects</h1><p>Plan, track, and ship your team’s best work.</p></div>
               <button
                 className={`${styles.formaPrimary} ${inspectEnabled && primarySelected ? styles.inspected : ""}`}
-                onClick={inspectEnabled ? () => onInspect("primary-button") : undefined}
+                onClick={() => inspectEnabled ? onInspect("primary-button") : createProjectDialog.current?.showModal()}
                 aria-label={inspectEnabled ? "Create project; inspect action.primary.background" : "Create project"}
               >
                 <span>＋</span> Create project
@@ -374,6 +376,14 @@ function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponent
             <div className={styles.activityPanel}><div><strong>Recent activity</strong><span>View all</span></div><p><span className={styles.avatar}>JL</span><span><strong>Jon Lee</strong> completed “Review navigation patterns”<small>Mobile app refresh · 18 minutes ago</small></span></p><p><span className={styles.avatar}>AK</span><span><strong>Ana Kim</strong> uploaded 3 files<small>Design system · 1 hour ago</small></span></p></div>
           </div>
         </div>
+        <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title">
+          <form method="dialog">
+            <h2 id="create-project-title">Create project</h2>
+            <p>Start with a clear name and an owner.</p>
+            <label>Project name<input autoFocus required /></label>
+            <div><button value="cancel">Cancel</button><button className={styles.formaPrimary} value="create">Create project</button></div>
+          </form>
+        </dialog>
       </div>
     </div>
   );

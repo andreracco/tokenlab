@@ -101,6 +101,10 @@
 .activityPanel p { margin: 13px 0 0; gap: 9px; font-size: 8px; }
 .activityPanel p > span:last-child { display: flex; flex-direction: column; gap: 2px; }
 .activityPanel p small { color: var(--forma-muted); }
+.createProjectDialog { width: min(360px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); color: var(--forma-text); box-shadow: 0 18px 50px rgba(39, 38, 34, .22); font-family: var(--tl-preview-font-family); }
+.createProjectDialog::backdrop { background: rgba(23, 24, 28, .45); }
+.createProjectDialog form { padding: 20px; display: grid; gap: 12px; }
+.createProjectDialog h2, .createProjectDialog p { margin: 0; }.createProjectDialog p { color: var(--forma-muted); font-size: 10px; }.createProjectDialog label { display: grid; gap: 6px; font-size: 9px; font-weight: 700; }.createProjectDialog input { min-height: 34px; padding: 0 10px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-control-radius); }.createProjectDialog form > div { display: flex; justify-content: flex-end; gap: 7px; }.createProjectDialog form > div button { min-height: 34px; padding: 0 12px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-control-radius); }.createProjectDialog .formaPrimary { border: 0; }
 .inspectorHeading { padding: 20px 18px 16px; border-bottom: 1px solid var(--studio-border); display: grid; gap: 6px; }
 .inspectorHeading strong { font: 600 13px ui-monospace, SFMono-Regular, monospace; overflow-wrap: anywhere; }
 .eyebrow, .fieldLabel { color: var(--studio-muted); font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
