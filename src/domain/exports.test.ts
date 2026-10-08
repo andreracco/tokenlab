@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { contrastRatio, checkContrast } from "./contrast";
-import { buildExports, exportCss, exportDtcg, exportProject, parseProjectFile } from "./exports";
+import { buildExports, exportCss, exportDtcg, exportProject, exportTailwind, parseProjectFile } from "./exports";
 import { initialProject } from "./tokens";
 
 describe("shipping formats", () => {
@@ -13,6 +13,15 @@ describe("shipping formats", () => {
     expect(exportCss(initialProject)).toContain("--action-primary-background: var(--color-brand-600)");
     expect(exportDtcg(initialProject, "light")).toContain('"$value": "{color.brand.600}"');
     expect(buildExports(initialProject, [])).toHaveLength(5);
+  });
+
+  it("emits CSS and Tailwind references that resolve in a consumer", () => {
+    const output = exportTailwind(initialProject);
+    const declared = new Set([...output.matchAll(/^\s*--([^:]+):/gm)].map((match) => match[1]));
+    const references = [...output.matchAll(/var\(--([^)]+)\)/g)].map((match) => match[1]);
+
+    expect(references.length).toBeGreaterThan(0);
+    expect(references.filter((name) => !declared.has(name))).toEqual([]);
   });
 
   it("round-trips project files and rejects unsupported input", () => {
