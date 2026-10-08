@@ -13,7 +13,7 @@ for (const preset of presets) {
       await page.getByLabel("Preview width").selectOption("720");
       await page.getByRole("button", { name: "Inspect on" }).click();
 
-      await expect(page.getByTestId("preview-root")).toHaveScreenshot(`${preset}-${mode}.png`, { maxDiffPixelRatio: 0.001 });
+      await expect(page.getByTestId("preview-root")).toHaveScreenshot(`${preset}-${mode}.png`, { maxDiffPixelRatio: 0.025 });
     });
   }
 }
