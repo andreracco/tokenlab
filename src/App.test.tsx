@@ -73,6 +73,17 @@ describe("TokenLab first slice", () => {
     expect(screen.getByRole("button", { name: "Inspector" }).getAttribute("aria-pressed")).toBe("true");
   });
 
+  it("opens and closes the tablet inspector drawer", () => {
+    render(<App />);
+    const open = screen.getByRole("button", { name: "Open inspector" });
+    expect(open.getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.click(open);
+    expect(open.getAttribute("aria-expanded")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Close inspector" }));
+    expect(open.getAttribute("aria-expanded")).toBe("false");
+  });
+
   it("renders specimens and switches the canvas to dark mode", () => {
     render(<App />);
 

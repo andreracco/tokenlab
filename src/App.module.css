@@ -53,6 +53,7 @@
 .modeSelect { min-height: 30px; padding: 0 7px; border: 1px solid var(--studio-border); border-radius: 6px; background: #fff; color: var(--studio-text); font-size: 11px; }
 .inspectButton, .inspectActive { min-height: 30px; }
 .inspectActive { border-color: #9eaee8; background: #e9edfb; color: #2647b4; }
+.inspectorDrawerButton, .inspectorDrawerClose { display: none; }
 .previewStage { flex: 1; min-height: 0; padding: 24px; overflow: auto; }
 
 /* Forma variables below are fixed preview-fixture constants; only the prefixed TokenLab variable is editable. */
@@ -188,7 +189,10 @@
 
 @media (max-width: 1100px) {
   .workspace { height: auto; min-height: calc(100vh - 64px); grid-template-columns: 220px minmax(0, 1fr); }
-  .inspectorPanel { grid-column: 1 / -1; border-top: 1px solid var(--studio-border); border-left: 0; }
+  .inspectorPanel { position: fixed; top: 64px; right: 0; bottom: 0; z-index: 10; width: 320px; border-left: 1px solid var(--studio-border); box-shadow: -16px 0 40px rgba(36, 36, 36, .12); }
+  .inspectorDrawerClosed { display: none; }
+  .inspectorDrawerButton { min-height: 30px; padding: 0 9px; display: inline-block; border: 1px solid var(--studio-border); border-radius: 6px; background: #fff; font-size: 11px; }
+  .inspectorDrawerClose { position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--studio-border); border-radius: 6px; background: #fff; font-size: 18px; }
   .presetPicker { margin-top: 8px; }
 }
 
@@ -200,6 +204,9 @@
   .mobilePanelNav { padding: 8px 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; border-bottom: 1px solid var(--studio-border); background: var(--studio-panel); }
   .mobilePanelNav button { min-height: 34px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; }
   .mobilePanelNav button[aria-pressed="true"] { border-color: #9eaee8; background: #e9edfb; color: #2647b4; font-weight: 700; }
+  .inspectorPanel { position: static; width: auto; box-shadow: none; }
+  .inspectorPanel.inspectorDrawerClosed { display: block; }
+  .inspectorDrawerButton, .inspectorDrawerClose { display: none; }
   .mobilePanelHidden { display: none; }
   .workspace { grid-template-columns: 1fr; }
   .tokenPanel { max-height: none; border-right: 0; border-bottom: 1px solid var(--studio-border); }

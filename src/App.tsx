@@ -53,6 +53,7 @@ export function App() {
   const [tokenType, setTokenType] = useState<"all" | Token["type"]>("all");
   const [snapshotName, setSnapshotName] = useState("");
   const [mobilePanel, setMobilePanel] = useState<"tokens" | "canvas" | "inspector">("canvas");
+  const [inspectorOpen, setInspectorOpen] = useState(false);
   const snapshotDialog = useRef<HTMLDialogElement>(null);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
@@ -64,6 +65,7 @@ export function App() {
     setSelectedComponentKey(key);
     selectToken(component.tokenIds[0]);
     setMobilePanel("inspector");
+    setInspectorOpen(true);
   };
   const previewStyle = createPreviewStyle(document, mode);
   const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
@@ -87,8 +89,8 @@ export function App() {
           <button className={styles.secondaryButton} disabled={history.length === 0} onClick={undo}>Undo</button>
           <button className={styles.secondaryButton} disabled={future.length === 0} onClick={redo}>Redo</button>
           <button className={styles.secondaryButton} onClick={() => { setSnapshotName(`Baseline ${snapshots.length + 1}`); snapshotDialog.current?.showModal(); }}>Snapshot</button>
-          <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => { setComparisonSnapshotId(snapshots.at(-1)?.id ?? null); setMobilePanel("canvas"); }}>Compare</button>
-          <button className={styles.primaryStudioButton} onClick={() => { setComparisonSnapshotId(null); setExportOpen(true); setMobilePanel("canvas"); }}>Export</button>
+          <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => { setComparisonSnapshotId(snapshots.at(-1)?.id ?? null); setMobilePanel("canvas"); setInspectorOpen(false); }}>Compare</button>
+          <button className={styles.primaryStudioButton} onClick={() => { setComparisonSnapshotId(null); setExportOpen(true); setMobilePanel("canvas"); setInspectorOpen(false); }}>Export</button>
         </div>
       </header>
 
@@ -119,7 +121,7 @@ export function App() {
                 token={token}
                 value={resolveCssValue(document, token.id, mode)}
                 selected={token.id === selectedTokenId}
-                onSelect={() => { setSelectedComponentKey(null); selectToken(token.id); setMobilePanel("inspector"); }}
+                onSelect={() => { setSelectedComponentKey(null); selectToken(token.id); setMobilePanel("inspector"); setInspectorOpen(true); }}
               />
             ))}
             {visibleTokens.length === 0 && <p className={styles.emptyTokens}>No matching tokens.</p>}
@@ -149,6 +151,7 @@ export function App() {
             <div className={styles.canvasControls}>
               <select className={styles.modeSelect} aria-label="Preview mode" value={mode} onChange={(event) => setMode(event.target.value as TokenMode)}><option value="light">Light</option><option value="dark">Dark</option></select>
               <span>{preset.name} · Desktop 1280</span>
+              <button className={styles.inspectorDrawerButton} aria-expanded={inspectorOpen} aria-controls="token-inspector" onClick={() => setInspectorOpen(true)}>Open inspector</button>
               <button
                 className={inspectEnabled ? styles.inspectActive : styles.inspectButton}
                 aria-pressed={inspectEnabled}
@@ -167,8 +170,9 @@ export function App() {
             /> : <SpecimenPreview style={previewStyle} />}
         </section>
 
-        <aside className={`${styles.inspectorPanel} ${mobilePanel !== "inspector" ? styles.mobilePanelHidden : ""}`} aria-label="Token inspector">
+        <aside id="token-inspector" className={`${styles.inspectorPanel} ${!inspectorOpen ? styles.inspectorDrawerClosed : ""} ${mobilePanel !== "inspector" ? styles.mobilePanelHidden : ""}`} aria-label="Token inspector">
           <div className={styles.inspectorHeading}>
+            <button className={styles.inspectorDrawerClose} onClick={() => setInspectorOpen(false)} aria-label="Close inspector">×</button>
             <span className={styles.eyebrow}>Selected token</span>
             <strong>{selectedToken.path}</strong>
             <span className={styles.layerBadge}>{selectedToken.layer}</span>
