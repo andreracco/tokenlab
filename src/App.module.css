@@ -28,6 +28,7 @@
 .tokenRow small { color: var(--studio-muted); font-size: 10px; overflow: hidden; text-overflow: ellipsis; }
 .tokenRow code { grid-column: 2; color: var(--studio-muted); font-size: 10px; }
 .swatch { width: 28px; height: 28px; border: 1px solid rgba(0,0,0,.12); border-radius: 7px; }
+.tokenTypeIcon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; background: #e8e5de; color: #69665f; font: 700 9px ui-monospace, monospace; text-transform: uppercase; }
 .presetPicker { margin-top: 20px; padding: 16px; border-top: 1px solid var(--studio-border); display: grid; gap: 7px; }
 .presetPicker label { color: var(--studio-muted); font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
 .presetPicker select { width: 100%; min-height: 36px; padding: 0 9px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; color: var(--studio-text); font-size: 12px; }
@@ -40,16 +41,18 @@
 .viewTabs button { padding: 7px 10px; border: 0; border-radius: 6px; background: transparent; font-size: 12px; cursor: pointer; }
 .viewTabs .activeTab { background: #e8e5de; font-weight: 700; }
 .canvasControls { gap: 12px; color: var(--studio-muted); font-size: 11px; }
+.modeSelect { min-height: 30px; padding: 0 7px; border: 1px solid var(--studio-border); border-radius: 6px; background: #fff; color: var(--studio-text); font-size: 11px; }
 .inspectButton, .inspectActive { min-height: 30px; }
 .inspectActive { border-color: #9eaee8; background: #e9edfb; color: #2647b4; }
 .previewStage { flex: 1; min-height: 0; padding: 24px; overflow: auto; }
 
 /* Forma variables below are fixed preview-fixture constants; only the prefixed TokenLab variable is editable. */
-.previewRoot { --forma-text: #20242a; --forma-muted: #727985; --forma-line: #e4e7eb; min-width: 720px; min-height: 650px; display: grid; grid-template-columns: 178px 1fr; overflow: hidden; border: 1px solid #d5d3ce; border-radius: var(--tl-preview-radius); background: #fff; color: var(--forma-text); box-shadow: 0 18px 50px rgba(39, 38, 34, .08); font-family: var(--tl-preview-font-family); }
-.formaSidebar { padding: 20px 12px 14px; display: flex; flex-direction: column; background: var(--tl-preview-sidebar); border-right: 1px solid var(--forma-line); }
+.previewRoot { --forma-text: var(--tl-preview-text); --forma-muted: var(--tl-preview-muted); --forma-line: var(--tl-preview-border); min-width: 720px; min-height: 650px; display: grid; grid-template-columns: 178px 1fr; overflow: hidden; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); color: var(--forma-text); box-shadow: 0 18px 50px rgba(39, 38, 34, .08); font-family: var(--tl-preview-font-family); font-size: var(--tl-preview-font-size); font-weight: var(--tl-preview-font-weight); line-height: var(--tl-preview-line-height); }
+.previewRoot strong, .previewRoot h1, .previewRoot h2, .previewRoot h3 { font-weight: var(--tl-preview-strong-weight); }
+.formaSidebar { padding: 20px 12px 14px; display: flex; flex-direction: column; background: var(--tl-preview-surface); border-right: 1px solid var(--forma-line); }
 .formaLogo { gap: 8px; padding: 0 6px 18px; font-size: 15px; font-weight: 800; }
 .formaLogo > span { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 7px; background: var(--tl-preview-action-primary-background); color: #fff; font-size: 12px; }
-.workspaceSwitcher { width: 100%; padding: 9px; gap: 7px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-radius); background: #fff; text-align: left; }
+.workspaceSwitcher { width: 100%; padding: 9px; gap: 7px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-control-radius); background: var(--tl-preview-panel); color: var(--forma-text); text-align: left; }
 .workspaceSwitcher > span:nth-child(2), .sidebarFooter > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; font-size: 10px; font-weight: 700; }
 .workspaceSwitcher small, .sidebarFooter small { color: var(--forma-muted); font-size: 8px; font-weight: 500; }
 .avatar { width: 25px; height: 25px; flex: 0 0 auto; display: inline-grid; place-items: center; border-radius: 50%; background: #e2e6f4; color: #495687; font-size: 8px; font-weight: 800; }
@@ -60,7 +63,7 @@
 .sidebarFooter { margin-top: auto; padding: 12px 4px 0; gap: 7px; border-top: 1px solid var(--forma-line); }
 .sidebarFooter button { border: 0; background: transparent; font-size: 9px; }
 .formaMain { min-width: 0; background: var(--tl-preview-surface); }
-.formaTopbar { height: 58px; padding: 0 22px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; border-bottom: 1px solid var(--forma-line); background: #fff; }
+.formaTopbar { height: 58px; padding: 0 22px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; border-bottom: 1px solid var(--forma-line); background: var(--tl-preview-panel); }
 .formaTopbar label { width: 220px; margin-right: auto; padding: 7px 10px; border: 1px solid var(--forma-line); border-radius: 7px; color: var(--forma-muted); font-size: 10px; }
 .formaTopbar input, .projectToolbar input { width: calc(100% - 18px); border: 0; outline: 0; background: transparent; font-size: 9px; }
 .formaTopbar button { border: 0; background: transparent; }
@@ -69,7 +72,7 @@
 .breadcrumb { color: var(--forma-muted); font-size: 8px; }
 .pageHeading h1 { margin: 6px 0 4px; font-size: 23px; letter-spacing: -.04em; }
 .pageHeading p { margin: 0; color: var(--forma-muted); font-size: 10px; }
-.formaPrimary { position: relative; min-height: 34px; padding: 0 13px; border: 0; border-radius: var(--tl-preview-radius); background: var(--tl-preview-action-primary-background); color: white; font-size: 10px; font-weight: 750; cursor: pointer; }
+.formaPrimary { position: relative; min-height: 34px; padding: 0 13px; border: 0; border-radius: var(--tl-preview-control-radius); background: var(--tl-preview-action-primary-background); color: var(--tl-preview-action-primary-foreground); font-size: 10px; font-weight: var(--tl-preview-strong-weight); cursor: pointer; }
 .formaPrimary > span { margin-right: 5px; }
 .formaPrimary.inspected { outline: 3px solid #e38b2c; outline-offset: 3px; }
 .formaPrimary small { position: absolute; right: -3px; bottom: -25px; z-index: 2; padding: 4px 6px; border-radius: 4px; background: #282724; color: white; font: 7px ui-monospace, monospace; white-space: nowrap; }
@@ -78,7 +81,7 @@
 .projectToolbar button { padding: 7px 9px; border: 1px solid var(--forma-line); border-radius: 6px; background: #fff; color: #555c67; font-size: 8px; }
 .projectToolbar > span { margin-left: auto; color: var(--forma-muted); font-size: 8px; }
 .projectGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--tl-preview-card-gap); }
-.projectCard { min-width: 0; padding: var(--tl-preview-card-padding); border: 1px solid var(--forma-line); border-radius: var(--tl-preview-radius); background: #fff; box-shadow: var(--tl-preview-card-shadow); }
+.projectCard { min-width: 0; padding: var(--tl-preview-card-padding); border: 1px solid var(--forma-line); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); box-shadow: var(--tl-preview-card-shadow); }
 .projectCard > div:first-child, .progressLabel, .cardFooter { justify-content: space-between; }
 .projectIcon { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px; color: white; font-size: 10px; font-weight: 800; }
 .projectCard button { border: 0; background: transparent; color: var(--forma-muted); font-size: 8px; }
@@ -91,7 +94,7 @@
 .cardFooter { padding-top: 12px; border-top: 1px solid var(--forma-line); color: var(--forma-muted); font-size: 7px; }
 .cardFooter > div { display: flex; }
 .cardFooter .avatar { width: 21px; height: 21px; margin-right: -5px; border: 2px solid white; font-size: 6px; }
-.activityPanel { margin-top: 16px; padding: 15px 17px; border: 1px solid var(--forma-line); border-radius: 9px; background: white; }
+.activityPanel { margin-top: 16px; padding: 15px 17px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); }
 .activityPanel > div { justify-content: space-between; font-size: 10px; }
 .activityPanel > div span { color: var(--tl-preview-action-primary-background); font-size: 8px; font-weight: 700; }
 .activityPanel p { margin: 13px 0 0; gap: 9px; font-size: 8px; }
@@ -114,12 +117,29 @@
 .aliasTarget code { overflow: hidden; font-size: 10px; text-overflow: ellipsis; }
 .resolvedRow { margin-top: 12px; display: flex; justify-content: space-between; color: var(--studio-muted); font-size: 10px; }
 .resolvedRow code { color: var(--studio-text); }
+.readOnlyValue { margin-top: 8px; padding: 10px; overflow-wrap: anywhere; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; font: 11px ui-monospace, monospace; }
 .inspectorSection { padding: 18px; }
 .usageRow { width: 100%; margin-top: 9px; padding: 10px; display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; border: 1px solid var(--studio-border); border-radius: 8px; background: white; text-align: left; cursor: pointer; }
 .componentGlyph { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; background: #ece9e3; }
 .usageRow > span:nth-child(2) { display: flex; flex-direction: column; gap: 2px; }
 .usageRow strong { font-size: 11px; }
 .usageRow small { color: var(--studio-muted); font-size: 9px; }
+.specimenRoot { padding: var(--tl-preview-content-padding); display: block; background: var(--tl-preview-surface); overflow: auto; }
+.specimenRoot > header { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 18px; border-bottom: 1px solid var(--forma-line); font-size: 16px; font-weight: var(--tl-preview-strong-weight); }
+.specimenRoot > header small, .specimenRoot section > h2 { color: var(--forma-muted); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+.specimenRoot section { padding: 18px 0; border-bottom: 1px solid var(--forma-line); }
+.specimenRow { display: flex; flex-wrap: wrap; gap: var(--tl-preview-card-gap); align-items: flex-start; }
+.specimenRow > input, .specimenDialog input { min-height: 34px; padding: 0 10px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-control-radius); background: var(--tl-preview-panel); color: var(--forma-text); }
+.simulatedFocus { outline: 3px solid var(--tl-preview-action-primary-background); outline-offset: 2px; }
+.inputError { border-color: #c94b52 !important; }
+.specimenCard { width: 220px; padding: var(--tl-preview-card-padding); border: 1px solid var(--forma-line); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); box-shadow: var(--tl-preview-card-shadow); }
+.specimenCard h3 { margin: 12px 0 4px; }
+.specimenCard p, .specimenDialog p { margin: 0; color: var(--forma-muted); }
+.specimenBadge { padding: 4px 7px; border-radius: 999px; background: var(--tl-preview-action-primary-background); color: var(--tl-preview-action-primary-foreground); font-size: 8px; }
+.specimenTabs, .specimenMenu { display: flex; padding: 5px; gap: 4px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-control-radius); background: var(--tl-preview-panel); }
+.specimenTabs button, .specimenMenu button, .specimenDialog > div button { padding: 7px 10px; border: 0; border-radius: var(--tl-preview-control-radius); background: transparent; color: var(--forma-text); font-size: 9px; }
+.specimenDialog { max-width: 360px; padding: 18px; display: grid; gap: 12px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-card-radius); background: var(--tl-preview-panel); box-shadow: var(--tl-preview-card-shadow); }
+.specimenDialog > div { display: flex; justify-content: flex-end; gap: 7px; }
 
 @media (max-width: 1100px) {
   .workspace { height: auto; min-height: calc(100vh - 64px); grid-template-columns: 220px minmax(0, 1fr); }

@@ -1,18 +1,27 @@
 import { useState, type CSSProperties, type KeyboardEvent } from "react";
-import { colorValueSchema, presetOptions, presetSpecs, resolveColorToken, type Token } from "./domain/tokens";
+import { colorValueSchema, presetOptions, presetSpecs, resolveColorToken, resolveCssValue, type Token, type TokenMode } from "./domain/tokens";
 import { useTokenLabStore } from "./app/store";
 import styles from "./App.module.css";
 
 type PreviewStyle = CSSProperties & {
   "--tl-preview-action-primary-background": string;
+  "--tl-preview-action-primary-foreground": string;
   "--tl-preview-font-family": string;
+  "--tl-preview-font-size": string;
+  "--tl-preview-font-weight": string;
+  "--tl-preview-strong-weight": string;
+  "--tl-preview-line-height": string;
   "--tl-preview-content-padding": string;
   "--tl-preview-card-padding": string;
   "--tl-preview-card-gap": string;
-  "--tl-preview-radius": string;
+  "--tl-preview-control-radius": string;
+  "--tl-preview-card-radius": string;
   "--tl-preview-card-shadow": string;
   "--tl-preview-surface": string;
-  "--tl-preview-sidebar": string;
+  "--tl-preview-panel": string;
+  "--tl-preview-border": string;
+  "--tl-preview-text": string;
+  "--tl-preview-muted": string;
 };
 
 export function App() {
@@ -23,20 +32,31 @@ export function App() {
   const execute = useTokenLabStore((state) => state.execute);
   const undo = useTokenLabStore((state) => state.undo);
   const [inspectEnabled, setInspectEnabled] = useState(true);
+  const [mode, setMode] = useState<TokenMode>("light");
+  const [canvasView, setCanvasView] = useState<"app" | "specimens">("app");
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
-  const primaryColor = resolveColorToken(document, "action.primary.background");
+  const primaryColor = resolveColorToken(document, "action.primary.background", mode);
   const preset = presetSpecs[document.presetId];
   const previewStyle: PreviewStyle = {
     "--tl-preview-action-primary-background": primaryColor,
-    "--tl-preview-font-family": preset.preview.fontFamily,
-    "--tl-preview-content-padding": preset.preview.contentPadding,
-    "--tl-preview-card-padding": preset.preview.cardPadding,
-    "--tl-preview-card-gap": preset.preview.cardGap,
-    "--tl-preview-radius": preset.preview.radius,
-    "--tl-preview-card-shadow": preset.preview.shadow,
-    "--tl-preview-surface": preset.preview.surface,
-    "--tl-preview-sidebar": preset.preview.sidebar,
+    "--tl-preview-action-primary-foreground": resolveCssValue(document, "action.primary.foreground", mode),
+    "--tl-preview-font-family": resolveCssValue(document, "typography.body.family", mode),
+    "--tl-preview-font-size": resolveCssValue(document, "typography.body.size", mode),
+    "--tl-preview-font-weight": resolveCssValue(document, "typography.body.weight", mode),
+    "--tl-preview-strong-weight": resolveCssValue(document, "typography.strong.weight", mode),
+    "--tl-preview-line-height": resolveCssValue(document, "typography.body.line-height", mode),
+    "--tl-preview-content-padding": resolveCssValue(document, "layout.content.padding", mode),
+    "--tl-preview-card-padding": resolveCssValue(document, "space.medium", mode),
+    "--tl-preview-card-gap": resolveCssValue(document, "layout.card.gap", mode),
+    "--tl-preview-control-radius": resolveCssValue(document, "component.control.radius", mode),
+    "--tl-preview-card-radius": resolveCssValue(document, "component.card.radius", mode),
+    "--tl-preview-card-shadow": resolveCssValue(document, "component.card.shadow", mode),
+    "--tl-preview-surface": resolveCssValue(document, "surface.page", mode),
+    "--tl-preview-panel": resolveCssValue(document, "surface.panel", mode),
+    "--tl-preview-border": resolveCssValue(document, "border.default", mode),
+    "--tl-preview-text": resolveCssValue(document, "text.primary", mode),
+    "--tl-preview-muted": resolveCssValue(document, "text.muted", mode),
   };
 
   return (
@@ -60,7 +80,7 @@ export function App() {
       <main className={styles.workspace}>
         <aside className={styles.tokenPanel} aria-label="Token library">
           <div className={styles.panelHeading}>
-            <div><span>Token library</span><small>2 tokens</small></div>
+            <div><span>Token library</span><small>{document.tokens.length} tokens</small></div>
             <button className={styles.iconButton} aria-label="Search tokens" disabled>⌕</button>
           </div>
           <div className={styles.categoryLabel}>Colors</div>
@@ -69,7 +89,7 @@ export function App() {
               <TokenRow
                 key={token.id}
                 token={token}
-                value={resolveColorToken(document, token.id)}
+                value={resolveCssValue(document, token.id, mode)}
                 selected={token.id === selectedTokenId}
                 onSelect={() => selectToken(token.id)}
               />
@@ -92,9 +112,13 @@ export function App() {
           <div className={styles.canvasToolbar}>
             <div>
               <strong>Living Canvas</strong>
-              <span className={styles.viewTabs}><button className={styles.activeTab}>App</button><button disabled>Specimens</button></span>
+              <span className={styles.viewTabs}>
+                <button className={canvasView === "app" ? styles.activeTab : ""} onClick={() => setCanvasView("app")}>App</button>
+                <button className={canvasView === "specimens" ? styles.activeTab : ""} onClick={() => setCanvasView("specimens")}>Specimens</button>
+              </span>
             </div>
             <div className={styles.canvasControls}>
+              <select className={styles.modeSelect} aria-label="Preview mode" value={mode} onChange={(event) => setMode(event.target.value as TokenMode)}><option value="light">Light</option><option value="dark">Dark</option></select>
               <span>{preset.name} · Desktop 1280</span>
               <button
                 className={inspectEnabled ? styles.inspectActive : styles.inspectButton}
@@ -105,12 +129,12 @@ export function App() {
               </button>
             </div>
           </div>
-          <FormaPreview
-            inspectEnabled={inspectEnabled}
-            selectedTokenId={selectedTokenId}
-            onInspect={() => selectToken("action.primary.background")}
-            style={previewStyle}
-          />
+          {canvasView === "app" ? <FormaPreview
+              inspectEnabled={inspectEnabled}
+              selectedTokenId={selectedTokenId}
+              onInspect={() => selectToken("action.primary.background")}
+              style={previewStyle}
+            /> : <SpecimenPreview style={previewStyle} />}
         </section>
 
         <aside className={styles.inspectorPanel} aria-label="Token inspector">
@@ -120,23 +144,24 @@ export function App() {
             <span className={styles.layerBadge}>{selectedToken.layer}</span>
           </div>
           <p className={styles.description}>{selectedToken.description}</p>
-          {selectedToken.type === "color" && selectedToken.values.light.kind === "literal" ? (
+          {selectedToken.type === "color" && (selectedToken.values[mode] ?? selectedToken.values.light).kind === "literal" ? (
             <ColorEditor
-              key={`${selectedToken.id}-${selectedToken.values.light.value}`}
-              initialValue={selectedToken.values.light.value}
-              onApply={(value) => execute({ type: "set-color", tokenId: selectedToken.id, mode: "light", value })}
+              key={`${selectedToken.id}-${mode}-${resolveColorToken(document, selectedToken.id, mode)}`}
+              mode={mode}
+              initialValue={resolveColorToken(document, selectedToken.id, mode)}
+              onApply={(value) => execute({ type: "set-color", tokenId: selectedToken.id, mode, value })}
             />
-          ) : (
-            <AliasInspector token={selectedToken} resolvedValue={primaryColor} onSelectTarget={selectToken} />
-          )}
-          <div className={styles.inspectorSection}>
+          ) : selectedToken.values[mode]?.kind === "reference" || selectedToken.values.light.kind === "reference" ? (
+            <AliasInspector token={selectedToken} mode={mode} resolvedValue={resolveCssValue(document, selectedToken.id, mode)} onSelectTarget={selectToken} />
+          ) : <ReadOnlyInspector value={resolveCssValue(document, selectedToken.id, mode)} />}
+          {(selectedToken.id === "color.brand.600" || selectedToken.id === "action.primary.background") && <div className={styles.inspectorSection}>
             <span className={styles.eyebrow}>Used by</span>
             <button className={styles.usageRow} onClick={() => selectToken("action.primary.background")}>
               <span className={styles.componentGlyph}>▣</span>
               <span><strong>Primary button</strong><small>Forma · Projects header</small></span>
               <span>›</span>
             </button>
-          </div>
+          </div>}
         </aside>
       </main>
     </div>
@@ -146,14 +171,14 @@ export function App() {
 function TokenRow({ token, value, selected, onSelect }: { token: Token; value: string; selected: boolean; onSelect: () => void }) {
   return (
     <button className={`${styles.tokenRow} ${selected ? styles.tokenRowSelected : ""}`} onClick={onSelect} aria-pressed={selected}>
-      <span className={styles.swatch} style={{ backgroundColor: value }} />
+      {token.type === "color" ? <span className={styles.swatch} style={{ backgroundColor: value }} /> : <span className={styles.tokenTypeIcon}>{token.type.slice(0, 2)}</span>}
       <span><strong>{token.path.split(".").at(-1)}</strong><small>{token.path}</small></span>
       <code>{token.values.light.kind === "reference" ? "↗ alias" : value}</code>
     </button>
   );
 }
 
-function ColorEditor({ initialValue, onApply }: { initialValue: string; onApply: (value: string) => void }) {
+function ColorEditor({ initialValue, mode, onApply }: { initialValue: string; mode: TokenMode; onApply: (value: string) => void }) {
   const [draft, setDraft] = useState(initialValue);
   const result = colorValueSchema.safeParse(draft);
 
@@ -164,7 +189,7 @@ function ColorEditor({ initialValue, onApply }: { initialValue: string; onApply:
 
   return (
     <div className={styles.editor}>
-      <label htmlFor="color-value">Light value</label>
+      <label htmlFor="color-value">{mode === "light" ? "Light" : "Dark"} value</label>
       <div className={styles.colorField}>
         <input aria-label="Choose color" type="color" value={result.success ? draft : initialValue} onChange={(event) => setDraft(event.target.value.toUpperCase())} />
         <input
@@ -186,8 +211,12 @@ function ColorEditor({ initialValue, onApply }: { initialValue: string; onApply:
   );
 }
 
-function AliasInspector({ token, resolvedValue, onSelectTarget }: { token: Token; resolvedValue: string; onSelectTarget: (tokenId: string) => void }) {
-  const value = token.values.light;
+function ReadOnlyInspector({ value }: { value: string }) {
+  return <div className={styles.editor}><span className={styles.fieldLabel}>Resolved value</span><div className={styles.readOnlyValue}>{value}</div></div>;
+}
+
+function AliasInspector({ token, mode, resolvedValue, onSelectTarget }: { token: Token; mode: TokenMode; resolvedValue: string; onSelectTarget: (tokenId: string) => void }) {
+  const value = token.values[mode] ?? token.values.light;
   if (value.kind !== "reference") return null;
 
   return (
@@ -198,6 +227,21 @@ function AliasInspector({ token, resolvedValue, onSelectTarget }: { token: Token
         <code>{value.tokenId}</code><span>›</span>
       </button>
       <div className={styles.resolvedRow}><span>Resolved value</span><code>{resolvedValue}</code></div>
+    </div>
+  );
+}
+
+function SpecimenPreview({ style }: { style: PreviewStyle }) {
+  return (
+    <div className={styles.previewStage}>
+      <div className={`${styles.previewRoot} ${styles.specimenRoot}`} style={style} data-testid="preview-root">
+        <header><span>Forma component specimens</span><small>Representative states</small></header>
+        <section><h2>Buttons</h2><div className={styles.specimenRow}><button className={styles.formaPrimary}>Primary</button><button className={`${styles.formaPrimary} ${styles.simulatedFocus}`}>Focus</button><button className={styles.formaPrimary} disabled>Disabled</button><button className={styles.formaPrimary}>••• Loading</button></div></section>
+        <section><h2>Inputs</h2><div className={styles.specimenRow}><input placeholder="Default input" /><input className={styles.simulatedFocus} defaultValue="Focused value" /><input className={styles.inputError} defaultValue="Invalid value" /><input disabled placeholder="Disabled" /></div></section>
+        <section><h2>Cards and badges</h2><div className={styles.specimenRow}><article className={styles.specimenCard}><span className={styles.specimenBadge}>In progress</span><h3>Design system</h3><p>Build reusable foundations for Forma.</p></article><article className={styles.specimenCard}><span className={styles.specimenBadge}>Complete</span><h3>Navigation audit</h3><p>Improve structure and wayfinding.</p></article></div></section>
+        <section><h2>Tabs and menu</h2><div className={styles.specimenRow}><div className={styles.specimenTabs}><button>Overview</button><button className={styles.activeTab}>Activity</button><button>Files</button></div><div className={styles.specimenMenu}><button>Edit project</button><button>Duplicate</button><button>Archive</button></div></div></section>
+        <section><h2>Dialog</h2><div className={styles.specimenDialog}><strong>Create project</strong><p>Start with a clear name and an owner.</p><input placeholder="Project name" /><div><button>Cancel</button><button className={styles.formaPrimary}>Create project</button></div></div></section>
+      </div>
     </div>
   );
 }

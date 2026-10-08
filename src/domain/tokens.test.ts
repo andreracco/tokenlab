@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyCommand, initialProject, presetOptions, projectSchema, resolveColorToken, resolveToken } from "./tokens";
+import { applyCommand, initialProject, presetOptions, projectSchema, resolveColorToken, resolveCssValue, resolveToken } from "./tokens";
 
 describe("token commands", () => {
   it("updates a primitive, resolves its alias, and leaves the original document intact", () => {
@@ -15,9 +15,10 @@ describe("token commands", () => {
   });
 
   it("provides three visually distinct starting systems", () => {
-    expect(new Set(presetOptions.map((preset) => preset.primaryColor)).size).toBe(3);
-    expect(new Set(presetOptions.map((preset) => preset.preview.fontFamily)).size).toBe(3);
-    expect(new Set(presetOptions.map((preset) => preset.preview.radius)).size).toBe(3);
+    const documents = presetOptions.map((preset) => applyCommand(initialProject, { type: "select-preset", presetId: preset.id }));
+    expect(new Set(documents.map((document) => resolveColorToken(document, "action.primary.background"))).size).toBe(3);
+    expect(new Set(documents.map((document) => resolveCssValue(document, "typography.body.family"))).size).toBe(3);
+    expect(new Set(documents.map((document) => resolveCssValue(document, "component.card.radius"))).size).toBe(3);
   });
 
   it("resolves mode overrides through aliases and falls back to light", () => {
@@ -29,7 +30,7 @@ describe("token commands", () => {
     });
 
     expect(resolveColorToken(document, "action.primary.background", "dark")).toBe("#111827");
-    expect(resolveColorToken(initialProject, "action.primary.background", "dark")).toBe("#3157D5");
+    expect(resolveColorToken(initialProject, "action.primary.foreground", "dark")).toBe("#FFFFFF");
   });
 
   it("accepts every supported literal type", () => {

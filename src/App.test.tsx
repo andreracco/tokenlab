@@ -41,4 +41,14 @@ describe("TokenLab first slice", () => {
     expect(preview.style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#3157D5");
     expect(screen.getByLabelText("Starting system")).toHaveProperty("value", "product");
   });
+
+  it("renders specimens and switches the canvas to dark mode", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Specimens" }));
+    expect(screen.getByText("Forma component specimens")).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Preview mode"), { target: { value: "dark" } });
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-surface")).toBe("#15171C");
+  });
 });
