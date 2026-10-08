@@ -14,6 +14,7 @@
 .primaryStudioButton { border-color: #242424; background: #242424; color: white; }
 .studioDialog { width: min(380px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--studio-border); border-radius: 10px; background: var(--studio-panel); color: var(--studio-text); box-shadow: 0 20px 60px rgba(36, 36, 36, .2); }
 .studioDialog::backdrop { background: rgba(36, 36, 36, .4); }.studioDialog form { padding: 22px; display: grid; gap: 12px; }.studioDialog h2, .studioDialog p { margin: 0; }.studioDialog h2 { font-size: 18px; }.studioDialog p { color: var(--studio-muted); font-size: 12px; }.studioDialog label { display: grid; gap: 6px; color: var(--studio-muted); font-size: 11px; font-weight: 650; }.studioDialog input { min-height: 36px; padding: 0 10px; border: 1px solid var(--studio-border); border-radius: 7px; }.studioDialog form > div { display: flex; justify-content: flex-end; gap: 7px; }.studioDialog form > div button { min-height: 34px; padding: 0 12px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; }.studioDialog form > div .primaryStudioButton { border-color: #242424; background: #242424; }
+.mobilePanelNav { display: none; }
 .workspace { height: calc(100vh - 64px); display: grid; grid-template-columns: 240px minmax(540px, 1fr) 320px; }
 .tokenPanel, .inspectorPanel { background: var(--studio-panel); overflow: auto; }
 .tokenPanel { border-right: 1px solid var(--studio-border); }
@@ -192,9 +193,15 @@
 
 @media (max-width: 760px) {
   .header { height: auto; padding: 12px; align-items: flex-start; }
+  .headerActions { flex-wrap: wrap; justify-content: flex-end; }
   .savedStatus, .headerActions button[title] { display: none; }
+  .contrastStatus { display: none; }
+  .mobilePanelNav { padding: 8px 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; border-bottom: 1px solid var(--studio-border); background: var(--studio-panel); }
+  .mobilePanelNav button { min-height: 34px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; }
+  .mobilePanelNav button[aria-pressed="true"] { border-color: #9eaee8; background: #e9edfb; color: #2647b4; font-weight: 700; }
+  .mobilePanelHidden { display: none; }
   .workspace { grid-template-columns: 1fr; }
-  .tokenPanel { max-height: 260px; border-right: 0; border-bottom: 1px solid var(--studio-border); }
+  .tokenPanel { max-height: none; border-right: 0; border-bottom: 1px solid var(--studio-border); }
   .canvasToolbar { align-items: flex-start; padding: 12px; gap: 12px; }
   .canvasToolbar, .canvasToolbar > div { flex-wrap: wrap; }
   .previewStage { padding: 12px; }

@@ -59,6 +59,15 @@ describe("TokenLab first slice", () => {
     expect(screen.getByText("No matching tokens.")).toBeTruthy();
   });
 
+  it("switches mobile workspace panels and opens selections in the inspector", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Tokens" }));
+    expect(screen.getByRole("button", { name: "Tokens" }).getAttribute("aria-pressed")).toBe("true");
+
+    fireEvent.click(screen.getByRole("button", { name: /radius\.control/i }));
+    expect(screen.getByRole("button", { name: "Inspector" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
   it("renders specimens and switches the canvas to dark mode", () => {
     render(<App />);
 

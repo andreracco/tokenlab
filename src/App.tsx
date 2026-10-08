@@ -51,6 +51,7 @@ export function App() {
   const [exportOpen, setExportOpen] = useState(false);
   const [tokenQuery, setTokenQuery] = useState("");
   const [snapshotName, setSnapshotName] = useState("");
+  const [mobilePanel, setMobilePanel] = useState<"tokens" | "canvas" | "inspector">("canvas");
   const snapshotDialog = useRef<HTMLDialogElement>(null);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
@@ -61,6 +62,7 @@ export function App() {
     const component = componentRegistry.find((candidate) => candidate.key === key)!;
     setSelectedComponentKey(key);
     selectToken(component.tokenIds[0]);
+    setMobilePanel("inspector");
   };
   const previewStyle = createPreviewStyle(document, mode);
   const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
@@ -84,8 +86,8 @@ export function App() {
           <button className={styles.secondaryButton} disabled={history.length === 0} onClick={undo}>Undo</button>
           <button className={styles.secondaryButton} disabled={future.length === 0} onClick={redo}>Redo</button>
           <button className={styles.secondaryButton} onClick={() => { setSnapshotName(`Baseline ${snapshots.length + 1}`); snapshotDialog.current?.showModal(); }}>Snapshot</button>
-          <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => setComparisonSnapshotId(snapshots.at(-1)?.id ?? null)}>Compare</button>
-          <button className={styles.primaryStudioButton} onClick={() => { setComparisonSnapshotId(null); setExportOpen(true); }}>Export</button>
+          <button className={styles.secondaryButton} disabled={snapshots.length === 0} onClick={() => { setComparisonSnapshotId(snapshots.at(-1)?.id ?? null); setMobilePanel("canvas"); }}>Compare</button>
+          <button className={styles.primaryStudioButton} onClick={() => { setComparisonSnapshotId(null); setExportOpen(true); setMobilePanel("canvas"); }}>Export</button>
         </div>
       </header>
 
@@ -98,8 +100,12 @@ export function App() {
         </form>
       </dialog>
 
+      <nav className={styles.mobilePanelNav} aria-label="Mobile workspace">
+        {(["tokens", "canvas", "inspector"] as const).map((panel) => <button key={panel} aria-pressed={mobilePanel === panel} onClick={() => setMobilePanel(panel)}>{panel[0].toUpperCase() + panel.slice(1)}</button>)}
+      </nav>
+
       <main className={styles.workspace}>
-        <aside className={styles.tokenPanel} aria-label="Token library">
+        <aside className={`${styles.tokenPanel} ${mobilePanel !== "tokens" ? styles.mobilePanelHidden : ""}`} aria-label="Token library">
           <div className={styles.panelHeading}>
             <div><span>Token library</span><small>{tokenQuery ? `${visibleTokens.length} of ${document.tokens.length}` : document.tokens.length} tokens</small></div>
           </div>
@@ -112,7 +118,7 @@ export function App() {
                 token={token}
                 value={resolveCssValue(document, token.id, mode)}
                 selected={token.id === selectedTokenId}
-                onSelect={() => { setSelectedComponentKey(null); selectToken(token.id); }}
+                onSelect={() => { setSelectedComponentKey(null); selectToken(token.id); setMobilePanel("inspector"); }}
               />
             ))}
             {visibleTokens.length === 0 && <p className={styles.emptyTokens}>No matching tokens.</p>}
@@ -130,7 +136,7 @@ export function App() {
           </div>
         </aside>
 
-        <section className={styles.canvasPanel} aria-label="Living Canvas">
+        <section className={`${styles.canvasPanel} ${mobilePanel !== "canvas" ? styles.mobilePanelHidden : ""}`} aria-label="Living Canvas">
           <div className={styles.canvasToolbar}>
             <div>
               <strong>Living Canvas</strong>
@@ -160,7 +166,7 @@ export function App() {
             /> : <SpecimenPreview style={previewStyle} />}
         </section>
 
-        <aside className={styles.inspectorPanel} aria-label="Token inspector">
+        <aside className={`${styles.inspectorPanel} ${mobilePanel !== "inspector" ? styles.mobilePanelHidden : ""}`} aria-label="Token inspector">
           <div className={styles.inspectorHeading}>
             <span className={styles.eyebrow}>Selected token</span>
             <strong>{selectedToken.path}</strong>
