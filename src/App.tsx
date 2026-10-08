@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type KeyboardEvent } from "react";
-import { colorValueSchema, presetOptions, presetSpecs, resolveToken, type Token } from "./domain/tokens";
+import { colorValueSchema, presetOptions, presetSpecs, resolveColorToken, type Token } from "./domain/tokens";
 import { useTokenLabStore } from "./app/store";
 import styles from "./App.module.css";
 
@@ -25,7 +25,7 @@ export function App() {
   const [inspectEnabled, setInspectEnabled] = useState(true);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
-  const primaryColor = resolveToken(document, "action.primary.background");
+  const primaryColor = resolveColorToken(document, "action.primary.background");
   const preset = presetSpecs[document.presetId];
   const previewStyle: PreviewStyle = {
     "--tl-preview-action-primary-background": primaryColor,
@@ -69,7 +69,7 @@ export function App() {
               <TokenRow
                 key={token.id}
                 token={token}
-                value={resolveToken(document, token.id)}
+                value={resolveColorToken(document, token.id)}
                 selected={token.id === selectedTokenId}
                 onSelect={() => selectToken(token.id)}
               />
@@ -120,7 +120,7 @@ export function App() {
             <span className={styles.layerBadge}>{selectedToken.layer}</span>
           </div>
           <p className={styles.description}>{selectedToken.description}</p>
-          {selectedToken.values.light.kind === "literal" ? (
+          {selectedToken.type === "color" && selectedToken.values.light.kind === "literal" ? (
             <ColorEditor
               key={`${selectedToken.id}-${selectedToken.values.light.value}`}
               initialValue={selectedToken.values.light.value}
