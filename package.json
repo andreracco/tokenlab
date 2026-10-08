@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "react": "latest",
@@ -15,6 +16,7 @@
     "zod": "latest"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@testing-library/react": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
