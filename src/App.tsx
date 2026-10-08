@@ -8,6 +8,8 @@ import { componentRegistry, consumersForToken, type ComponentKey } from "./previ
 import { useWorkspacePersistence } from "./persistence/useWorkspacePersistence";
 import styles from "./App.module.css";
 
+const inspectionHintKey = "tokenlab-inspection-hint-dismissed";
+
 type PreviewStyle = CSSProperties & {
   "--tl-preview-viewport-width"?: string;
   "--tl-preview-action-primary-background": string;
@@ -56,6 +58,7 @@ export function App() {
   const [snapshotName, setSnapshotName] = useState("");
   const [mobilePanel, setMobilePanel] = useState<"tokens" | "canvas" | "inspector">("canvas");
   const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [hintVisible, setHintVisible] = useState(() => { try { return localStorage.getItem(inspectionHintKey) !== "true"; } catch { return true; } });
   const snapshotDialog = useRef<HTMLDialogElement>(null);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
@@ -74,6 +77,7 @@ export function App() {
   const contrastResults = checkContrast(document, mode);
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
   const visibleTokens = document.tokens.filter((token) => (tokenType === "all" || token.type === tokenType) && `${token.path} ${token.type}`.toLowerCase().includes(tokenQuery.trim().toLowerCase()));
+  const dismissHint = () => { setHintVisible(false); try { localStorage.setItem(inspectionHintKey, "true"); } catch { /* Storage can be unavailable in private contexts. */ } };
 
   return (
     <div className={styles.app}>
@@ -164,6 +168,7 @@ export function App() {
               </button>
             </div>
           </div>
+          {hintVisible && <div className={styles.inspectionHint}><span>Select anything to see what styles it.</span><button aria-label="Dismiss inspection hint" onClick={dismissHint}>×</button></div>}
           {exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={() => setExportOpen(false)} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); setExportOpen(false); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); }} /> : canvasView === "app" ? <FormaPreview
               inspectEnabled={inspectEnabled}
               highlightedComponents={consumers.map((consumer) => consumer.key)}

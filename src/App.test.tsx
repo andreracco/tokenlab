@@ -7,6 +7,7 @@ import { App } from "./App";
 afterEach(cleanup);
 
 beforeEach(() => {
+  localStorage.clear();
   useTokenLabStore.setState({
     document: initialProject,
     selectedTokenId: "color.brand.600",
@@ -62,6 +63,16 @@ describe("TokenLab first slice", () => {
     fireEvent.change(screen.getByRole("combobox", { name: "Token category" }), { target: { value: "shadow" } });
     expect(screen.getAllByRole("button", { name: /shadow/i })).toHaveLength(2);
     expect(screen.queryByRole("button", { name: /radius\.control/i })).toBeNull();
+  });
+
+  it("dismisses the first-run inspection hint across reloads", () => {
+    const first = render(<App />);
+    expect(screen.getByText("Select anything to see what styles it.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss inspection hint" }));
+    first.unmount();
+
+    render(<App />);
+    expect(screen.queryByText("Select anything to see what styles it.")).toBeNull();
   });
 
   it("switches mobile workspace panels and opens selections in the inspector", () => {
