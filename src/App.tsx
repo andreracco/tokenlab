@@ -363,6 +363,7 @@ function SpecimenPreview({ style }: { style: PreviewStyle }) {
 
 function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponentKey, onInspect, style }: { inspectEnabled: boolean; highlightedComponents: ComponentKey[]; selectedComponentKey: ComponentKey | null; onInspect: (key: ComponentKey) => void; style: PreviewStyle }) {
   const createProjectDialog = useRef<HTMLDialogElement>(null);
+  const [createdProjects, setCreatedProjects] = useState<{ id: string; name: string }[]>([]);
   const primarySelected = highlightedComponents.includes("primary-button") || selectedComponentKey === "primary-button";
   const cardSelected = highlightedComponents.includes("project-card") || selectedComponentKey === "project-card";
 
@@ -394,21 +395,22 @@ function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponent
                 {inspectEnabled && primarySelected && <small>action.primary.background</small>}
               </button>
             </div>
-            <div className={styles.projectToolbar}><label>⌕ <input aria-label="Search projects" placeholder="Search projects" /></label><button>All statuses⌄</button><button>Last updated⌄</button><span>8 projects</span></div>
+            <div className={styles.projectToolbar}><label>⌕ <input aria-label="Search projects" placeholder="Search projects" /></label><button>All statuses⌄</button><button>Last updated⌄</button><span>{8 + createdProjects.length} projects</span></div>
             <div className={styles.projectGrid}>
               <ProjectCard title="Mobile app refresh" category="Product" progress={72} color="#E9A23B" members={["MS", "JL", "AK"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />
               <ProjectCard title="Q4 campaign" category="Marketing" progress={48} color="#D7648B" members={["OR", "MS"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />
               <ProjectCard title="Design system" category="Design" progress={86} color="#5A69C8" members={["AK", "JL", "OR"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />
+              {createdProjects.map((project) => <ProjectCard key={project.id} title={project.name} category="New project" progress={0} color="#6F7785" members={["MS"]} inspectEnabled={inspectEnabled} selected={cardSelected} onInspect={() => onInspect("project-card")} />)}
             </div>
             <div className={styles.activityPanel}><div><strong>Recent activity</strong><span>View all</span></div><p><span className={styles.avatar}>JL</span><span><strong>Jon Lee</strong> completed “Review navigation patterns”<small>Mobile app refresh · 18 minutes ago</small></span></p><p><span className={styles.avatar}>AK</span><span><strong>Ana Kim</strong> uploaded 3 files<small>Design system · 1 hour ago</small></span></p></div>
           </div>
         </div>
         <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title">
-          <form method="dialog">
+          <form method="dialog" onSubmit={(event) => { const name = String(new FormData(event.currentTarget).get("projectName") ?? "").trim(); if (name) setCreatedProjects((projects) => [...projects, { id: `preview-project-${projects.length + 1}`, name }]); event.currentTarget.reset(); }}>
             <h2 id="create-project-title">Create project</h2>
             <p>Start with a clear name and an owner.</p>
-            <label>Project name<input autoFocus required /></label>
-            <div><button value="cancel">Cancel</button><button className={styles.formaPrimary} value="create">Create project</button></div>
+            <label>Project name<input name="projectName" autoFocus required /></label>
+            <div><button type="button" onClick={() => createProjectDialog.current?.close()}>Cancel</button><button className={styles.formaPrimary} value="create">Create project</button></div>
           </form>
         </dialog>
       </div>

@@ -104,7 +104,10 @@ describe("TokenLab first slice", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create project" }));
 
     expect(dialog.open).toBe(true);
-    expect(screen.getByRole("textbox", { name: "Project name" })).toBeTruthy();
+    fireEvent.change(screen.getByRole("textbox", { name: "Project name" }), { target: { value: "Client portal" } });
+    fireEvent.submit(dialog.querySelector("form")!);
+    expect(screen.getByRole("heading", { name: "Client portal" })).toBeTruthy();
+    expect(screen.getByText("9 projects")).toBeTruthy();
   });
 
   it("edits a dimension token and inspects registered card dependencies", () => {
