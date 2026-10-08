@@ -59,6 +59,7 @@ export function App() {
   const [mobilePanel, setMobilePanel] = useState<"tokens" | "canvas" | "inspector">("canvas");
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [hintVisible, setHintVisible] = useState(() => { try { return localStorage.getItem(inspectionHintKey) !== "true"; } catch { return true; } });
+  const [createdProjects, setCreatedProjects] = useState<{ id: string; name: string }[]>([]);
   const snapshotDialog = useRef<HTMLDialogElement>(null);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
@@ -170,10 +171,12 @@ export function App() {
           </div>
           {hintVisible && <div className={styles.inspectionHint}><span>Select anything to see what styles it.</span><button aria-label="Dismiss inspection hint" onClick={dismissHint}>×</button></div>}
           {exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={() => setExportOpen(false)} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); setExportOpen(false); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); }} /> : canvasView === "app" ? <FormaPreview
+              createdProjects={createdProjects}
               inspectEnabled={inspectEnabled}
               highlightedComponents={consumers.map((consumer) => consumer.key)}
               selectedComponentKey={selectedComponentKey}
               onInspect={selectComponent}
+              onCreateProject={(name) => setCreatedProjects((projects) => [...projects, { id: `preview-project-${projects.length + 1}`, name }])}
               style={previewStyle}
             /> : <SpecimenPreview style={previewStyle} />}
         </section>
@@ -369,9 +372,8 @@ function SpecimenPreview({ style }: { style: PreviewStyle }) {
   );
 }
 
-function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponentKey, onInspect, style }: { inspectEnabled: boolean; highlightedComponents: ComponentKey[]; selectedComponentKey: ComponentKey | null; onInspect: (key: ComponentKey) => void; style: PreviewStyle }) {
+function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, selectedComponentKey, onInspect, onCreateProject, style }: { createdProjects: { id: string; name: string }[]; inspectEnabled: boolean; highlightedComponents: ComponentKey[]; selectedComponentKey: ComponentKey | null; onInspect: (key: ComponentKey) => void; onCreateProject: (name: string) => void; style: PreviewStyle }) {
   const createProjectDialog = useRef<HTMLDialogElement>(null);
-  const [createdProjects, setCreatedProjects] = useState<{ id: string; name: string }[]>([]);
   const primarySelected = highlightedComponents.includes("primary-button") || selectedComponentKey === "primary-button";
   const cardSelected = highlightedComponents.includes("project-card") || selectedComponentKey === "project-card";
 
@@ -414,8 +416,8 @@ function FormaPreview({ inspectEnabled, highlightedComponents, selectedComponent
             <div className={styles.emptyStatePanel}><span aria-hidden="true">◇</span><div><strong>No archived projects</strong><p>Archived work will appear here when you need it.</p></div><button>View active projects</button></div>
           </div>
         </div>
-        <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title">
-          <form method="dialog" onSubmit={(event) => { const name = String(new FormData(event.currentTarget).get("projectName") ?? "").trim(); if (name) setCreatedProjects((projects) => [...projects, { id: `preview-project-${projects.length + 1}`, name }]); event.currentTarget.reset(); }}>
+        <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title" onClose={(event) => event.currentTarget.querySelector("form")?.reset()}>
+          <form method="dialog" onSubmit={(event) => { const name = String(new FormData(event.currentTarget).get("projectName") ?? "").trim(); if (name) onCreateProject(name); event.currentTarget.reset(); }}>
             <h2 id="create-project-title">Create project</h2>
             <p>Start with a clear name and an owner.</p>
             <label>Project name<input name="projectName" autoFocus required /></label>
