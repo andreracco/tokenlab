@@ -9,7 +9,8 @@ describe("analyzeTokenHealth", () => {
 
     expect(report.referencedTokenCount).toBeGreaterThan(0);
     expect(report.unusedTokens.map(({ id }) => id)).not.toContain("color.brand.600");
-    expect(report.contrastChecks).toHaveLength(8);
+    expect(report.unusedTokens.map(({ id }) => id)).not.toContain("color.feedback.success.text");
+    expect(report.contrastChecks).toHaveLength(14);
   });
 
   it("groups duplicate literals by type and reports broken aliases", () => {
@@ -69,5 +70,15 @@ describe("analyzeTokenHealth", () => {
       projectedRatio: 6.34,
     });
     expect(suggestContrastFix(expressive, "light", "primary")).toBeUndefined();
+  });
+
+  it("does not suggest neutral aliases for failed semantic feedback colors", () => {
+    const document = structuredClone(initialProject);
+    document.tokens.find(({ id }) => id === "feedback.warning.text")!.values.light = {
+      kind: "literal",
+      value: "#FFFFFF",
+    };
+
+    expect(suggestContrastFix(document, "light", "feedback-warning")).toBeUndefined();
   });
 });

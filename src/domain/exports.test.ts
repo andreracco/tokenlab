@@ -9,22 +9,41 @@ import {
   exportTailwind,
   parseProjectFile,
 } from "./exports";
-import { initialProject } from "./tokens";
+import { applyCommand, initialProject, presetOptions } from "./tokens";
 import { componentRegistry } from "../preview/registry";
 
 describe("shipping formats", () => {
   it("calculates registered contrast pairs", () => {
     expect(contrastRatio("#000000", "#FFFFFF")).toBe(21);
     const checks = checkContrast(initialProject, "light");
-    expect(checks).toHaveLength(4);
+    expect(checks).toHaveLength(7);
     expect(checks.every((check) => check.passes)).toBe(true);
+  });
+
+  it("keeps semantic feedback contrast passing across every preset and mode", () => {
+    for (const preset of presetOptions) {
+      const document = applyCommand(initialProject, { type: "select-preset", presetId: preset.id });
+      for (const mode of ["light", "dark"] as const) {
+        const feedbackChecks = checkContrast(document, mode).filter((check) =>
+          check.id.startsWith("feedback-"),
+        );
+        expect(feedbackChecks).toHaveLength(3);
+        expect(feedbackChecks.every((check) => check.passes)).toBe(true);
+      }
+    }
   });
 
   it("exports deterministic CSS and DTCG aliases", () => {
     expect(exportCss(initialProject)).toContain(
       "--action-primary-background: var(--color-brand-600)",
     );
+    expect(exportCss(initialProject)).toContain(
+      "--feedback-success-text: var(--color-feedback-success-text)",
+    );
     expect(exportDtcg(initialProject, "light")).toContain('"$value": "{color.brand.600}"');
+    expect(exportDtcg(initialProject, "dark")).toContain(
+      '"$value": "{color.feedback.warning.text}"',
+    );
     expect(buildExports(initialProject, [], componentRegistry)).toHaveLength(6);
   });
 
@@ -37,6 +56,8 @@ describe("shipping formats", () => {
     expect(output).toContain("→ color.brand.600");
     expect(output).toContain("Body text on page (Forma page)");
     expect(output).toContain("`action.primary.background` | Primary button | Projects header |");
+    expect(output).toContain("`feedback.success.text`");
+    expect(output).toContain("Success message text (System status alerts)");
     expect(output).toContain("do not describe arbitrary applications");
     expect(output).toContain("4.5:1");
     expect(output).toContain("not a full accessibility certification");

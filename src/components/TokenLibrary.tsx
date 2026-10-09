@@ -15,7 +15,11 @@ import styles from "../App.module.css";
 export type TokenGroupId = "foundations" | "semantic" | "feedback";
 
 export function getTokenGroupId(token: Token): TokenGroupId {
-  if (token.path.startsWith("color.error") || token.path.startsWith("feedback.error"))
+  if (
+    token.path.startsWith("color.error") ||
+    token.path.startsWith("color.feedback.") ||
+    token.path.startsWith("feedback.")
+  )
     return "feedback";
   return token.layer === "semantic" ? "semantic" : "foundations";
 }

@@ -4,8 +4,10 @@ import {
   CheckCircle2,
   Component,
   GitBranch,
+  Info,
   Moon,
   Sun,
+  TriangleAlert,
 } from "lucide-react";
 import { checkContrast } from "../domain/contrast";
 import {
@@ -27,6 +29,9 @@ type SystemPreviewProps = {
   onSelectToken: (tokenId: string) => void;
   onSelectComponent: (key: ComponentKey) => void;
 };
+
+type FeedbackKind = "success" | "warning" | "error" | "info";
+type FeedbackColors = Record<FeedbackKind, { text: string; surface: string }>;
 
 export function SystemPreview({
   document,
@@ -56,6 +61,24 @@ export function SystemPreview({
   const passedContrast = contrastResults.filter((result) => result.passes).length;
   const primitive = document.tokens.find((token) => token.id === "color.brand.600")!;
   const semantic = document.tokens.find((token) => token.id === "action.primary.background")!;
+  const feedbackColors: FeedbackColors = {
+    success: {
+      text: resolveCssValue(document, "feedback.success.text", mode),
+      surface: resolveCssValue(document, "feedback.success.surface", mode),
+    },
+    warning: {
+      text: resolveCssValue(document, "feedback.warning.text", mode),
+      surface: resolveCssValue(document, "feedback.warning.surface", mode),
+    },
+    error: {
+      text: resolveCssValue(document, "feedback.error.text", mode),
+      surface: resolveCssValue(document, "feedback.error.surface", mode),
+    },
+    info: {
+      text: resolveCssValue(document, "feedback.info.text", mode),
+      surface: resolveCssValue(document, "feedback.info.surface", mode),
+    },
+  };
 
   return (
     <div className={styles.previewStage}>
@@ -302,9 +325,20 @@ export function SystemPreview({
           />
         </section>
 
-        <section className={styles.systemSection} aria-labelledby="quality-title">
+        <section className={styles.systemSection} aria-labelledby="feedback-title">
           <div className={styles.systemSectionHeading}>
             <span>03</span>
+            <div>
+              <h2 id="feedback-title">Feedback and status</h2>
+              <p>Clear signals for progress, outcomes, and useful next steps.</p>
+            </div>
+          </div>
+          <FeedbackStatusSpecimens colors={feedbackColors} />
+        </section>
+
+        <section className={styles.systemSection} aria-labelledby="quality-title">
+          <div className={styles.systemSectionHeading}>
+            <span>04</span>
             <div>
               <h2 id="quality-title">Accessibility evidence</h2>
               <p>
@@ -439,6 +473,81 @@ function FormControlSpecimens({ errorColor }: { errorColor: string }) {
         </fieldset>
       </div>
     </section>
+  );
+}
+
+function FeedbackStatusSpecimens({ colors }: { colors: FeedbackColors }) {
+  return (
+    <div className={styles.feedbackSpecimens}>
+      <div className={styles.feedbackAlerts} role="group" aria-label="Alert examples">
+        <div
+          className={styles.feedbackAlert}
+          role="status"
+          style={{ color: colors.success.text, background: colors.success.surface }}
+        >
+          <CheckCircle2 aria-hidden="true" />
+          <span>
+            <strong>Changes saved</strong>
+            <small>Your color updates are ready to review.</small>
+          </span>
+        </div>
+        <div
+          className={styles.feedbackAlert}
+          role="status"
+          style={{ color: colors.warning.text, background: colors.warning.surface }}
+        >
+          <TriangleAlert aria-hidden="true" />
+          <span>
+            <strong>Contrast needs attention</strong>
+            <small>Check the button label before exporting.</small>
+          </span>
+        </div>
+        <div
+          className={styles.feedbackAlert}
+          role="alert"
+          style={{ color: colors.error.text, background: colors.error.surface }}
+        >
+          <AlertTriangle aria-hidden="true" />
+          <span>
+            <strong>Import could not be applied</strong>
+            <small>Choose a compatible color token and try again.</small>
+          </span>
+        </div>
+        <div
+          className={styles.feedbackAlert}
+          role="status"
+          style={{ color: colors.info.text, background: colors.info.surface }}
+        >
+          <Info aria-hidden="true" />
+          <span>
+            <strong>Styles are read locally</strong>
+            <small>Imported CSS is never executed.</small>
+          </span>
+        </div>
+      </div>
+
+      <div className={styles.feedbackExamples}>
+        <section aria-labelledby="progress-example-title">
+          <h3 id="progress-example-title">Progress · determinate</h3>
+          <div className={styles.feedbackProgressLabel}>
+            <span>Token scan</span>
+            <strong>72%</strong>
+          </div>
+          <progress aria-label="Token scan" max={100} value={72} />
+          <small>Keep the current view available while work continues.</small>
+        </section>
+        <section aria-labelledby="empty-example-title">
+          <h3 id="empty-example-title">Empty state</h3>
+          <div className={styles.feedbackEmpty}>
+            <span>
+              <Component aria-hidden="true" />
+            </span>
+            <strong>No components yet</strong>
+            <small>Register a preview component to see its token impact here.</small>
+          </div>
+        </section>
+      </div>
+    </div>
   );
 }
 

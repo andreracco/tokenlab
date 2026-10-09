@@ -227,7 +227,11 @@ describe("token commands", () => {
       ...initialProject,
       tokens: initialProject.tokens
         .filter(
-          (token) => !token.id.startsWith("color.error") && !token.id.startsWith("feedback.error"),
+          (token) =>
+            !token.id.startsWith("color.error") &&
+            !token.id.startsWith("feedback.error") &&
+            !token.id.startsWith("color.feedback.") &&
+            !token.id.startsWith("feedback."),
         )
         .map((token) =>
           token.id === "color.brand.600"
@@ -242,6 +246,9 @@ describe("token commands", () => {
     const upgraded = upgradeProject(legacyDocument);
     expect(resolveColorToken(upgraded, "color.brand.600")).toBe("#C2415D");
     expect(resolveColorToken(upgraded, "feedback.error.text")).toBe("#B42318");
+    expect(resolveColorToken(upgraded, "feedback.success.text", "dark")).toBe("#6CE9A6");
+    expect(resolveColorToken(upgraded, "feedback.warning.surface", "dark")).toBe("#4A2A0A");
+    expect(resolveColorToken(upgraded, "feedback.info.text", "light")).toBe("#175CD3");
   });
 
   it("refreshes only the untouched legacy product typography defaults", () => {

@@ -152,6 +152,43 @@ test("keeps the task count badge readable in dark mode", async ({ page }) => {
   expect(contrast).toBeGreaterThanOrEqual(4.5);
 });
 
+test("shows accessible feedback, progress, and empty-state specimens", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "System" }).click();
+
+  const section = page.getByRole("region", { name: "Feedback and status" });
+  await expect(section.getByRole("status")).toHaveCount(3);
+  await expect(section.getByRole("alert")).toContainText("Import could not be applied");
+  await expect(section.getByRole("progressbar", { name: "Token scan" })).toHaveAttribute(
+    "value",
+    "72",
+  );
+  await expect(section.getByText("No components yet")).toBeVisible();
+  await page.getByLabel("Preview mode").selectOption("dark");
+  await expect(section.getByRole("status").filter({ hasText: "Changes saved" })).toHaveCSS(
+    "color",
+    "rgb(108, 233, 166)",
+  );
+
+  await page.getByLabel("Search tokens").fill("feedback.warning.text");
+  await page
+    .getByRole("complementary", { name: "Token library" })
+    .getByRole("button", { name: /^text feedback\.warning\.text/ })
+    .click();
+  const inspector = page.getByRole("complementary", { name: "Token inspector" });
+  await expect(inspector.locator("strong").first()).toHaveText("feedback.warning.text");
+  await expect(inspector).toContainText("Feedback alerts");
+
+  await page.setViewportSize({ width: 512, height: 760 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Canvas" }).click();
+  await expect(section.getByRole("alert")).toBeVisible();
+});
+
 test("applies and undoes a suggested contrast fix", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Starting system").selectOption("expressive");
@@ -266,7 +303,7 @@ test("keeps the active design system inspectable and responsive", async ({ page 
   await page.getByRole("button", { name: "System" }).click();
 
   await expect(page.getByRole("heading", { name: "From decision to interface." })).toBeVisible();
-  await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+  await expect(page.getByText("7/7", { exact: true })).toBeVisible();
   expect(await page.locator("[data-select-control]").count()).toBe(
     await page.locator("select").count(),
   );

@@ -11,6 +11,10 @@ export type PreviewStyle = CSSProperties & {
   "--tl-preview-viewport-width"?: string;
   "--tl-preview-action-primary-background": string;
   "--tl-preview-action-primary-foreground": string;
+  "--tl-preview-feedback-error-text": string;
+  "--tl-preview-feedback-error-surface": string;
+  "--tl-preview-feedback-success-text": string;
+  "--tl-preview-feedback-success-surface": string;
   "--tl-preview-font-family": string;
   "--tl-preview-font-size": string;
   "--tl-preview-font-weight": string;
@@ -40,6 +44,22 @@ export function createPreviewStyle(document: ProjectDocument, mode: TokenMode): 
     "--tl-preview-action-primary-foreground": resolveCssValue(
       document,
       "action.primary.foreground",
+      mode,
+    ),
+    "--tl-preview-feedback-error-text": resolveColorToken(document, "feedback.error.text", mode),
+    "--tl-preview-feedback-error-surface": resolveColorToken(
+      document,
+      "feedback.error.surface",
+      mode,
+    ),
+    "--tl-preview-feedback-success-text": resolveColorToken(
+      document,
+      "feedback.success.text",
+      mode,
+    ),
+    "--tl-preview-feedback-success-surface": resolveColorToken(
+      document,
+      "feedback.success.surface",
       mode,
     ),
     "--tl-preview-font-family":

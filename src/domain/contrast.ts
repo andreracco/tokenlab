@@ -33,6 +33,30 @@ const pairs = [
     threshold: 4.5,
     component: "Input error",
   },
+  {
+    id: "feedback-success",
+    label: "Success message text",
+    foreground: "feedback.success.text",
+    background: "feedback.success.surface",
+    threshold: 4.5,
+    component: "System status alerts",
+  },
+  {
+    id: "feedback-warning",
+    label: "Warning message text",
+    foreground: "feedback.warning.text",
+    background: "feedback.warning.surface",
+    threshold: 4.5,
+    component: "System status alerts",
+  },
+  {
+    id: "feedback-info",
+    label: "Informational message text",
+    foreground: "feedback.info.text",
+    background: "feedback.info.surface",
+    threshold: 4.5,
+    component: "System status alerts",
+  },
 ] as const;
 
 export function checkContrast(document: ProjectDocument, mode: TokenMode) {

@@ -46,6 +46,7 @@ export function FormaPreview({
   const [showAllActivity, setShowAllActivity] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [projectNameError, setProjectNameError] = useState("");
+  const [createdProjectName, setCreatedProjectName] = useState("");
   const inspectClass = (key: ComponentKey) =>
     selectedComponentKey === key
       ? styles.inspectSelected
@@ -258,6 +259,21 @@ export function FormaPreview({
                     )}
                   </button>
                 </div>
+                {createdProjectName && (
+                  <div className={styles.projectCreatedNotice} role="status">
+                    <CheckCircle2 aria-hidden="true" />
+                    <span>
+                      <strong>{createdProjectName}</strong> was created.
+                    </span>
+                    <button
+                      type="button"
+                      aria-label="Dismiss project confirmation"
+                      onClick={() => setCreatedProjectName("")}
+                    >
+                      <X aria-hidden="true" />
+                    </button>
+                  </div>
+                )}
                 <div className={styles.projectToolbar}>
                   <div
                     className={`${styles.formaSearch} ${inspectEnabled ? styles.inspectable : ""} ${inspectEnabled ? searchHighlight : ""}`}
@@ -356,6 +372,7 @@ export function FormaPreview({
                   </div>
                 )}
                 <ActivityPanel
+                  createdProjects={createdProjects}
                   expanded={showAllActivity}
                   inspectEnabled={inspectEnabled}
                   highlightClass={activityHighlight}
@@ -367,6 +384,7 @@ export function FormaPreview({
             )}
             {activeSection === "overview" && (
               <OverviewPanel
+                createdProjects={createdProjects}
                 inspectEnabled={inspectEnabled}
                 activityHighlight={activityHighlight}
                 activitySelected={selectedComponentKey === "recent-activity"}
@@ -418,6 +436,7 @@ export function FormaPreview({
                 projectNameInput.current?.focus();
                 return;
               }
+              setCreatedProjectName(name);
               onCreateProject(name);
               event.currentTarget.reset();
             }}
@@ -456,7 +475,39 @@ export function FormaPreview({
   );
 }
 
+const sampleActivities = [
+  {
+    id: "activity-navigation-review",
+    initials: "JL",
+    name: "Jon Lee",
+    action: "completed “Review navigation patterns”",
+    meta: "Mobile app refresh · 18 minutes ago",
+  },
+  {
+    id: "activity-files-uploaded",
+    initials: "AK",
+    name: "Ana Kim",
+    action: "uploaded 3 files",
+    meta: "Design system · 1 hour ago",
+  },
+  {
+    id: "activity-campaign-milestones",
+    initials: "OR",
+    name: "Owen Reed",
+    action: "updated campaign milestones",
+    meta: "Q4 campaign · Yesterday",
+  },
+  {
+    id: "activity-new-brief",
+    initials: "MS",
+    name: "Maya Santos",
+    action: "created a new project brief",
+    meta: "Mobile app refresh · Yesterday",
+  },
+];
+
 function ActivityPanel({
+  createdProjects,
   expanded,
   inspectEnabled,
   highlightClass,
@@ -464,6 +515,7 @@ function ActivityPanel({
   onInspect,
   onToggle,
 }: {
+  createdProjects: { id: string; name: string }[];
   expanded: boolean;
   inspectEnabled: boolean;
   highlightClass: string;
@@ -472,30 +524,17 @@ function ActivityPanel({
   onToggle: () => void;
 }) {
   const activities = [
-    {
-      initials: "JL",
-      name: "Jon Lee",
-      action: "completed “Review navigation patterns”",
-      meta: "Mobile app refresh · 18 minutes ago",
-    },
-    {
-      initials: "AK",
-      name: "Ana Kim",
-      action: "uploaded 3 files",
-      meta: "Design system · 1 hour ago",
-    },
-    {
-      initials: "OR",
-      name: "Owen Reed",
-      action: "updated campaign milestones",
-      meta: "Q4 campaign · Yesterday",
-    },
-    {
-      initials: "MS",
-      name: "Maya Santos",
-      action: "created a new project brief",
-      meta: "Mobile app refresh · Yesterday",
-    },
+    ...createdProjects
+      .slice()
+      .reverse()
+      .map(({ id, name }) => ({
+        id,
+        initials: "MS",
+        name: "Maya Santos",
+        action: `created project “${name}”`,
+        meta: "New project · Just now",
+      })),
+    ...sampleActivities,
   ];
   return (
     <div
@@ -510,7 +549,7 @@ function ActivityPanel({
         )}
       </div>
       {activities.slice(0, expanded ? activities.length : 2).map((activity) => (
-        <p key={`${activity.initials}-${activity.action}`}>
+        <p key={activity.id}>
           <span className={styles.avatar}>{activity.initials}</span>
           <span>
             <strong>{activity.name}</strong> {activity.action}
@@ -532,6 +571,7 @@ function ActivityPanel({
 }
 
 function OverviewPanel({
+  createdProjects,
   inspectEnabled,
   activityHighlight,
   activitySelected,
@@ -542,6 +582,7 @@ function OverviewPanel({
   onInspectAction,
   onOpenProjects,
 }: {
+  createdProjects: { id: string; name: string }[];
   inspectEnabled: boolean;
   activityHighlight: string;
   activitySelected: boolean;
@@ -600,6 +641,7 @@ function OverviewPanel({
         ))}
       </div>
       <ActivityPanel
+        createdProjects={createdProjects}
         expanded={false}
         inspectEnabled={inspectEnabled}
         highlightClass={activityHighlight}

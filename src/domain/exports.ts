@@ -77,7 +77,7 @@ export function exportDesignSystemMarkdown(
   lines.push(
     "## Registered preview usage",
     "",
-    "These relationships come from TokenLab's Forma preview registry and do not describe arbitrary applications.",
+    "These relationships come from TokenLab's registered Forma and System preview specimens and do not describe arbitrary applications.",
     "",
     "| Token | Component | Location |",
     "| --- | --- | --- |",

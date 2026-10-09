@@ -65,3 +65,48 @@ test("edits, compares, and exports a token system", async ({ page }) => {
   await expect(page.locator("#consumer")).toHaveCSS("background-color", "rgb(194, 65, 93)");
   await expect(page.locator("#consumer")).toHaveCSS("border-radius", "7px");
 });
+
+test("project creation uses the active system's error and success feedback", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Create project", exact: true }).click();
+  await page.getByRole("button", { name: "Create project", exact: true }).last().click();
+  await expect(page.getByRole("alert")).toHaveText("Enter a project name.");
+  await expect(page.getByRole("textbox", { name: "Project name" })).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
+  const preview = page.getByTestId("preview-root");
+  const errorColor = await preview.evaluate((element) => {
+    const probe = document.createElement("span");
+    probe.style.color = "var(--tl-preview-feedback-error-text)";
+    element.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  });
+  await expect(page.getByRole("alert")).toHaveCSS("color", errorColor);
+
+  await page.getByRole("textbox", { name: "Project name" }).fill("Portfolio refresh");
+  await page.getByRole("button", { name: "Create project", exact: true }).last().click();
+  const confirmation = page
+    .getByRole("status")
+    .filter({ hasText: "Portfolio refresh was created." });
+  await expect(confirmation).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Portfolio refresh" })).toBeVisible();
+  await expect(page.getByText("created project “Portfolio refresh”")).toBeVisible();
+  const successColor = await preview.evaluate((element) => {
+    const probe = document.createElement("span");
+    probe.style.color = "var(--tl-preview-feedback-success-text)";
+    element.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  });
+  await expect(confirmation).toHaveCSS("color", successColor);
+
+  await preview.getByRole("button", { name: "Overview" }).click();
+  await expect(page.getByText("created project “Portfolio refresh”")).toBeVisible();
+  await preview.getByRole("button", { name: "Projects", exact: true }).click();
+  await page.getByRole("button", { name: "Dismiss project confirmation" }).click();
+  await expect(confirmation).toHaveCount(0);
+});

@@ -131,8 +131,8 @@ describe("TokenLab first slice", () => {
     expect(
       await screen.findByRole("heading", { name: "From decision to interface." }),
     ).toBeTruthy();
-    expect(screen.getByText("39")).toBeTruthy();
-    expect(screen.getByText("4/4")).toBeTruthy();
+    expect(screen.getByText("51")).toBeTruthy();
+    expect(screen.getByText("7/7")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Inspect color.neutral.canvas" }));
     expect(screen.getByText("color.neutral.canvas", { selector: "strong" })).toBeTruthy();
     expect(
@@ -467,7 +467,7 @@ describe("TokenLab first slice", () => {
 
     expect(await screen.findByRole("heading", { name: "Token health" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Contrast pairs" })).toBeTruthy();
-    fireEvent.click(screen.getAllByRole("button", { name: "Inspect pair" })[6]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Inspect pair" })[9]);
 
     const inspector = await screen.findByLabelText("Token inspector");
     expect(screen.getByLabelText("Preview mode")).toHaveProperty("value", "dark");

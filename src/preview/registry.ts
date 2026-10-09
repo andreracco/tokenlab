@@ -144,6 +144,21 @@ export const componentRegistry = [
       "typography.strong.weight",
     ],
   },
+  {
+    key: "feedback-alerts",
+    label: "Feedback alerts",
+    location: "Project creation and System specimens",
+    tokenIds: [
+      "feedback.success.text",
+      "feedback.success.surface",
+      "feedback.warning.text",
+      "feedback.warning.surface",
+      "feedback.error.text",
+      "feedback.error.surface",
+      "feedback.info.text",
+      "feedback.info.surface",
+    ],
+  },
 ] as const;
 
 export type ComponentKey = (typeof componentRegistry)[number]["key"];

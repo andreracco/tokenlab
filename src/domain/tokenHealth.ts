@@ -95,6 +95,8 @@ export function suggestContrastFix(
   if (
     !pair ||
     pair.passes ||
+    // Don't offer a neutral alias as a fix for semantic status text.
+    pair.id.startsWith("feedback-") ||
     !foreground ||
     foreground.type !== "color" ||
     foreground.layer !== "semantic"
