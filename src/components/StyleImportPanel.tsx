@@ -14,6 +14,7 @@ import {
   type ProjectDocument,
   type TokenMode,
 } from "../domain/tokens";
+import { StyleImportGuide } from "./StyleImportGuide";
 import styles from "../App.module.css";
 
 const maximumFileSize = 1024 * 1024;
@@ -215,6 +216,7 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
       </div>
 
       <div className={styles.styleImportBody}>
+        <StyleImportGuide />
         <label className={styles.styleImportUpload}>
           <FileCode2 aria-hidden="true" />
           <span>

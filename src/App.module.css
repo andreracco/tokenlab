@@ -3249,6 +3249,99 @@ select.valueInput,
 .styleImportBody {
   margin-top: 24px;
 }
+.styleImportGuide {
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  background: var(--studio-panel);
+}
+.styleImportGuide > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.styleImportGuide > header > div {
+  display: grid;
+  gap: 3px;
+}
+.styleImportGuide > header > div > span {
+  color: var(--studio-muted);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.styleImportGuide h3 {
+  margin: 0;
+  font-size: 13px;
+}
+.styleImportGuide .textButton {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.styleImportGuide .textButton svg {
+  width: 13px;
+  height: 13px;
+}
+.styleImportGuideSteps {
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  list-style: none;
+}
+.styleImportGuideSteps li {
+  min-width: 0;
+  padding: 8px 14px 4px 0;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-content: start;
+  gap: 5px 8px;
+  border-right: 1px solid var(--studio-border);
+}
+.styleImportGuideSteps li + li {
+  padding-left: 14px;
+}
+.styleImportGuideSteps li:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+.styleImportGuideNumber {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--studio-muted);
+  font:
+    700 9px ui-monospace,
+    SFMono-Regular,
+    monospace;
+}
+.styleImportGuideSteps li > svg {
+  display: none;
+}
+.styleImportGuideSteps li > span:last-child {
+  display: grid;
+  gap: 4px;
+}
+.styleImportGuideSteps strong {
+  font-size: 10px;
+}
+.styleImportGuideSteps small {
+  color: var(--studio-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
 .styleImportUpload {
   position: relative;
   min-height: 82px;
@@ -4028,6 +4121,19 @@ select.valueInput,
     border-bottom: 1px solid var(--studio-border);
   }
   .styleImportSummary span:last-child {
+    border-bottom: 0;
+  }
+  .styleImportGuideSteps {
+    grid-template-columns: 1fr;
+  }
+  .styleImportGuideSteps li,
+  .styleImportGuideSteps li + li,
+  .styleImportGuideSteps li:last-child {
+    padding: 9px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--studio-border);
+  }
+  .styleImportGuideSteps li:last-child {
     border-bottom: 0;
   }
   .styleImportFilters {

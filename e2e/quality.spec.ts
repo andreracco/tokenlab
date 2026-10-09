@@ -169,6 +169,53 @@ test("applies and undoes a suggested contrast fix", async ({ page }) => {
   await expect(contrastChecks).toContainText("2.53:1");
 });
 
+test("guides a first CSS import and remembers the guide preference", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Import CSS" }).click();
+
+  const guide = page.getByRole("region", { name: "From stylesheet to tokens" });
+  await expect(guide.getByRole("listitem")).toHaveCount(3);
+  await expect(guide).toContainText("never executed");
+  await expect(guide).toContainText("one change");
+
+  const expandedPaddingTop = await guide.evaluate((element) => getComputedStyle(element).paddingTop);
+  await guide.getByRole("button", { name: "Hide guide" }).click();
+  const collapsedPaddingTop = await guide.evaluate((element) => getComputedStyle(element).paddingTop);
+  expect(collapsedPaddingTop).toBe(expandedPaddingTop);
+  await page.reload();
+  await page.getByRole("button", { name: "Import CSS" }).click();
+  await expect(guide.getByRole("button", { name: "Show guide" })).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
+  await guide.getByRole("button", { name: "Show guide" }).click();
+  await expect(guide.getByRole("listitem")).toHaveCount(3);
+  await page.setViewportSize({ width: 512, height: 760 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 800 });
+
+  await page.getByLabel(/Choose a CSS file/i).setInputFiles({
+    name: "brand.css",
+    mimeType: "text/css",
+    buffer: Buffer.from(":root { --color-brand-600: #c2415d; }"),
+  });
+  await expect(page.getByRole("button", { name: "Apply 1" })).toBeEnabled();
+  await page.getByRole("button", { name: "Apply 1" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "one undo step" })).toContainText(
+    "1 token change applied as one undo step",
+  );
+  await page.getByRole("button", { name: "Undo" }).click();
+  await page.getByRole("button", { name: "Back to preview" }).click();
+  await expect(page.getByTestId("preview-root")).toHaveCSS(
+    "--tl-preview-action-primary-background",
+    "#3157D5",
+  );
+});
+
 test("keeps the active design system inspectable and responsive", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
