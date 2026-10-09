@@ -88,6 +88,7 @@ test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
   await page.getByRole("button", { name: "History" }).click();
   await expect(page.getByRole("complementary", { name: "Token library" })).toBeHidden();
   await expect(page.getByRole("heading", { name: "Saved baselines" })).toBeVisible();
+  await expect(page.getByTestId("preview-root")).toHaveCount(0);
   const focusedView = await page.evaluate(() => {
     const panel = document
       .querySelector("main > section > div:last-child")
@@ -105,42 +106,48 @@ test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
 });
 
 test("fits the preview to a phone-width canvas without horizontal scrolling", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/");
 
-  const dimensions = await page.evaluate(() => {
-    const stage = document.querySelector<HTMLElement>("[data-testid='preview-root']")?.parentElement;
-    const preview = document.querySelector<HTMLElement>("[data-testid='preview-root']");
-    return {
-      documentFits: document.documentElement.scrollWidth === document.documentElement.clientWidth,
-      stageFits: Boolean(stage && stage.scrollWidth <= stage.clientWidth),
-      previewFits: Boolean(preview && preview.scrollWidth <= preview.clientWidth),
-      previewWidth: preview?.getBoundingClientRect().width ?? 0,
-      previewColumns: preview ? getComputedStyle(preview).gridTemplateColumns : "",
-      navigationClearsContent: (() => {
-        const navigation = preview?.querySelector("aside")?.getBoundingClientRect();
-        const content = preview?.querySelector("aside")?.nextElementSibling?.getBoundingClientRect();
-        return Boolean(navigation && content && navigation.bottom <= content.top);
-      })(),
-    };
-  });
+    const dimensions = await page.evaluate(() => {
+      const stage = document.querySelector<HTMLElement>(
+        "[data-testid='preview-root']",
+      )?.parentElement;
+      const preview = document.querySelector<HTMLElement>("[data-testid='preview-root']");
+      return {
+        documentFits: document.documentElement.scrollWidth === document.documentElement.clientWidth,
+        stageFits: Boolean(stage && stage.scrollWidth <= stage.clientWidth),
+        previewFits: Boolean(preview && preview.scrollWidth <= preview.clientWidth),
+        previewWidth: preview?.getBoundingClientRect().width ?? 0,
+        previewColumns: preview ? getComputedStyle(preview).gridTemplateColumns : "",
+        navigationClearsContent: (() => {
+          const navigation = preview?.querySelector("aside")?.getBoundingClientRect();
+          const content = preview
+            ?.querySelector("aside")
+            ?.nextElementSibling?.getBoundingClientRect();
+          return Boolean(navigation && content && navigation.bottom <= content.top);
+        })(),
+      };
+    });
 
-  expect(dimensions.documentFits).toBe(true);
-  expect(dimensions.stageFits).toBe(true);
-  expect(dimensions.previewFits).toBe(true);
-  expect(dimensions.previewWidth).toBeLessThanOrEqual(390);
-  expect(dimensions.previewColumns.split(" ")).toHaveLength(1);
-  expect(dimensions.navigationClearsContent).toBe(true);
+    expect(dimensions.documentFits).toBe(true);
+    expect(dimensions.stageFits).toBe(true);
+    expect(dimensions.previewFits).toBe(true);
+    expect(dimensions.previewWidth).toBeLessThanOrEqual(width);
+    expect(dimensions.previewColumns.split(" ")).toHaveLength(1);
+    expect(dimensions.navigationClearsContent).toBe(true);
 
-  const canvasHeight = await page.locator("#living-canvas").evaluate((canvas) =>
-    canvas.getBoundingClientRect().height,
-  );
-  await page.getByRole("button", { name: "My tasks" }).click();
-  await expect(page.getByRole("heading", { name: "My tasks" })).toBeVisible();
-  const tasksCanvasHeight = await page.locator("#living-canvas").evaluate((canvas) =>
-    canvas.getBoundingClientRect().height,
-  );
-  expect(tasksCanvasHeight).toBe(canvasHeight);
+    const canvasHeight = await page
+      .locator("#living-canvas")
+      .evaluate((canvas) => canvas.getBoundingClientRect().height);
+    await page.getByRole("button", { name: "My tasks" }).click();
+    await expect(page.getByRole("heading", { name: "My tasks" })).toBeVisible();
+    const tasksCanvasHeight = await page
+      .locator("#living-canvas")
+      .evaluate((canvas) => canvas.getBoundingClientRect().height);
+    expect(tasksCanvasHeight).toBe(canvasHeight);
+  }
 });
 
 test("keeps project search and filters the same height across presets", async ({ page }) => {
@@ -193,7 +200,7 @@ test("keeps the task count badge readable in dark mode", async ({ page }) => {
 
 test("shows accessible feedback, progress, and empty-state specimens", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "System" }).click();
+  await page.getByRole("button", { name: "System", exact: true }).click();
 
   const section = page.getByRole("region", { name: "Feedback and status" });
   await expect(section.getByRole("status")).toHaveCount(3);
@@ -339,7 +346,7 @@ test("rejects invalid and oversized CSS without changing the project", async ({ 
 test("keeps the active design system inspectable and responsive", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  await page.getByRole("button", { name: "System" }).click();
+  await page.getByRole("button", { name: "System", exact: true }).click();
 
   await expect(page.getByRole("heading", { name: "From decision to interface." })).toBeVisible();
   await expect(page.getByText("7/7", { exact: true })).toBeVisible();

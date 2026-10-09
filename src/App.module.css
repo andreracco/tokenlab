@@ -792,7 +792,7 @@
   --forma-muted: var(--tl-preview-muted);
   --forma-line: var(--tl-preview-border);
   width: min(var(--tl-preview-viewport-width, 1280px), 100%);
-  min-width: 0;
+  min-width: 720px;
   min-height: 650px;
   margin: 0 auto;
   display: grid;
