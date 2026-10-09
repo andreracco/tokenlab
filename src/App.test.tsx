@@ -34,6 +34,18 @@ describe("TokenLab first slice", () => {
     expect(preview.style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#C2415D");
   });
 
+  it("edits the font family without an overlay menu", () => {
+    useTokenLabStore.setState({ selectedTokenId: "font.family.ui" });
+    render(<App />);
+
+    const choices = screen.getByRole("group", { name: "Light value" });
+    expect(choices.querySelectorAll('input[type="radio"]')).toHaveLength(3);
+    fireEvent.click(screen.getByRole("radio", { name: "Georgia" }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-font-family")).toContain("Georgia");
+  });
+
   it("switches presets as one undoable document change", () => {
     render(<App />);
 
@@ -281,5 +293,24 @@ describe("TokenLab first slice", () => {
     fireEvent.click(autoMap);
     expect(target).toHaveProperty("value", "color.brand.600");
     expect(screen.getByRole("checkbox", { name: "Select #C2415D" })).toHaveProperty("checked", true);
+  });
+
+  it("triages large stylesheet results by search, group, and unsupported reason", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Import CSS" }));
+    fireEvent.change(screen.getByLabelText(/Choose a CSS file/i), { target: { files: [{ name: "mixed.css", size: 110, text: async () => ":root { --color-brand-600: #c2415d; } .card { padding: 18px; border-color: #abc; color: rgb(1 2 3); }" }] } });
+
+    expect((await screen.findAllByText("Spacing & sizing")).length).toBeGreaterThan(0);
+    fireEvent.change(screen.getByRole("combobox", { name: "Import group" }), { target: { value: "spacing" } });
+    expect(screen.getAllByText("18px")).toHaveLength(2);
+    expect(screen.queryByText("#C2415D")).toBeNull();
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Import status" }), { target: { value: "unsupported" } });
+    expect(screen.getByText("rgb(1 2 3)")).toBeTruthy();
+    expect(screen.getByText("Convert this color to six-digit hex.")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Import group" })).toHaveProperty("disabled", true);
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search imported styles" }), { target: { value: "missing" } });
+    expect(screen.getByText("No unsupported values match")).toBeTruthy();
   });
 });

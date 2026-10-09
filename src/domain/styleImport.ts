@@ -12,7 +12,16 @@ export type StyleScanResult = {
   declarationCount: number;
   variableCount: number;
   unsupportedCount: number;
+  unsupported: UnsupportedStyleValue[];
   candidates: StyleCandidate[];
+};
+
+export type UnsupportedStyleValue = {
+  id: string;
+  source: string;
+  value: string;
+  occurrences: number;
+  reason: string;
 };
 
 export type StyleMapping = { candidate: StyleCandidate; tokenId: string };
@@ -23,11 +32,19 @@ export function scanStylesheet(css: string): StyleScanResult {
   // shortcut: flat declarations exclude complex CSS grammar, use a parser before supporting data URLs or nested syntax.
   const declarations = [...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/(--[\w-]+|[a-zA-Z-]+)\s*:\s*([^;{}]+)(?:;|(?=\}))/g)];
   const candidates = new Map<string, StyleCandidate>();
+  const unsupported = new Map<string, UnsupportedStyleValue>();
 
   for (const declaration of declarations) {
     const source = declaration[1].toLowerCase();
     const match = classifyValue(source, declaration[2].trim());
-    if (!match) continue;
+    if (!match) {
+      const value = declaration[2].trim();
+      const id = `${source}:${value}`;
+      const existing = unsupported.get(id);
+      if (existing) existing.occurrences += 1;
+      else unsupported.set(id, { id, source, value: truncate(value), occurrences: 1, reason: unsupportedReason(value) });
+      continue;
+    }
 
     const id = `${match.type}:${match.value.toLowerCase()}`;
     const existing = candidates.get(id);
@@ -43,7 +60,8 @@ export function scanStylesheet(css: string): StyleScanResult {
   return {
     declarationCount: declarations.length,
     variableCount: declarations.filter((declaration) => declaration[1].startsWith("--")).length,
-    unsupportedCount: declarations.length - values.reduce((total, candidate) => total + candidate.occurrences, 0),
+    unsupportedCount: [...unsupported.values()].reduce((total, item) => total + item.occurrences, 0),
+    unsupported: [...unsupported.values()].sort((a, b) => b.occurrences - a.occurrences || a.source.localeCompare(b.source)),
     candidates: values,
   };
 }
@@ -84,4 +102,15 @@ function normalizeHex(value: string) {
   if (!match) return null;
   const hex = match[1].length === 3 ? [...match[1]].map((character) => character.repeat(2)).join("") : match[1];
   return `#${hex.toUpperCase()}`;
+}
+
+function unsupportedReason(value: string) {
+  if (/\b(?:var|calc|min|max|clamp)\(/i.test(value)) return "Computed values aren't resolved.";
+  if (/^(?:rgb|rgba|hsl|hsla|oklch|color)\(/i.test(value)) return "Convert this color to six-digit hex.";
+  if (/\s/.test(value)) return "Composite values aren't split automatically.";
+  return "This value type isn't supported yet.";
+}
+
+function truncate(value: string) {
+  return value.length > 120 ? `${value.slice(0, 117)}…` : value;
 }

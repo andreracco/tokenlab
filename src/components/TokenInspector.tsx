@@ -88,10 +88,9 @@ function ValueEditor({ token, mode, initialValue, onApply }: { token: Token; mod
 
   return <div className={styles.editor}>
     <div className={styles.editorHeading}><span>Edit value</span><small>{mode} mode</small></div>
-    <label htmlFor="token-value">{capitalize(mode)} value</label>
     {token.type === "fontFamily"
-      ? <select id="token-value" className={styles.valueInput} value={draft} aria-describedby={messageId} onChange={(event) => setDraft(event.target.value)}><option>Inter</option><option>Georgia</option><option>Avenir Next</option></select>
-      : <input id="token-value" className={styles.valueInput} value={draft} aria-invalid={Boolean(error)} aria-describedby={messageId} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Escape") setDraft(initialValue); if (event.key === "Enter") apply(); }} onBlur={(event) => { if (!(event.relatedTarget instanceof Element && event.relatedTarget.closest(`.${styles.editor}`))) apply(); }} />}
+      ? <fieldset className={styles.fontChoices} aria-describedby={messageId}><legend>{capitalize(mode)} value</legend>{["Inter", "Georgia", "Avenir Next"].map((font) => <label key={font}><input type="radio" name="token-font-family" value={font} checked={draft === font} onChange={(event) => setDraft(event.target.value)} /><span>{font}</span></label>)}</fieldset>
+      : <><label htmlFor="token-value">{capitalize(mode)} value</label><input id="token-value" className={styles.valueInput} value={draft} aria-invalid={Boolean(error)} aria-describedby={messageId} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Escape") setDraft(initialValue); if (event.key === "Enter") apply(); }} onBlur={(event) => { if (!(event.relatedTarget instanceof Element && event.relatedTarget.closest(`.${styles.editor}`))) apply(); }} /></>}
     <p className={`${styles.fieldMessage} ${error ? styles.fieldError : ""}`} id={messageId} role="status">{error || (dirty ? "Ready to apply." : valueHint(token.type))}</p>
     <EditorActions dirty={dirty} valid={Boolean(parsed)} onCancel={() => setDraft(initialValue)} onApply={apply} />
   </div>;

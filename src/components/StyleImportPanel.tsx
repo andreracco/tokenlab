@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { AlertTriangle, ArrowLeft, FileCode2, ShieldCheck, Upload } from "lucide-react";
+import { AlertTriangle, ArrowLeft, FileCode2, Search, ShieldCheck, Upload, X } from "lucide-react";
 import { checkContrast } from "../domain/contrast";
 import { createStyleImportCommand, scanStylesheet, type StyleCandidate, type StyleMapping, type StyleScanResult } from "../domain/styleImport";
 import { applyCommands, resolveCssValue, type ProjectDocument, type TokenMode } from "../domain/tokens";
 import styles from "../App.module.css";
 
 const maximumFileSize = 1024 * 1024;
+type ReviewStatus = "all" | "ready" | "unmapped" | "current" | "unsupported";
+type ReviewGroup = "all" | "colors" | "spacing" | "typography" | "shadows";
 
 type StyleImportPanelProps = {
   document: ProjectDocument;
@@ -19,9 +21,12 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
   const [filename, setFilename] = useState("");
   const [result, setResult] = useState<StyleScanResult | null>(null);
   const [targets, setTargets] = useState<Record<string, string>>({});
-  const [automaticTargets, setAutomaticTargets] = useState<Record<string, boolean>>({});
+  const [automaticTargets, setAutomaticTargets] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [autoMapEnabled, setAutoMapEnabled] = useState(true);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ReviewStatus>("all");
+  const [groupFilter, setGroupFilter] = useState<ReviewGroup>("all");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -43,6 +48,9 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
       setTargets(suggestions.targets);
       setAutomaticTargets(suggestions.automatic);
       setSelected(Object.fromEntries(scan.candidates.map((candidate) => [candidate.id, valueChanges(candidate, suggestions.targets[candidate.id], document, mode)])));
+      setQuery("");
+      setStatusFilter("all");
+      setGroupFilter("all");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Couldn't read this stylesheet.");
     } finally {
@@ -56,7 +64,26 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
   const previewDocument = applyCommands(document, mappings.map((mapping) => createStyleImportCommand(mapping, mode)));
   const currentContrast = checkContrast(document, mode);
   const contrastRegressions = checkContrast(previewDocument, mode).filter((check) => !check.passes && currentContrast.find((current) => current.id === check.id)?.passes);
-  const selectableCandidates = result?.candidates.filter((candidate) => valueChanges(candidate, targets[candidate.id], document, mode)) ?? [];
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredCandidates = result?.candidates.filter((candidate) => {
+    const target = targets[candidate.id];
+    const changed = valueChanges(candidate, target, document, mode);
+    const statusMatches = statusFilter === "all"
+      || (statusFilter === "ready" && changed)
+      || (statusFilter === "unmapped" && !target)
+      || (statusFilter === "current" && Boolean(target) && !changed);
+    const groupMatches = groupFilter === "all" || candidateGroup(candidate) === groupFilter;
+    const queryMatches = !normalizedQuery || `${candidate.value} ${candidate.sources.join(" ")} ${target ?? ""}`.toLowerCase().includes(normalizedQuery);
+    return statusFilter !== "unsupported" && statusMatches && groupMatches && queryMatches;
+  }) ?? [];
+  const filteredUnsupported = result?.unsupported.filter((item) => !normalizedQuery || `${item.source} ${item.value} ${item.reason}`.toLowerCase().includes(normalizedQuery)) ?? [];
+  const candidateGroups = ([
+    ["colors", "Colors"],
+    ["spacing", "Spacing & sizing"],
+    ["typography", "Typography"],
+    ["shadows", "Shadows"],
+  ] as const).map(([id, label]) => ({ id, label, candidates: filteredCandidates.filter((candidate) => candidateGroup(candidate) === id) })).filter((group) => group.candidates.length > 0);
+  const selectableCandidates = filteredCandidates.filter((candidate) => valueChanges(candidate, targets[candidate.id], document, mode));
   const allSelected = selectableCandidates.length > 0 && selectableCandidates.every((candidate) => selected[candidate.id]);
   const mappedCount = result?.candidates.filter((candidate) => targets[candidate.id]).length ?? 0;
 
@@ -116,12 +143,21 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
             <span><strong>{result.candidates.length - mappedCount}</strong> need mapping</span>
             <span><strong>{result.unsupportedCount}</strong> unsupported</span>
           </div>
-          {result.candidates.length === 0 ? <div className={styles.styleImportEmpty}><strong>No compatible values found</strong><p>TokenLab currently recognizes hex colors, px/rem dimensions, supported fonts, weights, line heights, and simple shadows.</p></div> : <>
+          <div className={styles.styleImportFilters}>
+            <label className={styles.styleImportSearch}><Search aria-hidden="true" /><input type="search" aria-label="Search imported styles" placeholder="Search variables or values" value={query} onChange={(event) => setQuery(event.target.value)} />{query && <button aria-label="Clear imported style search" onClick={() => setQuery("")}><X aria-hidden="true" /></button>}</label>
+            <select aria-label="Import status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as ReviewStatus)}><option value="all">All values</option><option value="ready">Ready to apply</option><option value="unmapped">Needs mapping</option><option value="current">Already matches</option><option value="unsupported">Unsupported</option></select>
+            <select aria-label="Import group" value={groupFilter} disabled={statusFilter === "unsupported"} onChange={(event) => setGroupFilter(event.target.value as ReviewGroup)}><option value="all">All groups</option><option value="colors">Colors</option><option value="spacing">Spacing & sizing</option><option value="typography">Typography</option><option value="shadows">Shadows</option></select>
+          </div>
+          {result.candidates.length > 0 && <>
             <div className={styles.styleImportTools}>
-              <div><strong>Review mappings</strong><small>{mappings.length} of {selectableCandidates.length} changes selected</small></div>
-              <span className={styles.styleImportToolActions}><label className={styles.autoMapToggle}><input type="checkbox" checked={autoMapEnabled} onChange={(event) => toggleAutoMap(event.target.checked)} />Auto-map obvious matches</label><button className={styles.secondaryButton} disabled={selectableCandidates.length === 0} onClick={() => setSelected(Object.fromEntries(selectableCandidates.map((candidate) => [candidate.id, !allSelected])))}>{allSelected ? "Clear selection" : "Select all changes"}</button></span>
+              <div><strong>Review mappings</strong><small>{filteredCandidates.length} shown · {mappings.length} changes selected</small></div>
+              <span className={styles.styleImportToolActions}><label className={styles.autoMapToggle}><input type="checkbox" checked={autoMapEnabled} onChange={(event) => toggleAutoMap(event.target.checked)} />Auto-map obvious matches</label><button className={styles.secondaryButton} disabled={selectableCandidates.length === 0} onClick={() => setSelected((current) => ({ ...current, ...Object.fromEntries(selectableCandidates.map((candidate) => [candidate.id, !allSelected])) }))}>{allSelected ? "Clear visible selection" : "Select visible changes"}</button></span>
             </div>
-            <div className={styles.styleCandidateList}>{result.candidates.map((candidate) => {
+            <div className={styles.styleImportSticky}>
+              {mappings.length > 0 && (contrastRegressions.length > 0 ? <div className={styles.importContrastWarning} role="alert"><AlertTriangle aria-hidden="true" /><div><strong>{contrastRegressions.length} new contrast {contrastRegressions.length === 1 ? "issue" : "issues"}</strong>{contrastRegressions.map((check) => <span key={check.id}>{check.label}: {check.ratio}:1, requires {check.threshold}:1.</span>)}</div></div> : <div className={styles.importContrastClear}><ShieldCheck aria-hidden="true" /><span>No new failures across TokenLab’s {currentContrast.length} registered contrast pairs.</span></div>)}
+              <div className={styles.styleImportActions}><span>{mappings.length > 0 ? `${mappings.length} selected ${mappings.length === 1 ? "change" : "changes"}` : "Select at least one mapped change"}</span><button className={styles.primaryStudioButton} disabled={mappings.length === 0} onClick={applySelection}>Apply {mappings.length || "selected"}</button></div>
+            </div>
+            {candidateGroups.map((group) => <section className={styles.styleCandidateGroup} key={group.id} aria-labelledby={`import-group-${group.id}`}><header><strong id={`import-group-${group.id}`}>{group.label}</strong><span>{group.candidates.length} values · usage first</span></header><div className={styles.styleCandidateList}>{group.candidates.map((candidate) => {
               const compatibleTokens = document.tokens.filter((token) => token.layer === "primitive" && token.type === candidate.type);
               const target = targets[candidate.id] ?? "";
               const currentValue = target ? resolveCssValue(document, target, mode) : "";
@@ -129,15 +165,19 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
               return <article className={styles.styleCandidate} key={candidate.id}>
                 <input type="checkbox" aria-label={`Select ${candidate.value}`} checked={Boolean(selected[candidate.id]) && changed} disabled={!changed} onChange={(event) => setSelected((current) => ({ ...current, [candidate.id]: event.target.checked }))} />
                 <span className={styles.candidatePreview}>{candidate.type === "color" ? <i style={{ background: candidate.value }} /> : candidate.type.slice(0, 2).toUpperCase()}</span>
-                <span className={styles.candidateValue}><code>{candidate.value}</code><small>{candidate.sources.join(", ")} · {candidate.occurrences} {candidate.occurrences === 1 ? "use" : "uses"}</small><span className={!target ? styles.mappingNeeded : changed ? styles.mappingReady : styles.mappingCurrent}>{!target ? "Needs mapping" : changed ? "Ready to apply" : "Already matches"}</span></span>
+                <span className={styles.candidateValue}><code>{candidate.value}</code><small>{candidate.sources.join(", ")} · {candidate.occurrences} {candidate.occurrences === 1 ? "use" : "uses"}</small><span className={!target ? styles.mappingNeeded : changed ? styles.mappingReady : styles.mappingCurrent}>{!target ? "Needs mapping" : changed ? "Ready to apply" : "Already matches"}</span>{automaticTargets[candidate.id] && <small className={styles.mappingReason}>Auto-mapped · {automaticTargets[candidate.id]}</small>}</span>
                 <span className={styles.candidateChange}><small>Current</small><code>{currentValue || "Choose a target"}</code><small>Imported</small><code>{candidate.value}</code></span>
-                <label>Map to<select value={target} onChange={(event) => { const tokenId = event.target.value; setTargets((current) => ({ ...current, [candidate.id]: tokenId })); setAutomaticTargets((current) => ({ ...current, [candidate.id]: false })); setSelected((current) => ({ ...current, [candidate.id]: valueChanges(candidate, tokenId, document, mode) })); setMessage(""); }}><option value="">Choose token</option>{compatibleTokens.map((token) => <option key={token.id} value={token.id} disabled={Object.entries(targets).some(([candidateId, tokenId]) => candidateId !== candidate.id && tokenId === token.id)}>{token.path}</option>)}</select></label>
+                <label>Map to<select value={target} onChange={(event) => { const tokenId = event.target.value; setTargets((current) => ({ ...current, [candidate.id]: tokenId })); setAutomaticTargets((current) => ({ ...current, [candidate.id]: "" })); setSelected((current) => ({ ...current, [candidate.id]: valueChanges(candidate, tokenId, document, mode) })); setMessage(""); }}><option value="">Choose token</option>{compatibleTokens.map((token) => <option key={token.id} value={token.id} disabled={Object.entries(targets).some(([candidateId, tokenId]) => candidateId !== candidate.id && tokenId === token.id)}>{token.path}</option>)}</select></label>
               </article>;
-            })}</div>
-
-            {mappings.length > 0 && (contrastRegressions.length > 0 ? <div className={styles.importContrastWarning} role="alert"><AlertTriangle aria-hidden="true" /><div><strong>{contrastRegressions.length} new contrast {contrastRegressions.length === 1 ? "issue" : "issues"}</strong>{contrastRegressions.map((check) => <span key={check.id}>{check.label}: {check.ratio}:1, requires {check.threshold}:1.</span>)}</div></div> : <div className={styles.importContrastClear}><ShieldCheck aria-hidden="true" /><span>No new failures across TokenLab’s {currentContrast.length} registered contrast pairs.</span></div>)}
-            <div className={styles.styleImportActions}><span>{mappings.length > 0 ? `${mappings.length} selected ${mappings.length === 1 ? "change" : "changes"}` : "Select at least one mapped change"}</span><button className={styles.primaryStudioButton} disabled={mappings.length === 0} onClick={applySelection}>Apply {mappings.length || "selected"}</button></div>
+            })}</div></section>)}
+            {statusFilter !== "unsupported" && filteredCandidates.length === 0 && <div className={styles.styleImportEmpty}><strong>No reusable values match</strong><p>Change the search or filters to continue reviewing this stylesheet.</p></div>}
           </>}
+
+          {(statusFilter === "all" || statusFilter === "unsupported") && (filteredUnsupported.length > 0 ? <details className={styles.unsupportedStyles} open={statusFilter === "unsupported"}>
+            <summary><span><strong>Unsupported declarations</strong><small>Review what TokenLab skipped and why.</small></span><span>{filteredUnsupported.reduce((total, item) => total + item.occurrences, 0)} uses</span></summary>
+            <div>{filteredUnsupported.map((item) => <article key={item.id}><code>{item.source}</code><code>{item.value}</code><span>{item.reason}</span><small>{item.occurrences} {item.occurrences === 1 ? "use" : "uses"}</small></article>)}</div>
+          </details> : statusFilter === "unsupported" && <div className={styles.styleImportEmpty}><strong>No unsupported values match</strong><p>Change the search to review skipped declarations.</p></div>)}
+
         </>}
       </div>
     </div>
@@ -146,15 +186,15 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
 
 function addSuggestions(candidates: StyleCandidate[], current: Record<string, string>, document: ProjectDocument, mode: TokenMode) {
   const targets = { ...current };
-  const automatic: Record<string, boolean> = {};
+  const automatic: Record<string, string> = {};
   const claimed = new Set(Object.values(current).filter(Boolean));
   for (const candidate of candidates) {
     if (targets[candidate.id]) continue;
-    const target = suggestedTarget(candidate, document, mode);
-    if (!target || claimed.has(target)) continue;
-    targets[candidate.id] = target;
-    automatic[candidate.id] = true;
-    claimed.add(target);
+    const suggestion = suggestedTarget(candidate, document, mode);
+    if (!suggestion || claimed.has(suggestion.tokenId)) continue;
+    targets[candidate.id] = suggestion.tokenId;
+    automatic[candidate.id] = suggestion.reason;
+    claimed.add(suggestion.tokenId);
   }
   return { targets, automatic };
 }
@@ -163,10 +203,17 @@ function suggestedTarget(candidate: StyleCandidate, document: ProjectDocument, m
   for (const variable of candidate.sources.filter((source) => source.startsWith("--"))) {
     const path = variable.slice(2).replaceAll("-", ".");
     const exact = document.tokens.find((token) => token.layer === "primitive" && token.type === candidate.type && token.path === path);
-    if (exact) return exact.id;
+    if (exact) return { tokenId: exact.id, reason: `Exact variable path: ${variable}` };
   }
   const valueMatches = document.tokens.filter((token) => token.layer === "primitive" && token.type === candidate.type && resolveCssValue(document, token.id, mode) === candidate.value);
-  return valueMatches.length === 1 ? valueMatches[0].id : "";
+  return valueMatches.length === 1 ? { tokenId: valueMatches[0].id, reason: "Unique existing value" } : null;
+}
+
+function candidateGroup(candidate: StyleCandidate): Exclude<ReviewGroup, "all"> {
+  if (candidate.type === "color") return "colors";
+  if (candidate.type === "dimension") return "spacing";
+  if (candidate.type === "shadow") return "shadows";
+  return "typography";
 }
 
 function valueChanges(candidate: StyleCandidate, tokenId: string, document: ProjectDocument, mode: TokenMode) {

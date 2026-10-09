@@ -13,6 +13,7 @@ describe("scanStylesheet", () => {
     expect(result.declarationCount).toBe(9);
     expect(result.variableCount).toBe(3);
     expect(result.unsupportedCount).toBe(1);
+    expect(result.unsupported).toEqual([expect.objectContaining({ source: "color", value: "var(--color-brand-600)", reason: "Computed values aren't resolved." })]);
     expect(result.candidates).toEqual(expect.arrayContaining([
       expect.objectContaining({ type: "color", value: "#3157D5", occurrences: 2 }),
       expect.objectContaining({ type: "dimension", value: "14px", occurrences: 2 }),
@@ -27,5 +28,10 @@ describe("scanStylesheet", () => {
     const result = scanStylesheet(`.thing { color: rgb(1 2 3); padding: calc(1rem + 2px); color: var(--brand); }`);
     expect(result.candidates).toEqual([]);
     expect(result.unsupportedCount).toBe(3);
+    expect(result.unsupported.map((item) => item.reason)).toEqual([
+      "Convert this color to six-digit hex.",
+      "Computed values aren't resolved.",
+      "Computed values aren't resolved.",
+    ]);
   });
 });
