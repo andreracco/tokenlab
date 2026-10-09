@@ -301,6 +301,10 @@ export function applyCommand(document: ProjectDocument, command: TokenCommand): 
   });
 }
 
+export function applyCommands(document: ProjectDocument, commands: TokenCommand[]): ProjectDocument {
+  return commands.reduce(applyCommand, document);
+}
+
 export function resolveToken(
   document: ProjectDocument,
   tokenId: string,

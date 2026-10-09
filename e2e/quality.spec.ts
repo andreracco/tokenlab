@@ -70,6 +70,20 @@ test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
   expect(Math.abs(focusedPreviewTabX - previewTabX)).toBeLessThanOrEqual(1);
 });
 
+test("keeps project search and filters the same height across presets", async ({ page }) => {
+  await page.goto("/");
+
+  for (const preset of ["product", "editorial", "expressive"]) {
+    await page.getByLabel("Starting system").selectOption(preset);
+    const heights = await Promise.all([
+      page.getByRole("textbox", { name: "Search projects" }).evaluate((input) => input.parentElement?.getBoundingClientRect().height),
+      page.getByRole("combobox", { name: "Project status" }).evaluate((select) => select.getBoundingClientRect().height),
+      page.getByRole("combobox", { name: "Project sort" }).evaluate((select) => select.getBoundingClientRect().height),
+    ]);
+    expect(heights).toEqual([34, 34, 34]);
+  }
+});
+
 test("keeps History focused at high browser zoom", async ({ page }) => {
   await page.setViewportSize({ width: 512, height: 700 });
   await page.goto("/");

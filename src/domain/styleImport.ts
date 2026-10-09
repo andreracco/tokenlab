@@ -1,4 +1,4 @@
-import { parseTokenInput, type Token } from "./tokens";
+import { parseTokenInput, type Token, type TokenCommand, type TokenMode } from "./tokens";
 
 export type StyleCandidate = {
   id: string;
@@ -11,8 +11,11 @@ export type StyleCandidate = {
 export type StyleScanResult = {
   declarationCount: number;
   variableCount: number;
+  unsupportedCount: number;
   candidates: StyleCandidate[];
 };
+
+export type StyleMapping = { candidate: StyleCandidate; tokenId: string };
 
 const supportedFontFamilies = new Set(["Inter", "Georgia", "Avenir Next"]);
 
@@ -36,11 +39,20 @@ export function scanStylesheet(css: string): StyleScanResult {
     }
   }
 
+  const values = [...candidates.values()].sort((a, b) => b.occurrences - a.occurrences || a.value.localeCompare(b.value));
   return {
     declarationCount: declarations.length,
     variableCount: declarations.filter((declaration) => declaration[1].startsWith("--")).length,
-    candidates: [...candidates.values()].sort((a, b) => b.occurrences - a.occurrences || a.value.localeCompare(b.value)),
+    unsupportedCount: declarations.length - values.reduce((total, candidate) => total + candidate.occurrences, 0),
+    candidates: values,
   };
+}
+
+export function createStyleImportCommand({ candidate, tokenId }: StyleMapping, mode: TokenMode): TokenCommand {
+  const value = parseTokenInput(candidate.type, candidate.value);
+  return candidate.type === "color"
+    ? { type: "set-color", tokenId, mode, value: value as string }
+    : { type: "set-token-value", tokenId, mode, value };
 }
 
 function classifyValue(source: string, rawValue: string): Pick<StyleCandidate, "type" | "value"> | null {

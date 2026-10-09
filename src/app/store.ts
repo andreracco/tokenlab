@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { applyCommand, initialProject, type ProjectDocument, type TokenCommand } from "../domain/tokens";
+import { applyCommand, applyCommands, initialProject, type ProjectDocument, type TokenCommand } from "../domain/tokens";
 import { createSnapshot, type ProjectSnapshot } from "../domain/projects";
 
 type TokenLabState = {
@@ -10,6 +10,7 @@ type TokenLabState = {
   snapshots: ProjectSnapshot[];
   selectToken: (tokenId: string) => void;
   execute: (command: TokenCommand) => void;
+  executeBatch: (commands: TokenCommand[]) => void;
   undo: () => void;
   redo: () => void;
   hydrate: (document: ProjectDocument, snapshots: ProjectSnapshot[]) => void;
@@ -30,6 +31,14 @@ export const useTokenLabStore = create<TokenLabState>((set) => ({
       history: [...state.history.slice(-99), state.document],
       future: [],
     })),
+  executeBatch: (commands) => {
+    if (commands.length === 0) return;
+    set((state) => ({
+      document: applyCommands(state.document, commands),
+      history: [...state.history.slice(-99), state.document],
+      future: [],
+    }));
+  },
   undo: () =>
     set((state) => {
       const previous = state.history.at(-1);

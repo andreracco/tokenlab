@@ -231,21 +231,36 @@ describe("TokenLab first slice", () => {
     expect(useTokenLabStore.getState().document).toEqual(initialProject);
   });
 
-  it("maps a scanned CSS variable through undoable token history", async () => {
+  it("reviews and applies mapped CSS variables as one undo step", async () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: "Import CSS" }));
 
     const input = screen.getByLabelText(/Choose a CSS file/i) as HTMLInputElement;
-    fireEvent.change(input, { target: { files: [{ name: "brand.css", size: 48, text: async () => ":root { --color-brand-600: #c2415d; }" }] } });
+    fireEvent.change(input, { target: { files: [{ name: "brand.css", size: 82, text: async () => ":root { --color-brand-600: #c2415d; --space-medium: 18px; }" }] } });
 
-    expect(await screen.findByText("#C2415D")).toBeTruthy();
-    expect(screen.getByRole("combobox", { name: "Map to" })).toHaveProperty("value", "color.brand.600");
-    fireEvent.click(screen.getByRole("button", { name: "Apply #C2415D to color.brand.600" }));
-    expect(screen.getByRole("button", { name: "Applied #C2415D to color.brand.600" })).toBeTruthy();
+    expect((await screen.findAllByText("#C2415D")).length).toBeGreaterThan(0);
+    expect(screen.getByRole("checkbox", { name: "Select #C2415D" })).toHaveProperty("checked", true);
+    expect(screen.getByRole("checkbox", { name: "Select 18px" })).toHaveProperty("checked", true);
+    expect(screen.getAllByRole("combobox", { name: "Map to" }).map((select) => (select as HTMLSelectElement).value)).toEqual(["color.brand.600", "space.medium"]);
+    fireEvent.click(screen.getByRole("button", { name: "Apply 2" }));
+    expect(screen.getByText("2 token changes applied as one undo step.")).toBeTruthy();
+    expect(useTokenLabStore.getState().history).toHaveLength(1);
 
     fireEvent.click(screen.getByRole("button", { name: "Back to preview" }));
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#C2415D");
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-card-padding")).toBe("18px");
     fireEvent.click(screen.getByRole("button", { name: "Undo" }));
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#3157D5");
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-card-padding")).toBe("14px");
+  });
+
+  it("flags newly failing registered contrast pairs before stylesheet changes are applied", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Import CSS" }));
+    fireEvent.change(screen.getByLabelText(/Choose a CSS file/i), { target: { files: [{ name: "low-contrast.css", size: 42, text: async () => ":root { --color-brand-600: #ffffff; }" }] } });
+
+    expect(await screen.findByText("1 new contrast issue")).toBeTruthy();
+    expect(screen.getByText(/Primary button label: 1:1, requires 4.5:1/)).toBeTruthy();
+    expect(useTokenLabStore.getState().history).toHaveLength(0);
   });
 });

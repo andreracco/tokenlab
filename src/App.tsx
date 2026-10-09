@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { CheckCircle2, Download, Eye, FileSearch, History as HistoryIcon, Layers3, MousePointer2, Redo2, Sparkles, Undo2 } from "lucide-react";
-import { parseTokenInput, resolveCssValue, type TokenMode } from "./domain/tokens";
-import type { StyleCandidate } from "./domain/styleImport";
+import { resolveCssValue, type TokenMode } from "./domain/tokens";
+import { createStyleImportCommand, type StyleMapping } from "./domain/styleImport";
 import { checkContrast } from "./domain/contrast";
 import { useTokenLabStore } from "./app/store";
 import { componentRegistry, consumersForToken, type ComponentKey } from "./preview/registry";
@@ -21,6 +21,7 @@ export function App() {
   const future = useTokenLabStore((state) => state.future);
   const selectToken = useTokenLabStore((state) => state.selectToken);
   const execute = useTokenLabStore((state) => state.execute);
+  const executeBatch = useTokenLabStore((state) => state.executeBatch);
   const undo = useTokenLabStore((state) => state.undo);
   const redo = useTokenLabStore((state) => state.redo);
   const snapshots = useTokenLabStore((state) => state.snapshots);
@@ -82,12 +83,9 @@ export function App() {
     setCanvasView("app");
     requestAnimationFrame(() => previewViewButton.current?.focus());
   };
-  const applyStyleCandidate = (candidate: StyleCandidate, tokenId: string) => {
-    const value = parseTokenInput(candidate.type, candidate.value);
-    execute(candidate.type === "color"
-      ? { type: "set-color", tokenId, mode, value: value as string }
-      : { type: "set-token-value", tokenId, mode, value });
-    selectVisibleToken(tokenId);
+  const applyStyleMappings = (mappings: StyleMapping[]) => {
+    executeBatch(mappings.map((mapping) => createStyleImportCommand(mapping, mode)));
+    selectVisibleToken(mappings.at(-1)!.tokenId);
   };
 
   return (
@@ -162,7 +160,7 @@ export function App() {
             </div>
           </div>}
           {inspectEnabled && !focusedView && <div className={styles.inspectNotice} role="status"><Sparkles aria-hidden="true" /><span><strong>Inspect mode</strong> — select a preview element to reveal its tokens.</span></div>}
-          {styleImportOpen ? <StyleImportPanel document={document} onApply={applyStyleCandidate} onClose={closeStyleImport} /> : exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={closeExport} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); closeExport(); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); setCanvasView("app"); requestAnimationFrame(() => previewViewButton.current?.focus()); }} /> : canvasView === "history" ? <HistoryPanel snapshots={snapshots} onCreate={openSnapshotDialog} onCompare={setComparisonSnapshotId} /> : canvasView === "app" ? <FormaPreview
+          {styleImportOpen ? <StyleImportPanel document={document} mode={mode} onApply={applyStyleMappings} onClose={closeStyleImport} /> : exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={closeExport} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); closeExport(); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); setCanvasView("app"); requestAnimationFrame(() => previewViewButton.current?.focus()); }} /> : canvasView === "history" ? <HistoryPanel snapshots={snapshots} onCreate={openSnapshotDialog} onCompare={setComparisonSnapshotId} /> : canvasView === "app" ? <FormaPreview
               createdProjects={createdProjects}
               inspectEnabled={inspectEnabled}
               highlightedComponents={consumers.map((consumer) => consumer.key)}
