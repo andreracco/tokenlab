@@ -29,12 +29,26 @@ export type StyleMapping = { candidate: StyleCandidate; tokenId: string };
 const supportedFontFamilies = new Set(["Inter", "Georgia", "Avenir Next"]);
 
 export function scanStylesheet(css: string): StyleScanResult {
-  // shortcut: flat declarations exclude complex CSS grammar, use a parser before supporting data URLs or nested syntax.
+  // shortcut: simple declarations exclude full CSS grammar, use a parser before expanding syntax support.
+  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const structure = withoutComments.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, "");
+  if (!structure.includes("{"))
+    throw new Error("No CSS rules were found. Choose a stylesheet with rules and values.");
+  let depth = 0;
+  for (const character of structure) {
+    if (character === "{") depth += 1;
+    if (character === "}") depth -= 1;
+    if (depth < 0) throw new Error("CSS has a closing brace without a matching opening brace.");
+  }
+  if (depth !== 0)
+    throw new Error("CSS has an unclosed rule. Check its opening and closing braces.");
+
+  const declarationSource = withoutComments.replace(/@[\w-]+[^{}]*\{/g, "");
   const declarations = [
-    ...css
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .matchAll(/(--[\w-]+|[a-zA-Z-]+)\s*:\s*([^;{}]+)(?:;|(?=\}))/g),
+    ...declarationSource.matchAll(/(--[\w-]+|[a-zA-Z-]+)\s*:\s*([^;{}]+)(?:;|(?=\}))/g),
   ];
+  if (declarations.length === 0)
+    throw new Error("No CSS declarations were found. Choose a stylesheet with rules and values.");
   const candidates = new Map<string, StyleCandidate>();
   const unsupported = new Map<string, UnsupportedStyleValue>();
 

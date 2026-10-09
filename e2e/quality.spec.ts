@@ -178,9 +178,13 @@ test("guides a first CSS import and remembers the guide preference", async ({ pa
   await expect(guide).toContainText("never executed");
   await expect(guide).toContainText("one change");
 
-  const expandedPaddingTop = await guide.evaluate((element) => getComputedStyle(element).paddingTop);
+  const expandedPaddingTop = await guide.evaluate(
+    (element) => getComputedStyle(element).paddingTop,
+  );
   await guide.getByRole("button", { name: "Hide guide" }).click();
-  const collapsedPaddingTop = await guide.evaluate((element) => getComputedStyle(element).paddingTop);
+  const collapsedPaddingTop = await guide.evaluate(
+    (element) => getComputedStyle(element).paddingTop,
+  );
   expect(collapsedPaddingTop).toBe(expandedPaddingTop);
   await page.reload();
   await page.getByRole("button", { name: "Import CSS" }).click();
@@ -213,6 +217,44 @@ test("guides a first CSS import and remembers the guide preference", async ({ pa
   await expect(page.getByTestId("preview-root")).toHaveCSS(
     "--tl-preview-action-primary-background",
     "#3157D5",
+  );
+});
+
+test("rejects invalid and oversized CSS without changing the project", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Import CSS" }).click();
+  const fileInput = page.locator('input[type="file"]');
+
+  await fileInput.setInputFiles({
+    name: "brand.css",
+    mimeType: "text/css",
+    buffer: Buffer.from(":root { --color-brand-600: #c2415d; }"),
+  });
+  await page.getByRole("button", { name: "Apply 1" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "one undo step" })).toContainText(
+    "1 token change applied as one undo step",
+  );
+
+  await fileInput.setInputFiles({
+    name: "invalid.css",
+    mimeType: "text/css",
+    buffer: Buffer.from("not CSS"),
+  });
+  await expect(page.getByRole("alert")).toContainText("No CSS rules were found");
+  await expect(page.getByText("1 reusable values")).toBeVisible();
+
+  await fileInput.setInputFiles({
+    name: "oversized.css",
+    mimeType: "text/css",
+    buffer: Buffer.alloc(1024 * 1024 + 1, 97),
+  });
+  await expect(page.getByRole("alert")).toContainText("smaller than 1 MB");
+  await expect(page.getByText("1 reusable values")).toBeVisible();
+
+  await page.getByRole("button", { name: "Back to preview" }).click();
+  await expect(page.getByTestId("preview-root")).toHaveCSS(
+    "--tl-preview-action-primary-background",
+    "#C2415D",
   );
 });
 

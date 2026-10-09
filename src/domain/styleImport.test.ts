@@ -44,4 +44,41 @@ describe("scanStylesheet", () => {
       "Computed values aren't resolved.",
     ]);
   });
+
+  it("scans declarations inside media rules without treating conditions or quoted braces as values", () => {
+    const result = scanStylesheet(`
+      /* } comments don't affect rule balance */
+      @media (min-width: 40rem) {
+        :root { --space-medium: 16px; }
+        .card::after { content: "brace }"; color: #3157D5; }
+      }
+    `);
+
+    expect(result.declarationCount).toBe(3);
+    expect(result.variableCount).toBe(1);
+    expect(result.candidates).toHaveLength(2);
+    expect(result.candidates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "dimension", value: "16px" }),
+        expect.objectContaining({ type: "color", value: "#3157D5" }),
+      ]),
+    );
+  });
+
+  it.each(["", "not CSS", "color: #fff;"])("rejects input without CSS rules: %s", (css) => {
+    expect(() => scanStylesheet(css)).toThrow("No CSS rules were found");
+  });
+
+  it("rejects rules without declarations", () => {
+    expect(() => scanStylesheet(".button { color #fff; }")).toThrow(
+      "No CSS declarations were found",
+    );
+  });
+
+  it.each([".button { color: #fff;", ".button { color: #fff; } }"])(
+    "rejects unbalanced CSS rules: %s",
+    (css) => {
+      expect(() => scanStylesheet(css)).toThrow(/brace/);
+    },
+  );
 });
