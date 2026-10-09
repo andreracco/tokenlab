@@ -1,6 +1,17 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, domMax, LazyMotion, MotionConfig, m } from "framer-motion";
-import { CheckCircle2, Download, Eye, FileSearch, History as HistoryIcon, Layers3, MousePointer2, Redo2, Sparkles, Undo2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  Eye,
+  FileSearch,
+  History as HistoryIcon,
+  Layers3,
+  MousePointer2,
+  Redo2,
+  Sparkles,
+  Undo2,
+} from "lucide-react";
 import { resolveCssValue, type TokenMode } from "./domain/tokens";
 import { createStyleImportCommand, type StyleMapping } from "./domain/styleImport";
 import { checkContrast } from "./domain/contrast";
@@ -15,6 +26,14 @@ import { TokenInspector } from "./components/TokenInspector";
 import { StyleImportPanel } from "./components/StyleImportPanel";
 import { useWorkspacePersistence } from "./persistence/useWorkspacePersistence";
 import styles from "./App.module.css";
+
+type CanvasScreen =
+  | { type: "preview" }
+  | { type: "system" }
+  | { type: "history" }
+  | { type: "style-import" }
+  | { type: "export" }
+  | { type: "comparison"; snapshotId: string };
 
 export function App() {
   const document = useTokenLabStore((state) => state.document);
@@ -34,11 +53,8 @@ export function App() {
   const [inspectEnabled, setInspectEnabled] = useState(false);
   const [mode, setMode] = useState<TokenMode>("light");
   const [previewWidth, setPreviewWidth] = useState<720 | 960 | 1280>(1280);
-  const [canvasView, setCanvasView] = useState<"app" | "components" | "history">("app");
+  const [canvasScreen, setCanvasScreen] = useState<CanvasScreen>({ type: "preview" });
   const [selectedComponentKey, setSelectedComponentKey] = useState<ComponentKey | null>(null);
-  const [comparisonSnapshotId, setComparisonSnapshotId] = useState<string | null>(null);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [styleImportOpen, setStyleImportOpen] = useState(false);
   const [openTokenGroupId, setOpenTokenGroupId] = useState<TokenGroupId | null>("foundations");
   const [snapshotName, setSnapshotName] = useState("");
   const [snapshotError, setSnapshotError] = useState("");
@@ -56,7 +72,9 @@ export function App() {
     selectToken(tokenId);
   };
   const consumers = consumersForToken(selectedTokenId);
-  const selectedComponent = componentRegistry.find((component) => component.key === selectedComponentKey);
+  const selectedComponent = componentRegistry.find(
+    (component) => component.key === selectedComponentKey,
+  );
   const selectComponent = (key: ComponentKey) => {
     const component = componentRegistry.find((candidate) => candidate.key === key)!;
     setSelectedComponentKey(key);
@@ -64,26 +82,37 @@ export function App() {
     setMobilePanel("inspector");
     setInspectorOpen(true);
   };
-  const previewStyle = { ...createPreviewStyle(document, mode), "--tl-preview-viewport-width": `${previewWidth}px` };
-  const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
+  const previewStyle = {
+    ...createPreviewStyle(document, mode),
+    "--tl-preview-viewport-width": `${previewWidth}px`,
+  };
+  const comparisonSnapshot =
+    canvasScreen.type === "comparison"
+      ? snapshots.find((snapshot) => snapshot.id === canvasScreen.snapshotId)
+      : undefined;
   const contrastResults = checkContrast(document, mode);
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
-  const spectrum = document.tokens.filter((token) => token.type === "color" && token.layer === "primitive").slice(0, 6);
-  const focusedView = exportOpen || styleImportOpen || canvasView === "history";
-  const canvasContentKey = styleImportOpen ? "style-import" : exportOpen ? "export" : comparisonSnapshot ? `comparison-${comparisonSnapshot.id}` : canvasView;
+  const spectrum = document.tokens
+    .filter((token) => token.type === "color" && token.layer === "primitive")
+    .slice(0, 6);
+  const focusedView = ["history", "comparison", "style-import", "export"].includes(
+    canvasScreen.type,
+  );
+  const canvasContentKey =
+    canvasScreen.type === "comparison"
+      ? `comparison-${canvasScreen.snapshotId}`
+      : canvasScreen.type;
   const openSnapshotDialog = () => {
     setSnapshotName(`Baseline ${snapshots.length + 1}`);
     setSnapshotError("");
     snapshotDialog.current?.showModal();
   };
   const closeExport = () => {
-    setExportOpen(false);
-    setCanvasView("app");
+    setCanvasScreen({ type: "preview" });
     requestAnimationFrame(() => previewViewButton.current?.focus());
   };
   const closeStyleImport = () => {
-    setStyleImportOpen(false);
-    setCanvasView("app");
+    setCanvasScreen({ type: "preview" });
     requestAnimationFrame(() => previewViewButton.current?.focus());
   };
   const applyStyleMappings = (mappings: StyleMapping[]) => {
@@ -93,112 +122,463 @@ export function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <LazyMotion features={domMax}>
-    <div className={styles.app}>
-      <header className={styles.header}>
-        <div className={styles.brandBlock}>
-          <div className={styles.brandMark}><Layers3 aria-hidden="true" /></div>
-          <div>
-            <strong>TokenLab</strong>
-            <span>{document.name}</span>
-          </div>
-        </div>
-        <div className={styles.tokenSpectrum} aria-label={`Active palette for ${document.name}`}>
-          <span>Active spectrum</span>
-          <div>{spectrum.map((token) => <i key={token.id} style={{ background: resolveCssValue(document, token.id, mode) }} title={`${token.path}: ${resolveCssValue(document, token.id, mode)}`} />)}</div>
-        </div>
-        <nav className={`${styles.viewTabs} ${styles.headerViewTabs}`} aria-label="Canvas views">
-          <m.button ref={previewViewButton} aria-pressed={canvasView === "app" && !exportOpen && !styleImportOpen} className={canvasView === "app" && !exportOpen && !styleImportOpen ? styles.activeTab : ""} whileTap={{ scale: 0.96 }} onClick={() => { setExportOpen(false); setStyleImportOpen(false); setComparisonSnapshotId(null); setCanvasView("app"); }}>{canvasView === "app" && !exportOpen && !styleImportOpen && <m.span layoutId="header-view-indicator" className={styles.tabIndicator} transition={{ type: "spring", stiffness: 520, damping: 38 }} aria-hidden="true" />}<span className={styles.tabLabel}>Preview</span></m.button>
-          <m.button aria-pressed={canvasView === "components" && !exportOpen && !styleImportOpen} className={canvasView === "components" && !exportOpen && !styleImportOpen ? styles.activeTab : ""} whileTap={{ scale: 0.96 }} onClick={() => { setExportOpen(false); setStyleImportOpen(false); setComparisonSnapshotId(null); setCanvasView("components"); }}>{canvasView === "components" && !exportOpen && !styleImportOpen && <m.span layoutId="header-view-indicator" className={styles.tabIndicator} transition={{ type: "spring", stiffness: 520, damping: 38 }} aria-hidden="true" />}<span className={styles.tabLabel}>System</span></m.button>
-          <m.button aria-pressed={canvasView === "history" && !exportOpen && !styleImportOpen} className={canvasView === "history" && !exportOpen && !styleImportOpen ? styles.activeTab : ""} whileTap={{ scale: 0.96 }} onClick={() => { setExportOpen(false); setStyleImportOpen(false); setComparisonSnapshotId(null); setCanvasView("history"); }}>{canvasView === "history" && !exportOpen && !styleImportOpen && <m.span layoutId="header-view-indicator" className={styles.tabIndicator} transition={{ type: "spring", stiffness: 520, damping: 38 }} aria-hidden="true" />}<span className={styles.tabLabel}><HistoryIcon aria-hidden="true" />History</span></m.button>
-        </nav>
-        <div className={styles.headerActions}>
-          <span className={styles.savedStatus} role="status" aria-live="polite"><CheckCircle2 aria-hidden="true" /> {saveStatus}</span>
-          <span className={styles.contrastStatus}>{contrastFailures === 0 ? "Contrast checks pass" : `${contrastFailures} contrast pairs need attention`}</span>
-          <span className={styles.historyActions}>
-            <m.button className={styles.iconAction} aria-label="Undo" title="Undo" disabled={history.length === 0} whileTap={{ scale: 0.9 }} onClick={undo}><Undo2 aria-hidden="true" /></m.button>
-            <m.button className={styles.iconAction} aria-label="Redo" title="Redo" disabled={future.length === 0} whileTap={{ scale: 0.9 }} onClick={redo}><Redo2 aria-hidden="true" /></m.button>
-          </span>
-          <m.button className={styles.headerSecondaryButton} whileTap={{ scale: 0.97 }} onClick={() => { setComparisonSnapshotId(null); setExportOpen(false); setStyleImportOpen(true); setMobilePanel("canvas"); setInspectorOpen(false); }}><FileSearch aria-hidden="true" />Import CSS</m.button>
-          <m.button className={styles.primaryStudioButton} whileTap={{ scale: 0.97 }} onClick={() => { setComparisonSnapshotId(null); setStyleImportOpen(false); setExportOpen(true); setMobilePanel("canvas"); setInspectorOpen(false); }}><Download aria-hidden="true" />Export</m.button>
-        </div>
-      </header>
-
-      <dialog ref={snapshotDialog} className={styles.studioDialog} aria-labelledby="snapshot-title" aria-describedby="snapshot-description" onClose={() => setSnapshotError("")}>
-        <form method="dialog" noValidate onSubmit={(event) => { if (!snapshotName.trim()) { event.preventDefault(); setSnapshotError("Enter a snapshot name."); snapshotNameInput.current?.focus(); return; } captureSnapshot(snapshotName.trim()); }}>
-          <h2 id="snapshot-title">Name snapshot</h2>
-          <p id="snapshot-description">Save the current token system as a comparison baseline.</p>
-          <label>Snapshot name<input ref={snapshotNameInput} autoFocus required aria-invalid={Boolean(snapshotError)} aria-describedby={snapshotError ? "snapshot-error" : "snapshot-description"} value={snapshotName} onChange={(event) => { setSnapshotName(event.target.value); setSnapshotError(""); }} /></label>
-          <span id="snapshot-error" className={styles.dialogError} role="alert">{snapshotError}</span>
-          <div><button type="button" className={styles.secondaryButton} onClick={() => snapshotDialog.current?.close()}>Cancel</button><button className={styles.primaryStudioButton}>Save snapshot</button></div>
-        </form>
-      </dialog>
-
-      <nav className={`${styles.mobilePanelNav} ${focusedView ? styles.focusedViewHidden : ""}`} aria-label="Mobile workspace">
-        {(["tokens", "canvas", "inspector"] as const).map((panel) => <m.button key={panel} aria-controls={panel === "tokens" ? "token-library" : panel === "canvas" ? "living-canvas" : "token-inspector"} aria-pressed={mobilePanel === panel} whileTap={{ scale: 0.97 }} onClick={() => setMobilePanel(panel)}>{mobilePanel === panel && <m.span layoutId="mobile-panel-indicator" className={styles.tabIndicator} transition={{ type: "spring", stiffness: 520, damping: 38 }} aria-hidden="true" />}<span className={styles.tabLabel}>{panel[0].toUpperCase() + panel.slice(1)}</span></m.button>)}
-      </nav>
-      <p className={styles.srOnly} role="status" aria-live="polite">{selectedComponent ? `${selectedComponent.label} selected. ${selectedComponent.tokenIds.length} related tokens are available in the inspector.` : ""}</p>
-
-      <main className={`${styles.workspace} ${focusedView ? styles.workspaceFocused : ""}`}>
-        <TokenLibrary
-          className={`${styles.tokenPanel} ${focusedView ? styles.focusedViewHidden : ""} ${mobilePanel !== "tokens" ? styles.mobilePanelHidden : ""}`}
-          document={document}
-          mode={mode}
-          selectedTokenId={selectedTokenId}
-          openGroupId={openTokenGroupId}
-          onOpenGroupChange={setOpenTokenGroupId}
-          onSelectToken={(tokenId) => { setSelectedComponentKey(null); selectVisibleToken(tokenId); setMobilePanel("inspector"); setInspectorOpen(true); }}
-          onSelectPreset={(presetId) => execute({ type: "select-preset", presetId })}
-        />
-
-        <section id="living-canvas" className={`${styles.canvasPanel} ${mobilePanel !== "canvas" ? styles.mobilePanelHidden : ""}`} aria-label={canvasView === "components" ? "Design system" : "Living Canvas"}>
-          {!focusedView && <div className={styles.canvasToolbar}>
-            <strong>{canvasView === "components" ? "Design system" : "Living Canvas"}</strong>
-            <div className={styles.canvasControls}>
-              <select className={styles.modeSelect} aria-label="Preview mode" value={mode} onChange={(event) => setMode(event.target.value as TokenMode)}><option value="light">Light</option><option value="dark">Dark</option></select>
-              <select className={styles.modeSelect} aria-label="Preview width" value={previewWidth} onChange={(event) => setPreviewWidth(Number(event.target.value) as typeof previewWidth)}><option value={1280}>Desktop 1280</option><option value={960}>Compact 960</option><option value={720}>Narrow 720</option></select>
-              <button className={styles.inspectorDrawerButton} aria-expanded={inspectorOpen} aria-controls="token-inspector" onClick={() => setInspectorOpen(true)}>Open inspector</button>
-              {canvasView === "app" && <span className={styles.interactionModes} aria-label="Preview interaction mode">
-                <m.button className={!inspectEnabled ? styles.activeInteractionMode : ""} aria-pressed={!inspectEnabled} whileTap={{ scale: 0.96 }} onClick={() => setInspectEnabled(false)}>{!inspectEnabled && <m.span layoutId="interaction-mode-indicator" className={styles.tabIndicator} transition={{ type: "spring", stiffness: 520, damping: 38 }} aria-hidden="true" />}<span className={styles.tabLabel}><MousePointer2 aria-hidden="true" />Interact</span></m.button>
-                <m.button className={inspectEnabled ? styles.activeInteractionMode : ""} aria-pressed={inspectEnabled} whileTap={{ scale: 0.96 }} onClick={() => setInspectEnabled(true)}>{inspectEnabled && <m.span layoutId="interaction-mode-indicator" className={styles.tabIndicator} transition={{ type: "spring", stiffness: 520, damping: 38 }} aria-hidden="true" />}<span className={styles.tabLabel}><Eye aria-hidden="true" />Inspect</span></m.button>
-              </span>}
+      <LazyMotion features={domMax}>
+        <div className={styles.app}>
+          <header className={styles.header}>
+            <div className={styles.brandBlock}>
+              <div className={styles.brandMark}>
+                <Layers3 aria-hidden="true" />
+              </div>
+              <div>
+                <strong>TokenLab</strong>
+                <span>{document.name}</span>
+              </div>
             </div>
-          </div>}
-          {inspectEnabled && !focusedView && canvasView === "app" && <div className={styles.inspectNotice} role="status"><Sparkles aria-hidden="true" /><span><strong>Inspect mode</strong> — select a preview element to reveal its tokens.</span></div>}
-          <AnimatePresence mode="wait" initial={false}>
-            <m.div key={canvasContentKey} className={styles.canvasViewContent} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}>
-              {styleImportOpen ? <StyleImportPanel document={document} mode={mode} onApply={applyStyleMappings} onClose={closeStyleImport} /> : exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={closeExport} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); closeExport(); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); setCanvasView("app"); requestAnimationFrame(() => previewViewButton.current?.focus()); }} /> : canvasView === "history" ? <HistoryPanel snapshots={snapshots} onCreate={openSnapshotDialog} onCompare={setComparisonSnapshotId} /> : canvasView === "app" ? <FormaPreview
-                createdProjects={createdProjects}
-                inspectEnabled={inspectEnabled}
-                highlightedComponents={consumers.map((consumer) => consumer.key)}
-                selectedComponentKey={selectedComponentKey}
-                onInspect={selectComponent}
-                onCreateProject={(name) => setCreatedProjects((projects) => [...projects, { id: `preview-project-${projects.length + 1}`, name }])}
-                style={previewStyle}
-              /> : <SystemPreview document={document} mode={mode} style={previewStyle} contrastResults={contrastResults} onSelectToken={(tokenId) => { setSelectedComponentKey(null); selectVisibleToken(tokenId); setMobilePanel("inspector"); setInspectorOpen(true); }} onSelectComponent={selectComponent} />}
-            </m.div>
-          </AnimatePresence>
-        </section>
+            <div
+              className={styles.tokenSpectrum}
+              aria-label={`Active palette for ${document.name}`}
+            >
+              <span>Active spectrum</span>
+              <div>
+                {spectrum.map((token) => (
+                  <i
+                    key={token.id}
+                    style={{ background: resolveCssValue(document, token.id, mode) }}
+                    title={`${token.path}: ${resolveCssValue(document, token.id, mode)}`}
+                  />
+                ))}
+              </div>
+            </div>
+            <nav
+              className={`${styles.viewTabs} ${styles.headerViewTabs}`}
+              aria-label="Canvas views"
+            >
+              <m.button
+                ref={previewViewButton}
+                aria-pressed={canvasScreen.type === "preview"}
+                className={canvasScreen.type === "preview" ? styles.activeTab : ""}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setCanvasScreen({ type: "preview" })}
+              >
+                {canvasScreen.type === "preview" && (
+                  <m.span
+                    layoutId="header-view-indicator"
+                    className={styles.tabIndicator}
+                    transition={{ type: "spring", stiffness: 520, damping: 38 }}
+                    aria-hidden="true"
+                  />
+                )}
+                <span className={styles.tabLabel}>Preview</span>
+              </m.button>
+              <m.button
+                aria-pressed={canvasScreen.type === "system"}
+                className={canvasScreen.type === "system" ? styles.activeTab : ""}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setCanvasScreen({ type: "system" })}
+              >
+                {canvasScreen.type === "system" && (
+                  <m.span
+                    layoutId="header-view-indicator"
+                    className={styles.tabIndicator}
+                    transition={{ type: "spring", stiffness: 520, damping: 38 }}
+                    aria-hidden="true"
+                  />
+                )}
+                <span className={styles.tabLabel}>System</span>
+              </m.button>
+              <m.button
+                aria-pressed={canvasScreen.type === "history" || canvasScreen.type === "comparison"}
+                className={
+                  canvasScreen.type === "history" || canvasScreen.type === "comparison"
+                    ? styles.activeTab
+                    : ""
+                }
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setCanvasScreen({ type: "history" })}
+              >
+                {(canvasScreen.type === "history" || canvasScreen.type === "comparison") && (
+                  <m.span
+                    layoutId="header-view-indicator"
+                    className={styles.tabIndicator}
+                    transition={{ type: "spring", stiffness: 520, damping: 38 }}
+                    aria-hidden="true"
+                  />
+                )}
+                <span className={styles.tabLabel}>
+                  <HistoryIcon aria-hidden="true" />
+                  History
+                </span>
+              </m.button>
+            </nav>
+            <div className={styles.headerActions}>
+              <span className={styles.savedStatus} role="status" aria-live="polite">
+                <CheckCircle2 aria-hidden="true" /> {saveStatus}
+              </span>
+              <span className={styles.contrastStatus}>
+                {contrastFailures === 0
+                  ? "Contrast checks pass"
+                  : `${contrastFailures} contrast pairs need attention`}
+              </span>
+              <span className={styles.historyActions}>
+                <m.button
+                  className={styles.iconAction}
+                  aria-label="Undo"
+                  title="Undo"
+                  disabled={history.length === 0}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={undo}
+                >
+                  <Undo2 aria-hidden="true" />
+                </m.button>
+                <m.button
+                  className={styles.iconAction}
+                  aria-label="Redo"
+                  title="Redo"
+                  disabled={future.length === 0}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={redo}
+                >
+                  <Redo2 aria-hidden="true" />
+                </m.button>
+              </span>
+              <m.button
+                className={styles.headerSecondaryButton}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  setCanvasScreen({ type: "style-import" });
+                  setMobilePanel("canvas");
+                  setInspectorOpen(false);
+                }}
+              >
+                <FileSearch aria-hidden="true" />
+                Import CSS
+              </m.button>
+              <m.button
+                className={styles.primaryStudioButton}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  setCanvasScreen({ type: "export" });
+                  setMobilePanel("canvas");
+                  setInspectorOpen(false);
+                }}
+              >
+                <Download aria-hidden="true" />
+                Export
+              </m.button>
+            </div>
+          </header>
 
-        <TokenInspector
-          className={`${styles.inspectorPanel} ${focusedView ? styles.focusedViewHidden : ""} ${!inspectorOpen ? styles.inspectorDrawerClosed : ""} ${mobilePanel !== "inspector" ? styles.mobilePanelHidden : ""}`}
-          document={document}
-          token={selectedToken}
-          mode={mode}
-          selectedComponent={selectedComponent}
-          consumers={consumers}
-          contrastResults={contrastResults}
-          contrastFailures={contrastFailures}
-          onClose={() => setInspectorOpen(false)}
-          onSelectToken={selectVisibleToken}
-          onSelectComponent={selectComponent}
-          onApplyColor={(value) => execute({ type: "set-color", tokenId: selectedToken.id, mode, value })}
-          onApplyValue={(value) => execute({ type: "set-token-value", tokenId: selectedToken.id, mode, value })}
-          onApplyReference={(targetId) => execute({ type: "set-token-reference", tokenId: selectedToken.id, mode, targetId })}
-        />
-      </main>
-    </div>
-    </LazyMotion>
+          <dialog
+            ref={snapshotDialog}
+            className={styles.studioDialog}
+            aria-labelledby="snapshot-title"
+            aria-describedby="snapshot-description"
+            onClose={() => setSnapshotError("")}
+          >
+            <form
+              method="dialog"
+              noValidate
+              onSubmit={(event) => {
+                if (!snapshotName.trim()) {
+                  event.preventDefault();
+                  setSnapshotError("Enter a snapshot name.");
+                  snapshotNameInput.current?.focus();
+                  return;
+                }
+                captureSnapshot(snapshotName.trim());
+              }}
+            >
+              <h2 id="snapshot-title">Name snapshot</h2>
+              <p id="snapshot-description">
+                Save the current token system as a comparison baseline.
+              </p>
+              <label>
+                Snapshot name
+                <input
+                  ref={snapshotNameInput}
+                  autoFocus
+                  required
+                  aria-invalid={Boolean(snapshotError)}
+                  aria-describedby={snapshotError ? "snapshot-error" : "snapshot-description"}
+                  value={snapshotName}
+                  onChange={(event) => {
+                    setSnapshotName(event.target.value);
+                    setSnapshotError("");
+                  }}
+                />
+              </label>
+              <span id="snapshot-error" className={styles.dialogError} role="alert">
+                {snapshotError}
+              </span>
+              <div>
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={() => snapshotDialog.current?.close()}
+                >
+                  Cancel
+                </button>
+                <button className={styles.primaryStudioButton}>Save snapshot</button>
+              </div>
+            </form>
+          </dialog>
+
+          <nav
+            className={`${styles.mobilePanelNav} ${focusedView ? styles.focusedViewHidden : ""}`}
+            aria-label="Mobile workspace"
+          >
+            {(["tokens", "canvas", "inspector"] as const).map((panel) => (
+              <m.button
+                key={panel}
+                aria-controls={
+                  panel === "tokens"
+                    ? "token-library"
+                    : panel === "canvas"
+                      ? "living-canvas"
+                      : "token-inspector"
+                }
+                aria-pressed={mobilePanel === panel}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setMobilePanel(panel)}
+              >
+                {mobilePanel === panel && (
+                  <m.span
+                    layoutId="mobile-panel-indicator"
+                    className={styles.tabIndicator}
+                    transition={{ type: "spring", stiffness: 520, damping: 38 }}
+                    aria-hidden="true"
+                  />
+                )}
+                <span className={styles.tabLabel}>{panel[0].toUpperCase() + panel.slice(1)}</span>
+              </m.button>
+            ))}
+          </nav>
+          <p className={styles.srOnly} role="status" aria-live="polite">
+            {selectedComponent
+              ? `${selectedComponent.label} selected. ${selectedComponent.tokenIds.length} related tokens are available in the inspector.`
+              : ""}
+          </p>
+
+          <main className={`${styles.workspace} ${focusedView ? styles.workspaceFocused : ""}`}>
+            <TokenLibrary
+              className={`${styles.tokenPanel} ${focusedView ? styles.focusedViewHidden : ""} ${mobilePanel !== "tokens" ? styles.mobilePanelHidden : ""}`}
+              document={document}
+              mode={mode}
+              selectedTokenId={selectedTokenId}
+              openGroupId={openTokenGroupId}
+              onOpenGroupChange={setOpenTokenGroupId}
+              onSelectToken={(tokenId) => {
+                setSelectedComponentKey(null);
+                selectVisibleToken(tokenId);
+                setMobilePanel("inspector");
+                setInspectorOpen(true);
+              }}
+              onSelectPreset={(presetId) => execute({ type: "select-preset", presetId })}
+            />
+
+            <section
+              id="living-canvas"
+              className={`${styles.canvasPanel} ${mobilePanel !== "canvas" ? styles.mobilePanelHidden : ""}`}
+              aria-label={canvasScreen.type === "system" ? "Design system" : "Living Canvas"}
+            >
+              {!focusedView && (
+                <div className={styles.canvasToolbar}>
+                  <strong>
+                    {canvasScreen.type === "system" ? "Design system" : "Living Canvas"}
+                  </strong>
+                  <div className={styles.canvasControls}>
+                    <select
+                      className={styles.modeSelect}
+                      aria-label="Preview mode"
+                      value={mode}
+                      onChange={(event) => setMode(event.target.value as TokenMode)}
+                    >
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                    </select>
+                    <select
+                      className={styles.modeSelect}
+                      aria-label="Preview width"
+                      value={previewWidth}
+                      onChange={(event) =>
+                        setPreviewWidth(Number(event.target.value) as typeof previewWidth)
+                      }
+                    >
+                      <option value={1280}>Desktop 1280</option>
+                      <option value={960}>Compact 960</option>
+                      <option value={720}>Narrow 720</option>
+                    </select>
+                    <button
+                      className={styles.inspectorDrawerButton}
+                      aria-expanded={inspectorOpen}
+                      aria-controls="token-inspector"
+                      onClick={() => setInspectorOpen(true)}
+                    >
+                      Open inspector
+                    </button>
+                    {canvasScreen.type === "preview" && (
+                      <span
+                        className={styles.interactionModes}
+                        aria-label="Preview interaction mode"
+                      >
+                        <m.button
+                          className={!inspectEnabled ? styles.activeInteractionMode : ""}
+                          aria-pressed={!inspectEnabled}
+                          whileTap={{ scale: 0.96 }}
+                          onClick={() => setInspectEnabled(false)}
+                        >
+                          {!inspectEnabled && (
+                            <m.span
+                              layoutId="interaction-mode-indicator"
+                              className={styles.tabIndicator}
+                              transition={{ type: "spring", stiffness: 520, damping: 38 }}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span className={styles.tabLabel}>
+                            <MousePointer2 aria-hidden="true" />
+                            Interact
+                          </span>
+                        </m.button>
+                        <m.button
+                          className={inspectEnabled ? styles.activeInteractionMode : ""}
+                          aria-pressed={inspectEnabled}
+                          whileTap={{ scale: 0.96 }}
+                          onClick={() => setInspectEnabled(true)}
+                        >
+                          {inspectEnabled && (
+                            <m.span
+                              layoutId="interaction-mode-indicator"
+                              className={styles.tabIndicator}
+                              transition={{ type: "spring", stiffness: 520, damping: 38 }}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span className={styles.tabLabel}>
+                            <Eye aria-hidden="true" />
+                            Inspect
+                          </span>
+                        </m.button>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+              {inspectEnabled && !focusedView && canvasScreen.type === "preview" && (
+                <div className={styles.inspectNotice} role="status">
+                  <Sparkles aria-hidden="true" />
+                  <span>
+                    <strong>Inspect mode</strong> — select a preview element to reveal its tokens.
+                  </span>
+                </div>
+              )}
+              <AnimatePresence mode="wait" initial={false}>
+                <m.div
+                  key={canvasContentKey}
+                  className={styles.canvasViewContent}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {canvasScreen.type === "style-import" ? (
+                    <StyleImportPanel
+                      document={document}
+                      mode={mode}
+                      onApply={applyStyleMappings}
+                      onClose={closeStyleImport}
+                    />
+                  ) : canvasScreen.type === "export" ? (
+                    <ExportPanel
+                      document={document}
+                      snapshots={snapshots}
+                      onClose={closeExport}
+                      onImport={(workspace) => {
+                        hydrate(workspace.document, workspace.snapshots);
+                        closeExport();
+                      }}
+                    />
+                  ) : canvasScreen.type === "comparison" && comparisonSnapshot ? (
+                    <ComparisonView
+                      snapshot={comparisonSnapshot}
+                      snapshots={snapshots}
+                      current={document}
+                      mode={mode}
+                      onSelect={(snapshotId) => setCanvasScreen({ type: "comparison", snapshotId })}
+                      onClose={() => setCanvasScreen({ type: "history" })}
+                      onRestore={() => {
+                        restoreSnapshot(comparisonSnapshot.id);
+                        setCanvasScreen({ type: "preview" });
+                        requestAnimationFrame(() => previewViewButton.current?.focus());
+                      }}
+                    />
+                  ) : canvasScreen.type === "history" || canvasScreen.type === "comparison" ? (
+                    <HistoryPanel
+                      snapshots={snapshots}
+                      onCreate={openSnapshotDialog}
+                      onCompare={(snapshotId) =>
+                        setCanvasScreen({ type: "comparison", snapshotId })
+                      }
+                    />
+                  ) : canvasScreen.type === "preview" ? (
+                    <FormaPreview
+                      createdProjects={createdProjects}
+                      inspectEnabled={inspectEnabled}
+                      highlightedComponents={consumers.map((consumer) => consumer.key)}
+                      selectedComponentKey={selectedComponentKey}
+                      onInspect={selectComponent}
+                      onCreateProject={(name) =>
+                        setCreatedProjects((projects) => [
+                          ...projects,
+                          { id: `preview-project-${projects.length + 1}`, name },
+                        ])
+                      }
+                      style={previewStyle}
+                    />
+                  ) : (
+                    <SystemPreview
+                      document={document}
+                      mode={mode}
+                      style={previewStyle}
+                      contrastResults={contrastResults}
+                      onSelectToken={(tokenId) => {
+                        setSelectedComponentKey(null);
+                        selectVisibleToken(tokenId);
+                        setMobilePanel("inspector");
+                        setInspectorOpen(true);
+                      }}
+                      onSelectComponent={selectComponent}
+                    />
+                  )}
+                </m.div>
+              </AnimatePresence>
+            </section>
+
+            <TokenInspector
+              className={`${styles.inspectorPanel} ${focusedView ? styles.focusedViewHidden : ""} ${!inspectorOpen ? styles.inspectorDrawerClosed : ""} ${mobilePanel !== "inspector" ? styles.mobilePanelHidden : ""}`}
+              document={document}
+              token={selectedToken}
+              mode={mode}
+              selectedComponent={selectedComponent}
+              consumers={consumers}
+              contrastResults={contrastResults}
+              contrastFailures={contrastFailures}
+              onClose={() => setInspectorOpen(false)}
+              onSelectToken={selectVisibleToken}
+              onSelectComponent={selectComponent}
+              onApplyColor={(value) =>
+                execute({ type: "set-color", tokenId: selectedToken.id, mode, value })
+              }
+              onApplyValue={(value) =>
+                execute({ type: "set-token-value", tokenId: selectedToken.id, mode, value })
+              }
+              onApplyReference={(targetId) =>
+                execute({ type: "set-token-reference", tokenId: selectedToken.id, mode, targetId })
+              }
+            />
+          </main>
+        </div>
+      </LazyMotion>
     </MotionConfig>
   );
 }

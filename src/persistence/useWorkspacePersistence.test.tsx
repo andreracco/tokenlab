@@ -55,13 +55,24 @@ describe("workspace persistence", () => {
     render(<PersistenceStatus />);
     await screen.findByText("Saved locally");
 
-    act(() => useTokenLabStore.getState().execute({ type: "set-color", tokenId: "color.brand.600", mode: "light", value: "#C2415D" }));
+    act(() =>
+      useTokenLabStore.getState().execute({
+        type: "set-color",
+        tokenId: "color.brand.600",
+        mode: "light",
+        value: "#C2415D",
+      }),
+    );
 
     expect(screen.getByText("Saving…")).toBeTruthy();
-    await waitFor(() => expect(repository.saveWorkspace).toHaveBeenCalledTimes(1), { timeout: 800 });
+    await waitFor(() => expect(repository.saveWorkspace).toHaveBeenCalledTimes(1), {
+      timeout: 800,
+    });
     expect(await screen.findByText("Saved locally")).toBeTruthy();
     const savedWorkspace = repository.saveWorkspace.mock.calls[0][0] as SavedWorkspace;
-    expect(savedWorkspace.document.tokens.find((token) => token.id === "color.brand.600")?.values.light).toEqual({ kind: "literal", value: "#C2415D" });
+    expect(
+      savedWorkspace.document.tokens.find((token) => token.id === "color.brand.600")?.values.light,
+    ).toEqual({ kind: "literal", value: "#C2415D" });
   });
 
   it("keeps the current draft and exposes load and save failures", async () => {
@@ -77,6 +88,8 @@ describe("workspace persistence", () => {
     await screen.findByText("Saved locally");
     act(() => useTokenLabStore.getState().captureSnapshot("Before changes"));
 
-    expect(await screen.findByText("Couldn't save — download your project", {}, { timeout: 800 })).toBeTruthy();
+    expect(
+      await screen.findByText("Couldn't save — download your project", {}, { timeout: 800 }),
+    ).toBeTruthy();
   });
 });

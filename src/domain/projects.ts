@@ -35,7 +35,13 @@ export function diffProjects(before: ProjectDocument, after: ProjectDocument): P
       const afterToken = afterTokens.get(id);
       const beforeValue = beforeToken ? definition(before, id, mode) : "Removed";
       const afterValue = afterToken ? definition(after, id, mode) : "Removed";
-      if (beforeValue !== afterValue) changes.push({ path: afterToken?.path ?? beforeToken?.path ?? id, mode, before: beforeValue, after: afterValue });
+      if (beforeValue !== afterValue)
+        changes.push({
+          path: afterToken?.path ?? beforeToken?.path ?? id,
+          mode,
+          before: beforeValue,
+          after: afterValue,
+        });
     }
   }
 
@@ -45,5 +51,7 @@ export function diffProjects(before: ProjectDocument, after: ProjectDocument): P
 function definition(document: ProjectDocument, tokenId: string, mode: TokenMode): string {
   const token = document.tokens.find((candidate) => candidate.id === tokenId)!;
   const value = token.values[mode] ?? token.values.light;
-  return value.kind === "reference" ? `→ ${value.tokenId}` : resolveCssValue(document, tokenId, mode);
+  return value.kind === "reference"
+    ? `→ ${value.tokenId}`
+    : resolveCssValue(document, tokenId, mode);
 }

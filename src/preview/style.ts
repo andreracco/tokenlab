@@ -1,5 +1,10 @@
 import type { CSSProperties } from "react";
-import { resolveColorToken, resolveCssValue, type ProjectDocument, type TokenMode } from "../domain/tokens";
+import {
+  resolveColorToken,
+  resolveCssValue,
+  type ProjectDocument,
+  type TokenMode,
+} from "../domain/tokens";
 
 export type PreviewStyle = CSSProperties & {
   "--tl-preview-viewport-width"?: string;
@@ -26,9 +31,20 @@ export type PreviewStyle = CSSProperties & {
 export function createPreviewStyle(document: ProjectDocument, mode: TokenMode): PreviewStyle {
   const fontFamily = resolveCssValue(document, "typography.body.family", mode);
   return {
-    "--tl-preview-action-primary-background": resolveColorToken(document, "action.primary.background", mode),
-    "--tl-preview-action-primary-foreground": resolveCssValue(document, "action.primary.foreground", mode),
-    "--tl-preview-font-family": fontFamily === "Georgia" ? "Georgia, serif" : `${fontFamily}, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`,
+    "--tl-preview-action-primary-background": resolveColorToken(
+      document,
+      "action.primary.background",
+      mode,
+    ),
+    "--tl-preview-action-primary-foreground": resolveCssValue(
+      document,
+      "action.primary.foreground",
+      mode,
+    ),
+    "--tl-preview-font-family":
+      fontFamily === "Georgia"
+        ? "Georgia, serif"
+        : `${fontFamily}, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`,
     "--tl-preview-font-size": resolveCssValue(document, "typography.body.size", mode),
     "--tl-preview-font-weight": resolveCssValue(document, "typography.body.weight", mode),
     "--tl-preview-strong-weight": resolveCssValue(document, "typography.strong.weight", mode),

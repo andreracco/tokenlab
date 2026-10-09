@@ -7,7 +7,11 @@ export function useWorkspacePersistence() {
   const snapshots = useTokenLabStore((state) => state.snapshots);
   const hydrate = useTokenLabStore((state) => state.hydrate);
   const [ready, setReady] = useState(false);
-  const [status, setStatus] = useState(persistenceAvailable ? "Loading local draft…" : "Local save unavailable — download your project");
+  const [status, setStatus] = useState(
+    persistenceAvailable
+      ? "Loading local draft…"
+      : "Local save unavailable — download your project",
+  );
 
   useEffect(() => {
     if (!persistenceAvailable) return;
@@ -20,7 +24,9 @@ export function useWorkspacePersistence() {
         setStatus("Saved locally");
       })
       .catch(() => active && setStatus("Couldn't load — current draft preserved"));
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [hydrate]);
 
   useEffect(() => {
