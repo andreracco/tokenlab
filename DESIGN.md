@@ -9,9 +9,17 @@ colors:
   studio-panel-strong: "#FFFFFF"
   studio-border: "#CFD3D6"
   studio-text: "#17202A"
-  studio-muted: "#68717C"
+  studio-muted: "#566069"
   studio-accent: "#265CF5"
   studio-signal: "#D7FF5F"
+  studio-on-ink: "#FFFFFF"
+  studio-ink-raised: "#222B38"
+  studio-ink-border: "#3C4655"
+  studio-ink-muted: "#A9B2BD"
+  studio-hover: "#ECEEEC"
+  studio-well: "#EFEDE7"
+  studio-success: "#327351"
+  studio-danger: "#9C3E3E"
 typography:
   interface:
     fontFamily: '"Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
@@ -62,7 +70,7 @@ The studio frame uses `studio-ink` for the header, mineral `studio-canvas` behin
 
 ## Typography
 
-The interface uses the installed-system `interface` stack for compact, readable controls. Token paths, values, spectrum labels, and draft metadata use `technical`. Headings rely on tighter tracking and weight rather than a separate downloaded display font, keeping rendering fast and stable.
+The interface uses the installed-system `interface` stack for compact, readable controls. Token paths, values, spectrum labels, and draft metadata use `technical`. Studio chrome text uses two rem-based roles from `src/styles.css`: `--studio-type-meta` (0.75rem) for labels, metadata, and dense controls, and `--studio-type-body` (0.8125rem) for primary row and field text, so nothing falls below 12px and browser font settings are respected. Preview content keeps its own token-driven sizes. Headings rely on tighter tracking and weight rather than a separate downloaded display font, keeping rendering fast and stable.
 
 ## Layout
 
@@ -80,7 +88,7 @@ Controls use a compact 7px radius, panels about 10px, and technical elements 4px
 
 ### Foundational visual states
 
-Hover is tonal, focus uses a 2px `studio-accent` ring, active segmented controls invert to `studio-ink`, and disabled controls preserve geometry at reduced opacity. Errors remain textual and adjacent to their fields. Reduced-motion preference removes decorative transition duration.
+Hover is tonal, focus uses a 2px `studio-accent` ring, active segmented controls invert to `studio-ink`, and disabled controls preserve geometry at reduced opacity. Errors remain textual and adjacent to their fields. Reduced-motion preference removes decorative transition duration. In forced-colors mode, pressed and selected controls gain a 3px `Highlight` outline (tabs also underline), while token swatches, the Active spectrum, and the preview keep their real colors because they are the data under inspection.
 
 ### Buttons and actions
 

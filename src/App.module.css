@@ -18,7 +18,7 @@
   padding: 0 18px;
   border-bottom: 1px solid #293240;
   background: var(--studio-ink);
-  color: #f7f6f2;
+  color: var(--studio-panel);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -51,6 +51,7 @@
 .brandMark {
   width: 34px;
   height: 34px;
+  flex: none;
   display: grid;
   place-items: center;
   border-radius: 8px;
@@ -77,7 +78,7 @@
 .brandBlock span {
   color: #949eaa;
   font:
-    9px ui-monospace,
+    var(--studio-type-meta) ui-monospace,
     SFMono-Regular,
     monospace;
   letter-spacing: 0.05em;
@@ -85,7 +86,7 @@
 }
 .panelHeading small {
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .tokenSpectrum {
   margin-right: auto;
@@ -98,7 +99,7 @@
 .tokenSpectrum > span {
   color: #8d98a6;
   font:
-    9px ui-monospace,
+    var(--studio-type-meta) ui-monospace,
     SFMono-Regular,
     monospace;
   letter-spacing: 0.08em;
@@ -110,8 +111,8 @@
   display: flex;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 4px;
-  background: #fff;
+  border-radius: var(--studio-radius-sm);
+  background: var(--studio-panel-strong);
 }
 .tokenSpectrum i {
   flex: 1;
@@ -125,12 +126,14 @@
   gap: 6px;
 }
 .savedStatus {
+  /* Reserve the longest status ("Loading local draft…") so the centered view tabs don't slide as it changes. */
+  min-width: 8.25rem;
   margin-right: 6px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #a9b2bd;
-  font-size: 10px;
+  color: var(--studio-ink-muted);
+  font-size: var(--studio-type-meta);
   white-space: nowrap;
 }
 .savedStatus svg {
@@ -139,8 +142,8 @@
   color: var(--studio-signal);
 }
 .contrastStatus {
-  color: #a9b2bd;
-  font-size: 10px;
+  color: var(--studio-ink-muted);
+  font-size: var(--studio-type-meta);
 }
 .secondaryButton,
 .primaryStudioButton,
@@ -148,14 +151,14 @@
 .iconAction {
   min-height: 32px;
   padding: 0 10px;
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   border: 1px solid var(--studio-border);
-  background: #fff;
+  background: var(--studio-panel-strong);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   font-weight: 650;
   cursor: pointer;
 }
@@ -173,15 +176,15 @@
 .headerSecondaryButton {
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid #3c4655;
-  border-radius: 7px;
-  background: #222b38;
+  border: 1px solid var(--studio-ink-border);
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-ink-raised);
   color: #e2e7ed;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   font-weight: 650;
   cursor: pointer;
 }
@@ -207,8 +210,8 @@
   color: #d1d7df;
 }
 .iconAction:hover:not(:disabled) {
-  border-color: #3c4655;
-  background: #222b38;
+  border-color: var(--studio-ink-border);
+  background: var(--studio-ink-raised);
 }
 .iconAction svg {
   width: 14px;
@@ -218,7 +221,7 @@
   width: min(380px, calc(100vw - 32px));
   padding: 0;
   border: 1px solid var(--studio-border);
-  border-radius: 10px;
+  border-radius: var(--studio-radius-panel);
   background: var(--studio-panel);
   color: var(--studio-text);
   box-shadow: 0 20px 60px rgba(36, 36, 36, 0.2);
@@ -240,20 +243,20 @@
 }
 .studioDialog p {
   color: var(--studio-muted);
-  font-size: 12px;
+  font-size: var(--studio-type-body);
 }
 .studioDialog label {
   display: grid;
   gap: 6px;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   font-weight: 650;
 }
 .studioDialog input {
   min-height: 36px;
   padding: 0 10px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background: var(--studio-panel-strong);
   color: var(--studio-text);
 }
@@ -265,7 +268,7 @@
 .dialogError {
   min-height: 14px;
   color: #a13c3c;
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .mobilePanelNav {
   display: none;
@@ -329,10 +332,10 @@
   align-items: center;
   gap: 7px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: #fff;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
   color: var(--studio-muted);
-  font-size: 12px;
+  font-size: var(--studio-type-body);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
 }
 .tokenSearch svg {
@@ -350,7 +353,7 @@
   background: transparent;
   color: var(--studio-text);
   caret-color: var(--studio-text);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .tokenSearch input::-webkit-search-cancel-button {
   display: none;
@@ -380,6 +383,10 @@
 .tokenSearch:focus-within {
   outline: 2px solid var(--studio-accent);
   outline-offset: 2px;
+}
+/* The wrapper carries the ring; the input would draw a second, nested one. */
+.tokenSearch input:focus-visible {
+  outline: 0;
 }
 .tokenList {
   min-height: 0;
@@ -430,7 +437,7 @@
   border-radius: 6px;
   background: transparent;
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -448,7 +455,7 @@
   height: 12px;
 }
 .tokenGroupTrigger:hover {
-  background: #eceeec;
+  background: var(--studio-hover);
   color: var(--studio-text);
 }
 .tokenGroupTrigger:focus-visible {
@@ -457,12 +464,12 @@
 .tokenGroupTrigger small {
   margin-left: auto;
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
 }
 .emptyTokens {
   margin: 12px 8px;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .tokenRow {
   width: 100%;
@@ -479,7 +486,7 @@
   cursor: pointer;
 }
 .tokenRow:hover {
-  background: #eceeec;
+  background: var(--studio-hover);
 }
 .tokenRowSelected {
   border-color: #9bb1ff;
@@ -492,13 +499,13 @@
   gap: 3px;
 }
 .tokenRow strong {
-  font-size: 12px;
+  font-size: var(--studio-type-body);
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .tokenRow small {
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -516,7 +523,7 @@
 .tokenMeta code {
   flex: 0 0 auto;
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   white-space: nowrap;
 }
 .swatch {
@@ -535,7 +542,7 @@
   background: #ece9e2;
   color: #69665f;
   font:
-    700 9px ui-monospace,
+    700 var(--studio-type-meta) ui-monospace,
     monospace;
   text-transform: uppercase;
 }
@@ -549,7 +556,7 @@
 }
 .presetPicker label {
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -559,15 +566,15 @@
   min-height: 36px;
   padding: 0 34px 0 9px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: #fff;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
   color: var(--studio-text);
-  font-size: 12px;
+  font-size: var(--studio-type-body);
 }
 .presetPicker small {
   min-height: 28px;
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   line-height: 1.4;
 }
 .canvasPanel {
@@ -590,7 +597,7 @@
   padding: 0 16px;
   justify-content: space-between;
   border-bottom: 1px solid var(--studio-border);
-  background: #f7f6f2;
+  background: var(--studio-panel);
 }
 .canvasToolbar strong {
   font-size: 14px;
@@ -600,7 +607,7 @@
   display: flex;
   gap: 2px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background: #e7e9e8;
 }
 .viewTabs button {
@@ -610,7 +617,7 @@
   border: 0;
   border-radius: 5px;
   background: transparent;
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   cursor: pointer;
 }
 .viewTabs button {
@@ -624,7 +631,7 @@
 }
 .viewTabs .activeTab {
   background: transparent;
-  color: #fff;
+  color: var(--studio-on-ink);
   font-weight: 700;
 }
 .tabLabel {
@@ -644,23 +651,23 @@
 }
 .viewTabs.headerViewTabs {
   flex: 0 0 auto;
-  border-color: #3c4655;
-  background: #222b38;
+  border-color: var(--studio-ink-border);
+  background: var(--studio-ink-raised);
 }
 .headerViewTabs button {
-  color: #a9b2bd;
+  color: var(--studio-ink-muted);
 }
 .viewTabs.headerViewTabs .activeTab {
   background: transparent;
   color: var(--studio-ink);
 }
 .viewTabs.headerViewTabs .tabIndicator {
-  background: #f7f6f2;
+  background: var(--studio-panel);
 }
 .canvasControls {
   gap: 12px;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .selectControl {
   min-width: 0;
@@ -708,16 +715,16 @@
   padding: 0 7px;
   border: 1px solid var(--studio-border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--studio-panel-strong);
   color: var(--studio-text);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .interactionModes {
   padding: 3px;
   display: inline-flex;
   gap: 2px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background: #e7e9e8;
 }
 .interactionModes button {
@@ -730,7 +737,7 @@
   border-radius: 5px;
   background: transparent;
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   cursor: pointer;
 }
 .interactionModes button svg {
@@ -743,7 +750,7 @@
 }
 .interactionModes .activeInteractionMode {
   background: transparent;
-  color: #fff;
+  color: var(--studio-on-ink);
   font-weight: 700;
 }
 .interactionModes .tabIndicator {
@@ -763,7 +770,7 @@
   border-bottom: 1px solid #cbd3ef;
   background: #f4f6ff;
   color: #445583;
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .inspectNotice svg {
   width: 13px;
@@ -1812,12 +1819,12 @@
 }
 .createProjectDialog p {
   color: var(--forma-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .createProjectDialog label {
   display: grid;
   gap: 6px;
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   font-weight: 700;
 }
 .createProjectDialog input {
@@ -1897,20 +1904,20 @@
   border-radius: 5px;
   background: #e2e3df;
   color: #626963;
-  font-size: 8px;
+  font-size: var(--studio-type-meta);
   font-weight: 700;
   text-transform: uppercase;
 }
 .inspectorHeading p {
   margin: 0;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   line-height: 1.45;
 }
 .eyebrow,
 .fieldLabel {
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1927,19 +1934,19 @@
   align-items: center;
 }
 .editorHeading span {
-  font-size: 12px;
+  font-size: var(--studio-type-body);
   font-weight: 750;
 }
 .editorHeading small {
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   text-transform: capitalize;
 }
 .editor label {
   display: block;
   margin-bottom: 7px;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   font-weight: 650;
 }
 .colorField {
@@ -1952,15 +1959,15 @@
   height: 36px;
   padding: 3px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: #fff;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
 }
 .colorField input[type="text"],
 .colorField input:not([type]) {
   min-width: 0;
   padding: 0 10px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background: white;
   color: var(--studio-text);
   font:
@@ -1976,11 +1983,11 @@
   min-height: 36px;
   padding: 0 10px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: #fff;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
   color: var(--studio-text);
   font:
-    11px ui-monospace,
+    var(--studio-type-meta) ui-monospace,
     monospace;
 }
 .valueInput[aria-invalid="true"] {
@@ -1997,7 +2004,7 @@
 .fontChoices legend {
   margin-bottom: 7px;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   font-weight: 650;
 }
 .fontChoices label {
@@ -2017,16 +2024,16 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: #fff;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
   color: var(--studio-text);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   text-align: center;
 }
 .fontChoices input:checked + span {
   border-color: var(--studio-ink);
   background: var(--studio-ink);
-  color: #fff;
+  color: var(--studio-on-ink);
   font-weight: 700;
 }
 .fontChoices input:focus-visible + span {
@@ -2038,7 +2045,7 @@
   margin: 0;
   padding-top: 6px;
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   line-height: 1.4;
 }
 .fieldError {
@@ -2056,10 +2063,10 @@
   justify-content: space-between;
   gap: 10px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: #fff;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .resolvedRow code {
   color: var(--studio-text);
@@ -2079,7 +2086,7 @@
   border: 0;
   background: transparent;
   color: var(--studio-text);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   font-weight: 700;
   text-align: left;
   cursor: pointer;
@@ -2087,7 +2094,7 @@
 .inspectorDisclosureTrigger > span:last-child {
   margin-left: auto;
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   font-weight: 600;
 }
 .disclosureChevron {
@@ -2108,10 +2115,10 @@
   gap: 4px;
 }
 .passLabel {
-  color: #327351 !important;
+  color: var(--studio-success) !important;
 }
 .failLabel {
-  color: #9c3e3e !important;
+  color: var(--studio-danger) !important;
 }
 .passLabel svg {
   width: 12px;
@@ -2147,7 +2154,7 @@
   height: 28px;
   display: grid;
   place-items: center;
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background: #ece9e3;
 }
 .usageRow > span:nth-child(2) {
@@ -2156,11 +2163,11 @@
   gap: 2px;
 }
 .usageRow strong {
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .usageRow small {
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
 }
 .registryToken {
   width: 100%;
@@ -2170,14 +2177,14 @@
   justify-content: space-between;
   gap: 8px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: #fff;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
   text-align: left;
   cursor: pointer;
 }
 .registryToken code {
   overflow: hidden;
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   text-overflow: ellipsis;
 }
 .contrastList {
@@ -2191,9 +2198,9 @@
   grid-template-columns: 1fr auto;
   gap: 2px 8px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: #fff;
-  font-size: 10px;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
+  font-size: var(--studio-type-meta);
 }
 .contrastList span {
   display: flex;
@@ -2201,19 +2208,19 @@
 }
 .contrastList small {
   color: var(--studio-muted);
-  font-size: 8px;
+  font-size: var(--studio-type-meta);
 }
 .contrastList > div > small {
   grid-column: 2;
 }
 .contrastPass strong {
-  color: #327351;
+  color: var(--studio-success);
 }
 .contrastFail {
   border-color: #d9a1a1 !important;
 }
 .contrastFail strong {
-  color: #9c3e3e;
+  color: var(--studio-danger);
 }
 .specimenDisplay:disabled {
   cursor: default;
@@ -2268,7 +2275,7 @@
   border-radius: 999px;
   background: var(--tl-preview-action-primary-background);
   color: var(--tl-preview-action-primary-foreground);
-  font-size: 8px;
+  font-size: var(--studio-type-meta);
 }
 .systemRoot {
   min-width: 0;
@@ -3307,7 +3314,7 @@
   max-width: 620px;
   margin: 0;
   color: var(--studio-muted);
-  font-size: 13px;
+  font-size: var(--studio-type-body);
   line-height: 1.5;
 }
 .healthSummary,
@@ -3322,7 +3329,7 @@
   margin-bottom: 20px;
   overflow: hidden;
   border: 1px solid var(--studio-border);
-  border-radius: 10px;
+  border-radius: var(--studio-radius-panel);
   background: var(--studio-panel);
 }
 .healthSummaryItem {
@@ -3345,7 +3352,7 @@
 .healthSummaryItem > span {
   min-width: 0;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   overflow-wrap: anywhere;
 }
 .healthSummaryItem > strong {
@@ -3360,7 +3367,7 @@
   min-width: 0;
   padding: 18px;
   border: 1px solid var(--studio-border);
-  border-radius: 10px;
+  border-radius: var(--studio-radius-panel);
   background: var(--studio-panel);
 }
 .healthSectionHeading {
@@ -3374,7 +3381,7 @@
 }
 .healthSectionHeading > span {
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   text-align: right;
 }
 .healthList,
@@ -3402,13 +3409,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background: color-mix(in srgb, var(--studio-accent) 6%, var(--studio-panel));
 }
 .healthSuggestion > span {
   min-width: 0;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   overflow-wrap: anywhere;
 }
 .healthSuggestion code {
@@ -3424,7 +3431,7 @@
   align-items: center;
   gap: 5px;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   text-transform: capitalize;
 }
 .healthPass svg,
@@ -3448,22 +3455,23 @@
 .healthFindingMain strong,
 .healthFindingDetail > span {
   overflow-wrap: anywhere;
-  font-size: 12px;
+  font-size: var(--studio-type-body);
 }
 .healthFindingMain > span,
 .healthFindingDetail strong,
 .healthTokenList small {
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .healthFindingDetail strong small {
+  font-size: inherit;
   font-weight: 400;
 }
 .healthNote,
 .healthEmpty {
   margin: 10px 0 0;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   line-height: 1.5;
 }
 .healthEmpty {
@@ -3497,7 +3505,7 @@
   background: transparent;
   color: var(--studio-accent);
   font: inherit;
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   cursor: pointer;
 }
 .textButton:hover {
@@ -3525,14 +3533,14 @@
   max-width: 540px;
   margin: 0;
   color: var(--studio-muted);
-  font-size: 12px;
+  font-size: var(--studio-type-body);
   line-height: 1.5;
 }
 .viewMeta {
   display: block;
   margin-top: 8px;
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .historyEmpty {
   width: 100%;
@@ -3561,7 +3569,7 @@
 .historyEmpty p {
   margin: 0 0 8px;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .historyList {
   width: 100%;
@@ -3577,7 +3585,7 @@
   align-items: center;
   gap: 12px;
   border: 1px solid var(--studio-border);
-  border-radius: 10px;
+  border-radius: var(--studio-radius-panel);
   background: var(--studio-panel);
 }
 .historyGlyph {
@@ -3586,7 +3594,7 @@
   display: grid;
   place-items: center;
   border-radius: 9px;
-  background: #efede7;
+  background: var(--studio-well);
   color: var(--studio-muted);
 }
 .historyGlyph svg {
@@ -3600,11 +3608,11 @@
 }
 .historyList article strong {
   overflow-wrap: anywhere;
-  font-size: 12px;
+  font-size: var(--studio-type-body);
 }
 .historyList article time {
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .comparisonHeading {
   max-width: 960px;
@@ -3618,7 +3626,7 @@
 .comparisonHeading p {
   margin: 0;
   color: var(--studio-muted);
-  font-size: 12px;
+  font-size: var(--studio-type-body);
 }
 .comparisonHeader {
   max-width: 960px;
@@ -3627,13 +3635,13 @@
   align-items: flex-end;
   gap: 8px;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .comparisonHeader label {
   display: grid;
   gap: 4px;
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -3641,9 +3649,9 @@
   min-height: 32px;
   padding: 0 34px 0 9px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: #fff;
-  font-size: 11px;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
+  font-size: var(--studio-type-meta);
 }
 .comparisonHeader button svg {
   width: 13px;
@@ -3671,7 +3679,7 @@
   display: block;
   margin-bottom: 12px;
   color: var(--tl-preview-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   text-transform: uppercase;
 }
 .comparisonPreview > div {
@@ -3695,7 +3703,7 @@
 }
 .comparisonPreview article span {
   color: var(--tl-preview-action-primary-background);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
 }
 .comparisonPreview article h4 {
   margin: 6px 0;
@@ -3723,7 +3731,7 @@
   width: 100%;
   min-width: 620px;
   border-collapse: collapse;
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   text-align: left;
 }
 .diffTable caption {
@@ -3738,7 +3746,7 @@
 }
 .diffTable thead th {
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   text-transform: uppercase;
 }
 .diffTable tbody th {
@@ -3752,7 +3760,7 @@
   color: #9c4a4a;
 }
 .diffTable ins {
-  color: #327351;
+  color: var(--studio-success);
   text-decoration: none;
 }
 .diffEmpty {
@@ -3763,7 +3771,7 @@
   border-radius: 9px;
   background: var(--studio-panel);
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   text-align: center;
 }
 .releaseReport {
@@ -3788,7 +3796,7 @@
   max-width: 620px;
   margin: 0;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
   line-height: 1.5;
 }
 .releaseReport a {
@@ -3802,7 +3810,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--studio-panel-strong);
 }
 .releaseSummary > div {
   padding: 9px 11px;
@@ -3817,7 +3825,7 @@
 }
 .releaseSummary dt {
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .releaseSummary dd {
   margin: 0;
@@ -3832,7 +3840,7 @@
 .releaseNotes summary {
   width: fit-content;
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   cursor: pointer;
 }
 .releaseNotes pre {
@@ -3840,11 +3848,11 @@
   margin: 10px 0 0;
   padding: 12px;
   overflow: auto;
-  border-radius: 7px;
-  background: #efede7;
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-well);
   color: var(--studio-text);
   font:
-    10px/1.6 ui-monospace,
+    var(--studio-type-meta)/1.6 ui-monospace,
     SFMono-Regular,
     monospace;
   white-space: pre-wrap;
@@ -3878,7 +3886,7 @@
 .exportHeader p {
   margin: 0;
   color: var(--studio-muted);
-  font-size: 12px;
+  font-size: var(--studio-type-body);
 }
 .exportHeader button svg {
   width: 13px;
@@ -3903,20 +3911,20 @@
 .exportCard code {
   min-width: 0;
   overflow-wrap: anywhere;
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .exportCard small {
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   white-space: nowrap;
 }
 .exportCard button {
   grid-column: 1 / -1;
   min-height: 34px;
   border: 0;
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background: var(--studio-text);
-  color: #fff;
+  color: var(--studio-on-ink);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3934,8 +3942,8 @@
   gap: 7px;
   border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: #fff;
-  font-size: 11px;
+  background: var(--studio-panel-strong);
+  font-size: var(--studio-type-meta);
 }
 .usageExample code {
   padding: 10px;
@@ -3949,21 +3957,21 @@
   display: block;
   border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: #fff;
-  font-size: 11px;
+  background: var(--studio-panel-strong);
+  font-size: var(--studio-type-meta);
   font-weight: 700;
   cursor: pointer;
 }
 .importControl input {
   display: block;
   margin-top: 8px;
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .importError {
   min-height: 24px;
   padding-top: 6px;
-  color: #9c3e3e;
-  font-size: 10px;
+  color: var(--studio-danger);
+  font-size: var(--studio-type-meta);
 }
 .focusedHeader h2:focus-visible,
 .comparisonHeading h2:focus-visible,
@@ -4002,7 +4010,7 @@
   max-width: 560px;
   margin: 0;
   color: var(--studio-muted);
-  font-size: 12px;
+  font-size: var(--studio-type-body);
   line-height: 1.5;
 }
 .styleImportBody {
@@ -4012,7 +4020,7 @@
   margin-bottom: 12px;
   padding: 14px 16px;
   border: 1px solid var(--studio-border);
-  border-radius: 10px;
+  border-radius: var(--studio-radius-panel);
   background: var(--studio-panel);
 }
 .styleImportGuide > header {
@@ -4027,14 +4035,14 @@
 }
 .styleImportGuide > header > div > span {
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   font-weight: 750;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .styleImportGuide h3 {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--studio-type-body);
 }
 .styleImportGuide .textButton {
   flex: 0 0 auto;
@@ -4079,10 +4087,10 @@
   place-items: center;
   border: 1px solid var(--studio-border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--studio-panel-strong);
   color: var(--studio-muted);
   font:
-    700 9px ui-monospace,
+    700 var(--studio-type-meta) ui-monospace,
     SFMono-Regular,
     monospace;
 }
@@ -4094,11 +4102,11 @@
   gap: 4px;
 }
 .styleImportGuideSteps strong {
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .styleImportGuideSteps small {
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   line-height: 1.45;
 }
 .styleImportUpload {
@@ -4134,13 +4142,13 @@
 }
 .styleImportUpload strong {
   overflow: hidden;
-  font-size: 13px;
+  font-size: var(--studio-type-body);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .styleImportUpload small {
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .styleImportUpload input {
   position: absolute;
@@ -4164,7 +4172,7 @@
   gap: 5px;
   border-right: 1px solid var(--studio-border);
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .styleImportSummary span:last-child {
   border-right: 0;
@@ -4187,7 +4195,7 @@
   align-items: center;
   gap: 7px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background: var(--studio-panel);
   color: var(--studio-muted);
 }
@@ -4203,7 +4211,7 @@
   outline: 0;
   background: transparent;
   color: var(--studio-text);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .styleImportSearch button {
   width: 25px;
@@ -4218,7 +4226,7 @@
   cursor: pointer;
 }
 .styleImportSearch button:hover {
-  background: #eceeec;
+  background: var(--studio-hover);
 }
 .styleImportSearch button svg {
   width: 12px;
@@ -4228,10 +4236,10 @@
   min-height: 34px;
   padding: 0 34px 0 9px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background-color: var(--studio-panel);
   color: var(--studio-text);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   cursor: pointer;
 }
 .styleImportFilters > .selectControl > select:disabled {
@@ -4250,11 +4258,11 @@
   gap: 3px;
 }
 .styleImportTools strong {
-  font-size: 13px;
+  font-size: var(--studio-type-body);
 }
 .styleImportTools small {
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .styleImportToolActions {
   display: flex;
@@ -4268,10 +4276,10 @@
   align-items: center;
   gap: 7px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
+  border-radius: var(--studio-radius-control);
   background: var(--studio-panel);
   color: var(--studio-text);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   font-weight: 650;
   cursor: pointer;
 }
@@ -4292,16 +4300,16 @@
   gap: 10px;
 }
 .styleCandidateGroup > header strong {
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .styleCandidateGroup > header span {
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
 }
 .styleCandidateList {
   overflow: hidden;
   border: 1px solid var(--studio-border);
-  border-radius: 10px;
+  border-radius: var(--studio-radius-panel);
   background: var(--studio-panel);
 }
 .styleCandidate {
@@ -4330,10 +4338,10 @@
   align-self: center;
   border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: #efede7;
+  background: var(--studio-well);
   color: var(--studio-muted);
   font:
-    700 9px ui-monospace,
+    700 var(--studio-type-meta) ui-monospace,
     monospace;
 }
 .candidatePreview i {
@@ -4350,22 +4358,22 @@
 }
 .candidateValue code {
   overflow-wrap: anywhere;
-  font-size: 12px;
+  font-size: var(--studio-type-body);
 }
 .candidateValue small {
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   overflow-wrap: anywhere;
 }
 .candidateValue .mappingReason {
   color: #52617c;
-  font-size: 8px;
+  font-size: var(--studio-type-meta);
 }
 .candidateValue > span {
   width: fit-content;
   padding: 3px 5px;
-  border-radius: 4px;
-  font-size: 8px;
+  border-radius: var(--studio-radius-sm);
+  font-size: var(--studio-type-meta);
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -4379,7 +4387,7 @@
 }
 .mappingCurrent {
   background: #eaf5ed;
-  color: #327351;
+  color: var(--studio-success);
 }
 .candidateChange {
   min-width: 0;
@@ -4390,13 +4398,13 @@
 }
 .candidateChange small {
   color: var(--studio-muted);
-  font-size: 8px;
+  font-size: var(--studio-type-meta);
   font-weight: 700;
   text-transform: uppercase;
 }
 .candidateChange code {
   overflow: hidden;
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4404,7 +4412,7 @@
   display: grid;
   gap: 4px;
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -4413,11 +4421,11 @@
   min-height: 34px;
   padding: 0 34px 0 9px;
   border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background-color: #fff;
+  border-radius: var(--studio-radius-control);
+  background-color: var(--studio-panel-strong);
   color: var(--studio-text);
   font-family: inherit;
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
   cursor: pointer;
 }
 .styleImportSticky {
@@ -4440,7 +4448,7 @@
   gap: 9px;
   border: 1px solid;
   border-radius: 9px;
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .importContrastWarning {
   border-color: #dfb0a8;
@@ -4450,7 +4458,7 @@
 .importContrastClear {
   border-color: #afd0ba;
   background: #eef8f1;
-  color: #327351;
+  color: var(--studio-success);
 }
 .importContrastWarning > svg,
 .importContrastClear > svg {
@@ -4469,7 +4477,7 @@
   margin-top: 12px;
   overflow: hidden;
   border: 1px solid var(--studio-border);
-  border-radius: 10px;
+  border-radius: var(--studio-radius-panel);
   background: var(--studio-panel);
 }
 .unsupportedStyles summary {
@@ -4488,16 +4496,16 @@
   gap: 3px;
 }
 .unsupportedStyles summary strong {
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 .unsupportedStyles summary small {
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
 }
 .unsupportedStyles summary > span:last-child {
   margin-left: auto;
   color: var(--studio-muted);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
 }
 .unsupportedStyles > div {
   border-top: 1px solid var(--studio-border);
@@ -4510,7 +4518,7 @@
   align-items: center;
   gap: 10px;
   border-bottom: 1px solid var(--studio-border);
-  font-size: 9px;
+  font-size: var(--studio-type-meta);
 }
 .unsupportedStyles article:last-child {
   border-bottom: 0;
@@ -4537,7 +4545,7 @@
 .styleImportActions > span {
   margin-right: auto;
   color: var(--studio-muted);
-  font-size: 10px;
+  font-size: var(--studio-type-meta);
 }
 .styleImportActions button:disabled,
 .styleImportTools button:disabled {
@@ -4549,8 +4557,8 @@
   min-height: 24px;
   margin: 0;
   padding-top: 6px;
-  color: #327351;
-  font-size: 10px;
+  color: var(--studio-success);
+  font-size: var(--studio-type-meta);
 }
 .styleImportEmpty {
   min-height: 220px;
@@ -4558,7 +4566,7 @@
   place-content: center;
   gap: 6px;
   border: 1px dashed var(--studio-border);
-  border-radius: 10px;
+  border-radius: var(--studio-radius-panel);
   background: var(--studio-panel);
   text-align: center;
 }
@@ -4566,7 +4574,7 @@
   max-width: 480px;
   margin: 0;
   color: var(--studio-muted);
-  font-size: 11px;
+  font-size: var(--studio-type-meta);
 }
 
 @media (max-width: 1100px) {
@@ -4587,6 +4595,9 @@
   }
   .tokenSpectrum > div {
     width: 120px;
+  }
+  .tokenSpectrum > span {
+    display: none;
   }
   .contrastStatus {
     display: none;
@@ -4637,8 +4648,8 @@
     display: inline-block;
     border: 1px solid var(--studio-border);
     border-radius: 6px;
-    background: #fff;
-    font-size: 11px;
+    background: var(--studio-panel-strong);
+    font-size: var(--studio-type-meta);
   }
   .inspectorDrawerClose {
     position: absolute;
@@ -4650,8 +4661,14 @@
     place-items: center;
     border: 1px solid var(--studio-border);
     border-radius: 6px;
-    background: #fff;
+    background: var(--studio-panel-strong);
     font-size: 18px;
+  }
+}
+
+@media (max-width: 960px) {
+  .tokenSpectrum {
+    display: none;
   }
 }
 
@@ -4699,8 +4716,8 @@
     isolation: isolate;
     min-height: 34px;
     border: 1px solid var(--studio-border);
-    border-radius: 7px;
-    background: #fff;
+    border-radius: var(--studio-radius-control);
+    background: var(--studio-panel-strong);
   }
   .mobilePanelNav button[aria-pressed="true"] {
     border-color: #9eaee8;
@@ -4941,18 +4958,95 @@
   }
 }
 
+/* Touch: studio controls reach 44px. The preview is the artifact under inspection and keeps its own sizing. */
+@media (pointer: coarse) {
+  :is(button, select, summary, [role="button"], input:not([type="checkbox"], [type="radio"])):not(
+    [data-testid="preview-root"] *
+  ) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .inspectorDrawerClose {
+    top: 8px;
+    right: 8px;
+  }
+}
+
+/* Reduced motion keeps state feedback (fades, color) and drops movement, scale, blur, and staggered waits. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+    transition-property: color, background-color, border-color, opacity !important;
+    transition-duration: 0.15s !important;
+    animation-duration: 0.15s !important;
     animation-delay: 0s !important;
+  }
+  @keyframes systemReveal {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes systemMetric {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes flowNodeEnter {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes markerEnter {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 }
 
 @media (forced-colors: active) {
+  /* Selected state needs a system-color cue: tints, stripes and ink fills are stripped. */
+  button[aria-pressed="true"] {
+    outline: 3px solid Highlight;
+    outline-offset: -3px;
+  }
+  .viewTabs button[aria-pressed="true"],
+  .interactionModes button[aria-pressed="true"] {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .viewTabs .tabIndicator,
+  .interactionModes .tabIndicator {
+    display: none;
+  }
+  /* Swatches show token values, and the preview is the design under inspection: keep their real colors. */
+  .swatch,
+  .inspectorSwatch,
+  .candidatePreview i,
+  .tokenSpectrum i,
+  .previewRoot {
+    forced-color-adjust: none;
+  }
+  .swatch,
+  .inspectorSwatch,
+  .candidatePreview i,
+  .tokenSpectrum i {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
   .formControlGrid input[type="checkbox"],
   .formControlGrid input[type="radio"] {
     appearance: auto;

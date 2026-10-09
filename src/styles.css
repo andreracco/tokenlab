@@ -15,10 +15,23 @@
   --studio-panel-strong: #ffffff;
   --studio-border: #cfd3d6;
   --studio-text: #17202a;
-  --studio-muted: #68717c;
+  --studio-muted: #566069;
   --studio-accent: #265cf5;
   --studio-signal: #d7ff5f;
   --studio-ink: #111722;
+  --studio-on-ink: #ffffff;
+  --studio-ink-raised: #222b38;
+  --studio-ink-border: #3c4655;
+  --studio-ink-muted: #a9b2bd;
+  --studio-hover: #eceeec;
+  --studio-well: #efede7;
+  --studio-success: #327351;
+  --studio-danger: #9c3e3e;
+  --studio-radius-sm: 4px;
+  --studio-radius-control: 7px;
+  --studio-radius-panel: 10px;
+  --studio-type-meta: 0.75rem;
+  --studio-type-body: 0.8125rem;
   scrollbar-color: #8e98a4 #d9dde0;
   scrollbar-width: thin;
 }
