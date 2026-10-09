@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { ComponentKey } from "./registry";
 import type { PreviewStyle } from "./style";
+import { SelectControl } from "../components/SelectControl";
 import styles from "../App.module.css";
 
 type FormaPreviewProps = {
@@ -286,7 +287,7 @@ export function FormaPreview({
                   <div
                     className={`${styles.projectFilters} ${inspectEnabled ? styles.inspectable : ""} ${inspectEnabled ? filtersHighlight : ""}`}
                   >
-                    <select
+                    <SelectControl
                       aria-label="Project status"
                       aria-hidden={inspectEnabled}
                       disabled={inspectEnabled}
@@ -297,8 +298,8 @@ export function FormaPreview({
                       <option value="in-progress">In progress</option>
                       <option value="planning">Planning</option>
                       <option value="review">In review</option>
-                    </select>
-                    <select
+                    </SelectControl>
+                    <SelectControl
                       aria-label="Project sort"
                       aria-hidden={inspectEnabled}
                       disabled={inspectEnabled}
@@ -307,7 +308,7 @@ export function FormaPreview({
                     >
                       <option value="updated">Most progressed</option>
                       <option value="name">Name</option>
-                    </select>
+                    </SelectControl>
                     {inspectEnabled && (
                       <button
                         type="button"

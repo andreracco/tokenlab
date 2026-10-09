@@ -9,6 +9,7 @@ import {
   type Token,
   type TokenMode,
 } from "../domain/tokens";
+import { SelectControl } from "./SelectControl";
 import styles from "../App.module.css";
 
 export type TokenGroupId = "foundations" | "semantic" | "feedback";
@@ -159,7 +160,7 @@ export function TokenLibrary({
       </div>
       <div className={styles.presetPicker}>
         <label htmlFor="starting-system">Starting system</label>
-        <select
+        <SelectControl
           id="starting-system"
           value={document.presetId}
           onChange={(event) => onSelectPreset(event.target.value as ProjectDocument["presetId"])}
@@ -169,7 +170,7 @@ export function TokenLibrary({
               {option.name}
             </option>
           ))}
-        </select>
+        </SelectControl>
         <small>{presetSpecs[document.presetId].description}</small>
       </div>
     </aside>

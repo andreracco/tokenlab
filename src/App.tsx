@@ -24,6 +24,7 @@ import { createPreviewStyle } from "./preview/style";
 import { getTokenGroupId, TokenLibrary, type TokenGroupId } from "./components/TokenLibrary";
 import { ComparisonView, ExportPanel, HistoryPanel } from "./components/WorkspacePanels";
 import { TokenInspector } from "./components/TokenInspector";
+import { SelectControl } from "./components/SelectControl";
 import { StyleImportPanel } from "./components/StyleImportPanel";
 import { TokenHealthPanel } from "./components/TokenHealthPanel";
 import { analyzeTokenHealth } from "./domain/tokenHealth";
@@ -420,7 +421,7 @@ export function App() {
                     {canvasScreen.type === "system" ? "Design system" : "Living Canvas"}
                   </strong>
                   <div className={styles.canvasControls}>
-                    <select
+                    <SelectControl
                       className={styles.modeSelect}
                       aria-label="Preview mode"
                       value={mode}
@@ -431,8 +432,8 @@ export function App() {
                     >
                       <option value="light">Light</option>
                       <option value="dark">Dark</option>
-                    </select>
-                    <select
+                    </SelectControl>
+                    <SelectControl
                       className={styles.modeSelect}
                       aria-label="Preview width"
                       value={previewWidth}
@@ -443,7 +444,7 @@ export function App() {
                       <option value={1280}>Desktop 1280</option>
                       <option value={960}>Compact 960</option>
                       <option value={720}>Narrow 720</option>
-                    </select>
+                    </SelectControl>
                     <button
                       className={styles.inspectorDrawerButton}
                       aria-expanded={inspectorOpen}

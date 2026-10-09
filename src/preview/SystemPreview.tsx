@@ -15,6 +15,7 @@ import {
   type TokenMode,
 } from "../domain/tokens";
 import { componentRegistry, type ComponentKey } from "./registry";
+import { SelectControl } from "../components/SelectControl";
 import type { PreviewStyle } from "./style";
 import styles from "../App.module.css";
 
@@ -296,6 +297,9 @@ export function SystemPreview({
               </div>
             </section>
           </div>
+          <FormControlSpecimens
+            errorColor={resolveCssValue(document, "feedback.error.text", mode)}
+          />
         </section>
 
         <section className={styles.systemSection} aria-labelledby="quality-title">
@@ -337,6 +341,104 @@ export function SystemPreview({
         </section>
       </article>
     </div>
+  );
+}
+
+function FormControlSpecimens({ errorColor }: { errorColor: string }) {
+  return (
+    <section className={styles.formControlSpecimens} aria-labelledby="form-controls-title">
+      <header>
+        <h3 id="form-controls-title">Form controls</h3>
+        <p>Native controls styled with the active system tokens.</p>
+      </header>
+      <div className={styles.formControlGrid}>
+        <label>
+          <span>Status · default</span>
+          <SelectControl defaultValue="progress">
+            <option value="progress">In progress</option>
+            <option value="complete">Complete</option>
+            <option value="planning">Planning</option>
+          </SelectControl>
+        </label>
+        <label>
+          <span>Status · focus</span>
+          <SelectControl className={styles.simulatedFocus} defaultValue="complete">
+            <option value="progress">In progress</option>
+            <option value="complete">Complete</option>
+            <option value="planning">Planning</option>
+          </SelectControl>
+        </label>
+        <label>
+          <span>Status · disabled</span>
+          <SelectControl disabled defaultValue="planning">
+            <option value="planning">Planning</option>
+          </SelectControl>
+        </label>
+        <label>
+          <span>Status · invalid</span>
+          <SelectControl
+            aria-describedby="specimen-status-error"
+            aria-invalid="true"
+            defaultValue=""
+            style={{ borderColor: errorColor }}
+          >
+            <option value="" disabled>
+              Choose a status
+            </option>
+            <option value="progress">In progress</option>
+            <option value="complete">Complete</option>
+          </SelectControl>
+          <small id="specimen-status-error" style={{ color: errorColor }}>
+            Choose a status to continue.
+          </small>
+        </label>
+        <fieldset>
+          <legend>Notifications · checkboxes</legend>
+          <label>
+            <input type="checkbox" defaultChecked />
+            <span>Email updates</span>
+          </label>
+          <label>
+            <input type="checkbox" />
+            <span>Product news</span>
+          </label>
+          <label className={styles.specimenDisabledOption}>
+            <input type="checkbox" disabled />
+            <span>Disabled option</span>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Priority · radio group</legend>
+          <label>
+            <input type="radio" name="specimen-priority" defaultChecked />
+            <span>Standard</span>
+          </label>
+          <label>
+            <input type="radio" name="specimen-priority" />
+            <span>High priority</span>
+          </label>
+          <label className={styles.specimenDisabledOption}>
+            <input type="radio" name="specimen-priority" disabled />
+            <span>Unavailable</span>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Switches</legend>
+          <label>
+            <input type="checkbox" role="switch" defaultChecked />
+            <span>Project reminders</span>
+          </label>
+          <label>
+            <input type="checkbox" role="switch" />
+            <span>Quiet mode</span>
+          </label>
+          <label className={styles.specimenDisabledOption}>
+            <input type="checkbox" role="switch" disabled />
+            <span>Disabled option</span>
+          </label>
+        </fieldset>
+      </div>
+    </section>
   );
 }
 

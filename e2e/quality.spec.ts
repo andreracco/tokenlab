@@ -66,17 +66,19 @@ test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
       const style = getComputedStyle(select);
       return {
         appearance: style.appearance,
-        backgroundPosition: style.backgroundPosition,
+        backgroundImage: style.backgroundImage,
         paddingRight: style.paddingRight,
+        hasChevron: Boolean(select.parentElement?.querySelector("svg")),
       };
     }),
   );
   expect(
     selectChrome.every(
-      ({ appearance, backgroundPosition, paddingRight }) =>
+      ({ appearance, backgroundImage, paddingRight, hasChevron }) =>
         appearance === "none" &&
-        backgroundPosition === "calc(100% - 10px) 50%" &&
-        paddingRight === "32px",
+        backgroundImage === "none" &&
+        Number.parseFloat(paddingRight) >= 32 &&
+        hasChevron,
     ),
   ).toBe(true);
 
@@ -265,6 +267,24 @@ test("keeps the active design system inspectable and responsive", async ({ page 
 
   await expect(page.getByRole("heading", { name: "From decision to interface." })).toBeVisible();
   await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+  expect(await page.locator("[data-select-control]").count()).toBe(
+    await page.locator("select").count(),
+  );
+  const status = page.getByLabel("Status · default");
+  await expect(status).toHaveValue("progress");
+  await status.selectOption("complete");
+  await expect(status).toHaveValue("complete");
+  await expect(page.getByRole("checkbox", { name: "Email updates" })).toBeChecked();
+  const unchecked = page.getByRole("checkbox", { name: "Product news" });
+  await expect(unchecked).not.toBeChecked();
+  await expect(unchecked).toHaveCSS("appearance", "none");
+  await expect(page.getByRole("checkbox", { name: "Disabled option" })).toBeDisabled();
+  await page.getByRole("radio", { name: "High priority" }).check();
+  await expect(page.getByRole("radio", { name: "Standard" })).not.toBeChecked();
+  await expect(page.getByRole("switch", { name: "Project reminders" })).toBeChecked();
+  await page.getByRole("switch", { name: "Project reminders" }).uncheck();
+  await expect(page.getByRole("switch", { name: "Project reminders" })).not.toBeChecked();
+  await expect(page.getByLabel("Status · invalid")).toHaveAttribute("aria-invalid", "true");
   await page.getByRole("button", { name: "Inspect color.neutral.canvas" }).click();
   await expect(
     page
@@ -273,6 +293,11 @@ test("keeps the active design system inspectable and responsive", async ({ page 
   ).toBeVisible();
 
   await page.setViewportSize({ width: 512, height: 760 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
   await page.getByRole("button", { name: "Canvas" }).click();
   await expect(page.getByRole("region", { name: "Design system" })).toBeVisible();
   expect(

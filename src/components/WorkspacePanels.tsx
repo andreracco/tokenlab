@@ -12,6 +12,7 @@ import type { ProjectDocument, TokenMode } from "../domain/tokens";
 import { createPreviewStyle, type PreviewStyle } from "../preview/style";
 import { componentRegistry } from "../preview/registry";
 import { ReleaseReadinessReport } from "./ReleaseReadinessReport";
+import { SelectControl } from "./SelectControl";
 import styles from "../App.module.css";
 
 type HistoryPanelProps = {
@@ -189,7 +190,7 @@ export function ComparisonView({
         </button>
         <label>
           Baseline
-          <select
+          <SelectControl
             aria-label="Comparison baseline"
             value={snapshot.id}
             onChange={(event) => onSelect(event.target.value)}
@@ -199,7 +200,7 @@ export function ComparisonView({
                 {candidate.name}
               </option>
             ))}
-          </select>
+          </SelectControl>
         </label>
         <span role="status">
           {changes.length} token {changes.length === 1 ? "change" : "changes"}

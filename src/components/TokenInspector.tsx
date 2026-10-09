@@ -14,6 +14,7 @@ import {
   type TokenMode,
 } from "../domain/tokens";
 import type { componentRegistry, ComponentKey, consumersForToken } from "../preview/registry";
+import { SelectControl } from "./SelectControl";
 import styles from "../App.module.css";
 
 type TokenInspectorProps = {
@@ -446,7 +447,7 @@ function AliasEditor({
         <small>{mode} mode</small>
       </div>
       <label htmlFor="alias-target">Token reference</label>
-      <select
+      <SelectControl
         id="alias-target"
         className={styles.valueInput}
         value={draft}
@@ -457,7 +458,7 @@ function AliasEditor({
             {target.path}
           </option>
         ))}
-      </select>
+      </SelectControl>
       <div className={styles.resolvedRow}>
         <span>Resolved value</span>
         <code>{resolvedValue}</code>

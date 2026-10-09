@@ -15,6 +15,7 @@ import {
   type TokenMode,
 } from "../domain/tokens";
 import { StyleImportGuide } from "./StyleImportGuide";
+import { SelectControl } from "./SelectControl";
 import styles from "../App.module.css";
 
 const maximumFileSize = 1024 * 1024;
@@ -272,7 +273,7 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
                   </button>
                 )}
               </label>
-              <select
+              <SelectControl
                 aria-label="Import status"
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value as ReviewStatus)}
@@ -282,8 +283,8 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
                 <option value="unmapped">Needs mapping</option>
                 <option value="current">Already matches</option>
                 <option value="unsupported">Unsupported</option>
-              </select>
-              <select
+              </SelectControl>
+              <SelectControl
                 aria-label="Import group"
                 value={groupFilter}
                 disabled={statusFilter === "unsupported"}
@@ -294,7 +295,7 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
                 <option value="spacing">Spacing & sizing</option>
                 <option value="typography">Typography</option>
                 <option value="shadows">Shadows</option>
-              </select>
+              </SelectControl>
             </div>
             {result.candidates.length > 0 && (
               <>
@@ -445,7 +446,7 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
                             </span>
                             <label>
                               Map to
-                              <select
+                              <SelectControl
                                 value={target}
                                 onChange={(event) => {
                                   const tokenId = event.target.value;
@@ -482,7 +483,7 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
                                     {token.path}
                                   </option>
                                 ))}
-                              </select>
+                              </SelectControl>
                             </label>
                           </article>
                         );

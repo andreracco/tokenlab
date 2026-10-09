@@ -557,7 +557,7 @@
 .presetPicker select {
   width: 100%;
   min-height: 36px;
-  padding: 0 9px;
+  padding: 0 34px 0 9px;
   border: 1px solid var(--studio-border);
   border-radius: 7px;
   background: #fff;
@@ -661,6 +661,47 @@
   gap: 12px;
   color: var(--studio-muted);
   font-size: 11px;
+}
+.selectControl {
+  min-width: 0;
+  max-width: 100%;
+  position: relative;
+  display: grid;
+  vertical-align: middle;
+}
+.selectControl > select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding-right: 34px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: none;
+  cursor: pointer;
+}
+.selectControl > select:disabled {
+  cursor: default;
+}
+.selectChevron {
+  width: 14px;
+  height: 14px;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  color: currentColor;
+  opacity: 0.72;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.selectControl > select:disabled + .selectChevron {
+  opacity: 0.42;
+}
+.previewRoot .selectChevron {
+  color: var(--forma-muted);
+}
+.selectControl > select:focus-visible {
+  outline: 2px solid var(--studio-accent);
+  outline-offset: 2px;
 }
 .modeSelect {
   min-height: 30px;
@@ -1116,21 +1157,17 @@
 .projectToolbar select {
   width: 125px;
   height: 34px;
-  padding: 0 32px 0 9px;
+  padding: 0 34px 0 9px;
   box-sizing: border-box;
   appearance: none;
   border: 1px solid var(--forma-line);
   border-radius: 7px;
   background-color: var(--tl-preview-panel);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3 4.5 3 3 3-3' stroke='%23806d8e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px;
   color: var(--forma-muted);
   font-size: 0.76em;
   cursor: pointer;
 }
-.projectToolbar select:last-of-type {
+.projectToolbar .selectControl:last-of-type select {
   width: 140px;
 }
 .projectToolbar > span {
@@ -2466,6 +2503,188 @@
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
+.systemRoot .formControlSpecimens {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--forma-line);
+  border-radius: var(--tl-preview-card-radius);
+  background: var(--tl-preview-panel);
+}
+.formControlSpecimens > header {
+  margin-bottom: 12px;
+}
+.formControlSpecimens > header h3 {
+  margin: 0;
+  font-size: 0.72em;
+}
+.formControlSpecimens > header p {
+  margin: 4px 0 0;
+  color: var(--forma-muted);
+  font-size: 0.62em;
+}
+.formControlGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  align-items: start;
+  gap: 14px;
+}
+.formControlGrid > label,
+.formControlGrid fieldset {
+  min-width: 0;
+  margin: 0;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+.formControlGrid > label > span:not(.selectControl),
+.formControlGrid legend {
+  padding: 0;
+  color: var(--forma-muted);
+  font-size: 0.6em;
+  font-weight: 700;
+}
+.formControlGrid select {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 34px 0 10px;
+  border: 1px solid var(--forma-line);
+  border-radius: var(--tl-preview-control-radius);
+  background: var(--tl-preview-panel);
+  color: var(--forma-text);
+  font: inherit;
+  font-size: 0.68em;
+}
+.formControlGrid select:focus-visible,
+.formControlGrid input:focus-visible {
+  outline: 2px solid var(--tl-preview-action-primary-background);
+  outline-offset: 2px;
+}
+.formControlGrid select:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+.formControlGrid > label > small {
+  color: var(--forma-muted);
+  font-size: 0.58em;
+}
+.formControlGrid fieldset {
+  padding: 0;
+  border: 0;
+}
+.formControlGrid fieldset legend {
+  margin-bottom: 8px;
+}
+.formControlGrid fieldset label {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--forma-text);
+  font-size: 0.65em;
+  cursor: pointer;
+}
+.formControlGrid .specimenDisabledOption {
+  color: var(--forma-muted);
+  cursor: not-allowed;
+}
+.formControlGrid input[type="checkbox"]:not([role="switch"]),
+.formControlGrid input[type="radio"] {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  flex: 0 0 auto;
+  position: relative;
+  display: grid;
+  place-content: center;
+  border: 1px solid var(--forma-line);
+  background: var(--tl-preview-panel);
+  cursor: pointer;
+}
+.formControlGrid input[type="checkbox"]:not([role="switch"]) {
+  border-radius: 4px;
+}
+.formControlGrid input[type="radio"] {
+  border-radius: 50%;
+}
+.formControlGrid input[type="checkbox"]:not([role="switch"])::before {
+  content: "";
+  width: 7px;
+  height: 4px;
+  border: solid var(--tl-preview-action-primary-foreground);
+  border-width: 0 0 2px 2px;
+  opacity: 0;
+  transform: translateY(-1px) rotate(-45deg) scale(0.6);
+}
+.formControlGrid input[type="radio"]::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tl-preview-action-primary-background);
+  transform: scale(0);
+}
+.formControlGrid input[type="checkbox"]:not([role="switch"]):checked,
+.formControlGrid input[type="radio"]:checked {
+  border-color: var(--tl-preview-action-primary-background);
+  background: var(--tl-preview-action-primary-background);
+}
+.formControlGrid input[type="checkbox"]:not([role="switch"]):checked::before {
+  opacity: 1;
+  transform: translateY(-1px) rotate(-45deg) scale(1);
+}
+.formControlGrid input[type="radio"]:checked::before {
+  background: var(--tl-preview-action-primary-foreground);
+  transform: scale(1);
+}
+.formControlGrid input[type="checkbox"]:not([role="switch"]):disabled,
+.formControlGrid input[type="radio"]:disabled {
+  border-color: var(--forma-line);
+  background: color-mix(in srgb, var(--tl-preview-panel) 78%, var(--forma-line));
+  cursor: not-allowed;
+}
+.formControlGrid input[type="checkbox"]:not([role="switch"]):disabled:checked::before {
+  border-color: var(--forma-muted);
+}
+.formControlGrid input[type="radio"]:disabled:checked::before {
+  background: var(--forma-muted);
+}
+.formControlGrid input[role="switch"] {
+  appearance: none;
+  width: 34px;
+  height: 19px;
+  position: relative;
+  border: 1px solid var(--forma-line);
+  border-radius: 999px;
+  background: var(--forma-line);
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+.formControlGrid input[role="switch"]::before {
+  content: "";
+  width: 13px;
+  height: 13px;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  border-radius: 50%;
+  background: var(--tl-preview-panel);
+  transition: transform 140ms ease;
+}
+.formControlGrid input[role="switch"]:checked {
+  border-color: var(--tl-preview-action-primary-background);
+  background: var(--tl-preview-action-primary-background);
+}
+.formControlGrid input[role="switch"]:checked::before {
+  transform: translateX(15px);
+}
+.formControlGrid input[role="switch"]:disabled {
+  cursor: not-allowed;
+}
+.systemRoot .formControlGrid input[role="switch"]:disabled {
+  background: color-mix(in srgb, var(--tl-preview-panel) 72%, var(--forma-line));
+  opacity: 1;
+}
 .systemRoot button:focus-visible {
   outline: 2px solid var(--tl-preview-action-primary-background);
   outline-offset: 2px;
@@ -2951,30 +3170,17 @@
 }
 .comparisonHeader select {
   min-height: 32px;
-  padding: 0 9px;
+  padding: 0 34px 0 9px;
   border: 1px solid var(--studio-border);
   border-radius: 7px;
   background: #fff;
   font-size: 11px;
 }
-select.modeSelect,
-.presetPicker select,
-select.valueInput,
-.comparisonHeader select {
-  appearance: none;
-  padding-right: 32px;
-  background-color: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3 4.5 3 3 3-3' stroke='%2368717c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px;
-  cursor: pointer;
-}
 .comparisonHeader button svg {
   width: 13px;
   height: 13px;
 }
-.comparisonHeader span {
+.comparisonHeader > span {
   margin-right: auto;
 }
 .comparisonGrid {
@@ -3549,21 +3755,17 @@ select.valueInput,
   width: 12px;
   height: 12px;
 }
-.styleImportFilters > select {
+.styleImportFilters > .selectControl > select {
   min-height: 34px;
-  padding: 0 32px 0 9px;
-  appearance: none;
+  padding: 0 34px 0 9px;
   border: 1px solid var(--studio-border);
   border-radius: 7px;
   background-color: var(--studio-panel);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3 4.5 3 3 3-3' stroke='%2368717c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
   color: var(--studio-text);
   font-size: 10px;
   cursor: pointer;
 }
-.styleImportFilters > select:disabled {
+.styleImportFilters > .selectControl > select:disabled {
   cursor: default;
   opacity: 0.5;
 }
@@ -3740,14 +3942,10 @@ select.valueInput,
 .styleCandidate select {
   width: 100%;
   min-height: 34px;
-  padding: 0 32px 0 9px;
-  appearance: none;
+  padding: 0 34px 0 9px;
   border: 1px solid var(--studio-border);
   border-radius: 7px;
   background-color: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3 4.5 3 3 3-3' stroke='%2368717c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
   color: var(--studio-text);
   font-family: inherit;
   font-size: 10px;
@@ -4282,5 +4480,21 @@ select.valueInput,
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-delay: 0s !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .formControlGrid input[type="checkbox"],
+  .formControlGrid input[type="radio"] {
+    appearance: auto;
+  }
+  .formControlGrid input[type="checkbox"]::before,
+  .formControlGrid input[type="radio"]::before {
+    display: none;
+  }
+  .formControlGrid input[role="switch"] {
+    appearance: auto;
+    width: auto;
+    height: auto;
   }
 }
