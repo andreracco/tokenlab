@@ -67,7 +67,6 @@ function TokenRow({ token, value, selected, onSelect }: { token: Token; value: s
   const swatchValue = token.type === "color" ? value : null;
   return <button className={`${styles.tokenRow} ${selected ? styles.tokenRowSelected : ""}`} onClick={onSelect} aria-pressed={selected}>
     {swatchValue ? <span className={styles.swatch} style={{ background: swatchValue }} /> : <span className={styles.tokenTypeIcon}>{token.type.slice(0, 2)}</span>}
-    <span><strong>{token.path.split(".").at(-1)}</strong><small>{token.path}</small></span>
-    <code>{token.values.light.kind === "reference" ? "↗ alias" : value}</code>
+    <span><strong>{token.path.split(".").at(-1)}</strong><span className={styles.tokenMeta}><small>{token.path}</small><code>{token.values.light.kind === "reference" ? "↗ alias" : value}</code></span></span>
   </button>;
 }

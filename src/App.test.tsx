@@ -230,4 +230,22 @@ describe("TokenLab first slice", () => {
     await waitFor(() => expect(input.value).toBe(""));
     expect(useTokenLabStore.getState().document).toEqual(initialProject);
   });
+
+  it("maps a scanned CSS variable through undoable token history", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Import CSS" }));
+
+    const input = screen.getByLabelText(/Choose a CSS file/i) as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [{ name: "brand.css", size: 48, text: async () => ":root { --color-brand-600: #c2415d; }" }] } });
+
+    expect(await screen.findByText("#C2415D")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Map to" })).toHaveProperty("value", "color.brand.600");
+    fireEvent.click(screen.getByRole("button", { name: "Apply #C2415D to color.brand.600" }));
+    expect(screen.getByRole("button", { name: "Applied #C2415D to color.brand.600" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to preview" }));
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#C2415D");
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#3157D5");
+  });
 });
