@@ -3091,6 +3091,90 @@ select.valueInput,
   font-size: 11px;
   text-align: center;
 }
+.releaseReport {
+  max-width: 960px;
+  margin: 14px auto 0;
+  padding: 14px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-panel);
+}
+.releaseReport > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.releaseReport h3 {
+  margin: 5px 0;
+  font-size: 15px;
+}
+.releaseReport p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--studio-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.releaseReport a {
+  flex: 0 0 auto;
+  color: inherit;
+  text-decoration: none;
+}
+.releaseSummary {
+  margin: 14px 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: #fff;
+}
+.releaseSummary > div {
+  padding: 9px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-right: 1px solid var(--studio-border);
+}
+.releaseSummary > div:last-child {
+  border-right: 0;
+}
+.releaseSummary dt {
+  color: var(--studio-muted);
+  font-size: 10px;
+}
+.releaseSummary dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+.releaseNotes {
+  border-top: 1px solid var(--studio-border);
+  padding-top: 10px;
+}
+.releaseNotes summary {
+  width: fit-content;
+  color: var(--studio-muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+.releaseNotes pre {
+  max-height: 260px;
+  margin: 10px 0 0;
+  padding: 12px;
+  overflow: auto;
+  border-radius: 7px;
+  background: #efede7;
+  color: var(--studio-text);
+  font:
+    10px/1.6 ui-monospace,
+    SFMono-Regular,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .exportPanel {
   width: 100%;
   flex: 1;
@@ -4076,6 +4160,12 @@ select.valueInput,
   }
   .comparisonHeading {
     margin-bottom: 14px;
+  }
+  .releaseReport > header {
+    flex-direction: column;
+  }
+  .releaseReport > header .secondaryButton {
+    width: 100%;
   }
   .comparisonHeader {
     align-items: stretch;

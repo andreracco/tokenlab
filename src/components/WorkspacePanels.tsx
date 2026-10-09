@@ -10,6 +10,8 @@ import { buildExports, parseProjectFile, type ExportArtifact } from "../domain/e
 import { diffProjects, type ProjectSnapshot } from "../domain/projects";
 import type { ProjectDocument, TokenMode } from "../domain/tokens";
 import { createPreviewStyle, type PreviewStyle } from "../preview/style";
+import { componentRegistry } from "../preview/registry";
+import { ReleaseReadinessReport } from "./ReleaseReadinessReport";
 import styles from "../App.module.css";
 
 type HistoryPanelProps = {
@@ -86,7 +88,7 @@ type ExportPanelProps = {
 export function ExportPanel({ document, snapshots, onClose, onImport }: ExportPanelProps) {
   const [error, setError] = useState("");
   const headingRef = useFocusedHeading();
-  const artifacts = buildExports(document, snapshots);
+  const artifacts = buildExports(document, snapshots, componentRegistry);
   const importProject = async (event: ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
     const file = input.files?.[0];
@@ -248,6 +250,7 @@ export function ComparisonView({
           </table>
         </div>
       )}
+      <ReleaseReadinessReport baselineName={snapshot.name} changes={changes} />
     </div>
   );
 }

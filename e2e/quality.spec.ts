@@ -312,7 +312,7 @@ test("keeps export cards readable across wide and narrow viewports", async ({ pa
         return { x: bounds.x, width: bounds.width };
       }),
     );
-  expect(wideCards).toHaveLength(5);
+  expect(wideCards).toHaveLength(6);
   expect(Math.max(...wideCards.map(({ width }) => width))).toBeLessThan(380);
   expect(new Set(wideCards.slice(0, 3).map(({ x }) => Math.round(x))).size).toBe(3);
 
@@ -352,6 +352,38 @@ test("keeps comparison actions reachable at high browser zoom", async ({ page })
       () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
     ),
   ).toBe(true);
+});
+
+test("summarizes release impact and downloads notes from a baseline comparison", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "History" }).click();
+  await page.getByRole("button", { name: "Save first baseline" }).click();
+  await page.getByRole("textbox", { name: "Snapshot name" }).fill("Before refresh");
+  await page.getByRole("button", { name: "Save snapshot" }).click();
+  await page.getByRole("button", { name: "Preview" }).click();
+  await page.getByRole("textbox", { name: "Light value" }).fill("#C2415D");
+  await page.getByRole("button", { name: "Apply" }).click();
+
+  await page.setViewportSize({ width: 512, height: 700 });
+  await page.getByRole("button", { name: "History" }).click();
+  await page.getByRole("button", { name: "Compare" }).click();
+  await expect(page.getByRole("heading", { name: "Patch bump recommended" })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+  await page.getByText("Preview generated release notes").click();
+  await expect(page.locator("details pre")).toContainText("Suggested version bump: PATCH");
+  await expect(page.locator("details pre")).toContainText("color.brand.600");
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("link", { name: "Download notes" }).click(),
+  ]);
+  expect(download.suggestedFilename()).toBe("tokenlab-release-notes.md");
 });
 
 test("keeps token categories and presets visible while the active category scrolls", async ({

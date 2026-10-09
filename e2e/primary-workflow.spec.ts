@@ -13,22 +13,34 @@ test("edits, compares, and exports a token system", async ({ page }) => {
 
   await page.getByRole("textbox", { name: "Light value" }).fill("#C2415D");
   await page.getByRole("button", { name: "Apply" }).click();
-  await expect(page.getByTestId("preview-root")).toHaveCSS("--tl-preview-action-primary-background", "#C2415D");
+  await expect(page.getByTestId("preview-root")).toHaveCSS(
+    "--tl-preview-action-primary-background",
+    "#C2415D",
+  );
   await page.getByRole("button", { name: "Inspect", exact: true }).click();
-  await page.getByRole("button", { name: "Create project; inspect action.primary.background" }).click();
+  await page
+    .getByRole("button", { name: "Create project; inspect action.primary.background" })
+    .click();
   await expect(page.getByText("Primary button tokens")).toBeVisible();
-  await expect(page.getByRole("status").filter({ hasText: "Primary button selected" })).toBeAttached();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Primary button selected" }),
+  ).toBeAttached();
 
   await page.getByRole("button", { name: "History" }).click();
   await page.getByRole("button", { name: "Compare" }).click();
   await expect(page.getByText("1 token change")).toBeVisible();
-  await expect(page.getByRole("region", { name: "Living Canvas" }).getByText("color.brand.600", { exact: true })).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: "Living Canvas" })
+      .getByText("color.brand.600", { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Back to history" }).click();
 
   await page.getByRole("button", { name: "Export" }).click();
   await expect(page.getByRole("heading", { name: "Production-ready token files" })).toBeVisible();
   await expect(page.getByText("tokenlab.css", { exact: true })).toBeVisible();
   await expect(page.getByText("tokenlab.project.json", { exact: true })).toBeVisible();
+  await expect(page.getByText("tokenlab.design-system.md", { exact: true })).toBeVisible();
 
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download tokenlab.css" }).click();
@@ -37,7 +49,19 @@ test("edits, compares, and exports a token system", async ({ page }) => {
   const css = await readFile(await download.path(), "utf8");
   expect(css).toContain("--action-primary-background: var(--color-brand-600)");
 
-  await page.setContent(`<style>${css}</style><button id="consumer" style="background:var(--action-primary-background);color:var(--action-primary-foreground);border-radius:var(--component-control-radius)">Create project</button>`);
+  const handoffDownloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download tokenlab.design-system.md" }).click();
+  const handoffDownload = await handoffDownloadPromise;
+  expect(handoffDownload.suggestedFilename()).toBe("tokenlab.design-system.md");
+  const handoff = await readFile(await handoffDownload.path(), "utf8");
+  expect(handoff).toContain("Registered contrast checks");
+  expect(handoff).toContain("Registered preview usage");
+  expect(handoff).toContain("Primary button | Projects header");
+  expect(handoff).toContain("→ color.brand.600");
+
+  await page.setContent(
+    `<style>${css}</style><button id="consumer" style="background:var(--action-primary-background);color:var(--action-primary-foreground);border-radius:var(--component-control-radius)">Create project</button>`,
+  );
   await expect(page.locator("#consumer")).toHaveCSS("background-color", "rgb(194, 65, 93)");
   await expect(page.locator("#consumer")).toHaveCSS("border-radius", "7px");
 });

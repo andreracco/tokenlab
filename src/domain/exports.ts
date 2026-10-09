@@ -1,17 +1,25 @@
 import {
   projectSchema,
   upgradeProject,
+  resolveCssValue,
   type ProjectDocument,
   type Token,
   type TokenMode,
 } from "./tokens";
 import type { ProjectSnapshot } from "./projects";
+import { checkContrast } from "./contrast";
 
 export type ExportArtifact = { filename: string; mimeType: string; content: string };
+type RegisteredComponent = {
+  label: string;
+  location: string;
+  tokenIds: readonly string[];
+};
 
 export function buildExports(
   document: ProjectDocument,
   snapshots: ProjectSnapshot[],
+  registeredComponents: readonly RegisteredComponent[],
 ): ExportArtifact[] {
   return [
     { filename: "tokenlab.css", mimeType: "text/css", content: exportCss(document) },
@@ -31,7 +39,104 @@ export function buildExports(
       mimeType: "application/json",
       content: exportProject(document, snapshots),
     },
+    {
+      filename: "tokenlab.design-system.md",
+      mimeType: "text/markdown",
+      content: exportDesignSystemMarkdown(document, registeredComponents),
+    },
   ];
+}
+
+export function exportDesignSystemMarkdown(
+  document: ProjectDocument,
+  registeredComponents: readonly RegisteredComponent[],
+): string {
+  const lines = [
+    `# ${document.name}`,
+    "",
+    "Design-system handoff generated from the current TokenLab project.",
+    "",
+    `- ${document.tokens.length} tokens across primitive and semantic layers`,
+    "- Light and dark modes (tokens without a dark value inherit their light value)",
+    "",
+    "## Tokens",
+    "",
+  ];
+
+  for (const layer of ["primitive", "semantic"] as const) {
+    lines.push(`### ${layer === "primitive" ? "Primitives" : "Semantic tokens"}`, "");
+    lines.push("| Path | Type | Description | Light | Dark |", "| --- | --- | --- | --- | --- |");
+    for (const token of document.tokens.filter((candidate) => candidate.layer === layer)) {
+      lines.push(
+        `| \`${token.path}\` | ${token.type} | ${markdownCell(token.description)} | ${markdownCell(formatHandoffValue(document, token, "light"))} | ${markdownCell(formatHandoffValue(document, token, "dark"))} |`,
+      );
+    }
+    lines.push("");
+  }
+
+  lines.push(
+    "## Registered preview usage",
+    "",
+    "These relationships come from TokenLab's Forma preview registry and do not describe arbitrary applications.",
+    "",
+    "| Token | Component | Location |",
+    "| --- | --- | --- |",
+  );
+  for (const component of registeredComponents) {
+    for (const tokenId of component.tokenIds) {
+      const token = document.tokens.find((candidate) => candidate.id === tokenId);
+      if (token) {
+        lines.push(
+          `| \`${token.path}\` | ${markdownCell(component.label)} | ${markdownCell(component.location)} |`,
+        );
+      }
+    }
+  }
+
+  lines.push(
+    "## Registered contrast checks",
+    "",
+    "These checks cover registered pairs only; they are not a full accessibility certification.",
+    "",
+    "| Mode | Pair | Foreground / background | Result | Ratio | Minimum |",
+    "| --- | --- | --- | --- | ---: | ---: |",
+  );
+  for (const mode of ["light", "dark"] as const) {
+    for (const check of checkContrast(document, mode)) {
+      lines.push(
+        `| ${mode} | ${check.label} (${check.component}) | \`${check.foreground}\` / \`${check.background}\` | ${check.passes ? "Pass" : "Review"} | ${check.ratio}:1 | ${check.threshold}:1 |`,
+      );
+    }
+  }
+
+  lines.push(
+    "",
+    "## CSS usage",
+    "",
+    "```css",
+    ".button {",
+    "  background: var(--action-primary-background);",
+    "  color: var(--action-primary-foreground);",
+    "}",
+    "```",
+    "",
+    "Alias values point to their referenced token; displayed values show the resolved value for each mode.",
+    "",
+  );
+  return lines.join("\n");
+}
+
+function formatHandoffValue(document: ProjectDocument, token: Token, mode: TokenMode): string {
+  const value = token.values[mode] ?? token.values.light;
+  if (value.kind === "reference") {
+    const target = document.tokens.find((candidate) => candidate.id === value.tokenId);
+    return `→ ${target?.path ?? value.tokenId} (${resolveCssValue(document, token.id, mode)})`;
+  }
+  return resolveCssValue(document, token.id, mode);
+}
+
+function markdownCell(value: string): string {
+  return value.replaceAll("|", "\\|").replaceAll("\n", " ");
 }
 
 export function exportCss(document: ProjectDocument): string {

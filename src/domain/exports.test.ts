@@ -3,12 +3,14 @@ import { contrastRatio, checkContrast } from "./contrast";
 import {
   buildExports,
   exportCss,
+  exportDesignSystemMarkdown,
   exportDtcg,
   exportProject,
   exportTailwind,
   parseProjectFile,
 } from "./exports";
 import { initialProject } from "./tokens";
+import { componentRegistry } from "../preview/registry";
 
 describe("shipping formats", () => {
   it("calculates registered contrast pairs", () => {
@@ -23,7 +25,21 @@ describe("shipping formats", () => {
       "--action-primary-background: var(--color-brand-600)",
     );
     expect(exportDtcg(initialProject, "light")).toContain('"$value": "{color.brand.600}"');
-    expect(buildExports(initialProject, [])).toHaveLength(5);
+    expect(buildExports(initialProject, [], componentRegistry)).toHaveLength(6);
+  });
+
+  it("exports a deterministic design-system handoff with aliases and registered checks", () => {
+    const output = exportDesignSystemMarkdown(initialProject, componentRegistry);
+
+    expect(output).toBe(exportDesignSystemMarkdown(initialProject, componentRegistry));
+    expect(output).toContain(`# ${initialProject.name}`);
+    expect(output).toContain("`action.primary.background`");
+    expect(output).toContain("→ color.brand.600");
+    expect(output).toContain("Body text on page (Forma page)");
+    expect(output).toContain("`action.primary.background` | Primary button | Projects header |");
+    expect(output).toContain("do not describe arbitrary applications");
+    expect(output).toContain("4.5:1");
+    expect(output).toContain("not a full accessibility certification");
   });
 
   it("emits CSS and Tailwind references that resolve in a consumer", () => {
