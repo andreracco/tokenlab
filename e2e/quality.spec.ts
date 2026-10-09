@@ -5,22 +5,29 @@ test("commits a preview edit within 100 ms", async ({ page }) => {
   await expect(page.getByRole("status").filter({ hasText: "Saved locally" })).toBeVisible();
   await page.getByRole("textbox", { name: "Light value" }).fill("#C2415D");
 
-  const result = await page.getByRole("button", { name: "Apply" }).evaluate((button) => new Promise<{ elapsed: number; value: string }>((resolve) => {
-    const preview = document.querySelector<HTMLElement>("[data-testid='preview-root']");
-    const start = performance.now();
-    const finish = () => {
-      observer.disconnect();
-      window.clearTimeout(timeout);
-      resolve({
-        elapsed: performance.now() - start,
-        value: preview ? getComputedStyle(preview).getPropertyValue("--tl-preview-action-primary-background").trim() : "",
-      });
-    };
-    const observer = new MutationObserver(finish);
-    if (preview) observer.observe(preview, { attributes: true, attributeFilter: ["style"] });
-    const timeout = window.setTimeout(finish, 500);
-    button.click();
-  }));
+  const result = await page.getByRole("button", { name: "Apply" }).evaluate(
+    (button) =>
+      new Promise<{ elapsed: number; value: string }>((resolve) => {
+        const preview = document.querySelector<HTMLElement>("[data-testid='preview-root']");
+        const start = performance.now();
+        const finish = () => {
+          observer.disconnect();
+          window.clearTimeout(timeout);
+          resolve({
+            elapsed: performance.now() - start,
+            value: preview
+              ? getComputedStyle(preview)
+                  .getPropertyValue("--tl-preview-action-primary-background")
+                  .trim()
+              : "",
+          });
+        };
+        const observer = new MutationObserver(finish);
+        if (preview) observer.observe(preview, { attributes: true, attributeFilter: ["style"] });
+        const timeout = window.setTimeout(finish, 500);
+        button.click();
+      }),
+  );
 
   expect(result.value).toBe("#C2415D");
   expect(result.elapsed).toBeLessThan(100);
@@ -32,7 +39,10 @@ test("honors reduced-motion preference", async ({ page }) => {
 
   const durations = await page.getByRole("button", { name: "Export" }).evaluate((button) => {
     const style = getComputedStyle(button);
-    return [Number.parseFloat(style.animationDuration), Number.parseFloat(style.transitionDuration)];
+    return [
+      Number.parseFloat(style.animationDuration),
+      Number.parseFloat(style.transitionDuration),
+    ];
   });
   expect(durations).toEqual([0.00001, 0.00001]);
 });
@@ -41,32 +51,54 @@ test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
   await page.setViewportSize({ width: 936, height: 624 });
   await page.goto("/");
 
-  const toolbarFits = await page.locator("main > section > div").first().evaluate((toolbar) => {
-    const controls = toolbar.lastElementChild?.getBoundingClientRect();
-    const bounds = toolbar.getBoundingClientRect();
-    return Boolean(controls && controls.left >= bounds.left && controls.right <= bounds.right);
-  });
+  const toolbarFits = await page
+    .locator("main > section > div")
+    .first()
+    .evaluate((toolbar) => {
+      const controls = toolbar.lastElementChild?.getBoundingClientRect();
+      const bounds = toolbar.getBoundingClientRect();
+      return Boolean(controls && controls.left >= bounds.left && controls.right <= bounds.right);
+    });
   expect(toolbarFits).toBe(true);
 
-  const selectChrome = await page.getByRole("combobox").evaluateAll((selects) => selects.map((select) => {
-    const style = getComputedStyle(select);
-    return { appearance: style.appearance, backgroundPosition: style.backgroundPosition, paddingRight: style.paddingRight };
-  }));
-  expect(selectChrome.every(({ appearance, backgroundPosition, paddingRight }) => appearance === "none" && backgroundPosition === "calc(100% - 10px) 50%" && paddingRight === "32px")).toBe(true);
+  const selectChrome = await page.getByRole("combobox").evaluateAll((selects) =>
+    selects.map((select) => {
+      const style = getComputedStyle(select);
+      return {
+        appearance: style.appearance,
+        backgroundPosition: style.backgroundPosition,
+        paddingRight: style.paddingRight,
+      };
+    }),
+  );
+  expect(
+    selectChrome.every(
+      ({ appearance, backgroundPosition, paddingRight }) =>
+        appearance === "none" &&
+        backgroundPosition === "calc(100% - 10px) 50%" &&
+        paddingRight === "32px",
+    ),
+  ).toBe(true);
 
-  const previewTabX = await page.getByRole("button", { name: "Preview" }).evaluate((button) => button.getBoundingClientRect().x);
+  const previewTabX = await page
+    .getByRole("button", { name: "Preview" })
+    .evaluate((button) => button.getBoundingClientRect().x);
   await page.getByRole("button", { name: "History" }).click();
   await expect(page.getByRole("complementary", { name: "Token library" })).toBeHidden();
   await expect(page.getByRole("heading", { name: "Saved baselines" })).toBeVisible();
   const focusedView = await page.evaluate(() => {
-    const panel = document.querySelector("main > section > div:last-child")?.getBoundingClientRect();
+    const panel = document
+      .querySelector("main > section > div:last-child")
+      ?.getBoundingClientRect();
     return {
       documentFits: document.documentElement.scrollWidth === document.documentElement.clientWidth,
       panelFits: Boolean(panel && panel.left >= 0 && panel.right <= window.innerWidth),
     };
   });
   expect(focusedView).toEqual({ documentFits: true, panelFits: true });
-  const focusedPreviewTabX = await page.getByRole("button", { name: "Preview" }).evaluate((button) => button.getBoundingClientRect().x);
+  const focusedPreviewTabX = await page
+    .getByRole("button", { name: "Preview" })
+    .evaluate((button) => button.getBoundingClientRect().x);
   expect(Math.abs(focusedPreviewTabX - previewTabX)).toBeLessThanOrEqual(1);
 });
 
@@ -76,12 +108,65 @@ test("keeps project search and filters the same height across presets", async ({
   for (const preset of ["product", "editorial", "expressive"]) {
     await page.getByLabel("Starting system").selectOption(preset);
     const heights = await Promise.all([
-      page.getByRole("textbox", { name: "Search projects" }).evaluate((input) => input.parentElement?.getBoundingClientRect().height),
-      page.getByRole("combobox", { name: "Project status" }).evaluate((select) => select.getBoundingClientRect().height),
-      page.getByRole("combobox", { name: "Project sort" }).evaluate((select) => select.getBoundingClientRect().height),
+      page
+        .getByRole("textbox", { name: "Search projects" })
+        .evaluate((input) => input.parentElement?.getBoundingClientRect().height),
+      page
+        .getByRole("combobox", { name: "Project status" })
+        .evaluate((select) => select.getBoundingClientRect().height),
+      page
+        .getByRole("combobox", { name: "Project sort" })
+        .evaluate((select) => select.getBoundingClientRect().height),
     ]);
     expect(heights).toEqual([34, 34, 34]);
   }
+});
+
+test("keeps the task count badge readable in dark mode", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Starting system").selectOption("expressive");
+  await page.getByLabel("Preview mode").selectOption("dark");
+
+  const badge = page.getByRole("button", { name: /My tasks/ }).locator("small");
+  const contrast = await badge.evaluate((element) => {
+    const parse = (value: string) =>
+      value
+        .match(/[\d.]+/g)!
+        .slice(0, 3)
+        .map(Number);
+    const luminance = (color: string) => {
+      const channels = parse(color)
+        .map((channel) => channel / 255)
+        .map((channel) =>
+          channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+        );
+      return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+    };
+    const foreground = luminance(getComputedStyle(element).color);
+    const background = luminance(getComputedStyle(element).backgroundColor);
+    return (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+  });
+
+  expect(contrast).toBeGreaterThanOrEqual(4.5);
+});
+
+test("applies and undoes a suggested contrast fix", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Starting system").selectOption("expressive");
+  await page.getByLabel("Preview mode").selectOption("dark");
+  await page.getByRole("button", { name: "Health" }).click();
+
+  const applySuggestion = page.getByRole("button", { name: "Apply suggestion" });
+  await expect(applySuggestion).toBeVisible();
+  await expect(applySuggestion.locator("xpath=../..")).toContainText("color.neutral.panel");
+  await expect(applySuggestion.locator("xpath=../..")).toContainText("6.34:1");
+  await applySuggestion.click();
+
+  const contrastChecks = page.getByRole("region", { name: "Contrast checks" });
+  await expect(contrastChecks).toContainText("Passes 4.5:1");
+  await expect(contrastChecks).toContainText("6.34:1");
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(contrastChecks).toContainText("2.53:1");
 });
 
 test("keeps the active design system inspectable and responsive", async ({ page }) => {
@@ -92,12 +177,20 @@ test("keeps the active design system inspectable and responsive", async ({ page 
   await expect(page.getByRole("heading", { name: "From decision to interface." })).toBeVisible();
   await expect(page.getByText("4/4", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Inspect color.neutral.canvas" }).click();
-  await expect(page.getByRole("complementary", { name: "Token inspector" }).getByText("color.neutral.canvas", { exact: true })).toBeVisible();
+  await expect(
+    page
+      .getByRole("complementary", { name: "Token inspector" })
+      .getByText("color.neutral.canvas", { exact: true }),
+  ).toBeVisible();
 
   await page.setViewportSize({ width: 512, height: 760 });
   await page.getByRole("button", { name: "Canvas" }).click();
   await expect(page.getByRole("region", { name: "Design system" })).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
 });
 
 test("keeps History focused at high browser zoom", async ({ page }) => {
@@ -108,30 +201,49 @@ test("keeps History focused at high browser zoom", async ({ page }) => {
   await expect(page.getByRole("navigation", { name: "Canvas views" })).toBeVisible();
   await expect(page.getByRole("complementary", { name: "Token library" })).toBeHidden();
   await expect(page.getByRole("heading", { name: "Saved baselines" })).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
 });
 
 test("keeps export cards readable across wide and narrow viewports", async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 800 });
   await page.goto("/");
   await page.getByRole("button", { name: "Export" }).click();
+  await expect(page.getByRole("heading", { name: "Production-ready token files" })).toBeVisible();
 
-  const wideCards = await page.locator("article").filter({ has: page.getByRole("button", { name: /^Download tokenlab/ }) }).evaluateAll((cards) => cards.map((card) => {
-    const bounds = card.getBoundingClientRect();
-    return { x: bounds.x, width: bounds.width };
-  }));
+  const wideCards = await page
+    .locator("article")
+    .filter({ has: page.getByRole("button", { name: /^Download tokenlab/ }) })
+    .evaluateAll((cards) =>
+      cards.map((card) => {
+        const bounds = card.getBoundingClientRect();
+        return { x: bounds.x, width: bounds.width };
+      }),
+    );
   expect(wideCards).toHaveLength(5);
   expect(Math.max(...wideCards.map(({ width }) => width))).toBeLessThan(380);
   expect(new Set(wideCards.slice(0, 3).map(({ x }) => Math.round(x))).size).toBe(3);
 
   await page.setViewportSize({ width: 512, height: 700 });
-  const narrowCards = await page.locator("article").filter({ has: page.getByRole("button", { name: /^Download tokenlab/ }) }).evaluateAll((cards) => cards.map((card) => {
-    const bounds = card.getBoundingClientRect();
-    return { x: bounds.x, right: bounds.right };
-  }));
+  const narrowCards = await page
+    .locator("article")
+    .filter({ has: page.getByRole("button", { name: /^Download tokenlab/ }) })
+    .evaluateAll((cards) =>
+      cards.map((card) => {
+        const bounds = card.getBoundingClientRect();
+        return { x: bounds.x, right: bounds.right };
+      }),
+    );
   expect(new Set(narrowCards.map(({ x }) => Math.round(x))).size).toBe(1);
   expect(narrowCards.every(({ x, right }) => x >= 0 && right <= 512)).toBe(true);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
 });
 
 test("keeps comparison actions reachable at high browser zoom", async ({ page }) => {
@@ -146,17 +258,27 @@ test("keeps comparison actions reachable at high browser zoom", async ({ page })
   await expect(page.getByRole("heading", { name: "Baseline and current system" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Back to history" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Restore baseline" })).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth === document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
 });
 
-test("keeps token categories and presets visible while the active category scrolls", async ({ page }) => {
+test("keeps token categories and presets visible while the active category scrolls", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 936, height: 624 });
   await page.goto("/");
 
   const tokenPanel = page.locator("aside[aria-label='Token library']");
   const openTokens = tokenPanel.getByRole("region", { name: "Foundations tokens" });
+  const tokenRows = openTokens.locator(":scope > div");
   await expect(openTokens).toBeVisible();
-  expect(await openTokens.evaluate((list) => list.scrollHeight > list.clientHeight)).toBe(true);
+  await expect
+    .poll(() => tokenRows.evaluate((list) => list.scrollHeight > list.clientHeight))
+    .toBe(true);
+  await tokenRows.evaluate((list) => list.scrollTo(0, list.scrollHeight));
 
   const semanticSummary = tokenPanel.getByRole("button", { name: /Semantic/ });
   await semanticSummary.focus();

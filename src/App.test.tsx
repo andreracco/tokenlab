@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useTokenLabStore } from "./app/store";
 import { initialProject } from "./domain/tokens";
@@ -459,5 +459,45 @@ describe("TokenLab first slice", () => {
       target: { value: "missing" },
     });
     expect(screen.getByText("No unsupported values match")).toBeTruthy();
+  });
+
+  it("shows the token health report and opens a finding in the inspector", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Health" }));
+
+    expect(await screen.findByRole("heading", { name: "Token health" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Contrast pairs" })).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("button", { name: "Inspect pair" })[6]);
+
+    const inspector = await screen.findByLabelText("Token inspector");
+    expect(screen.getByLabelText("Preview mode")).toHaveProperty("value", "dark");
+    const contrastDisclosure = within(inspector).getByRole("button", { name: /Contrast checks/ });
+    expect(contrastDisclosure.getAttribute("aria-expanded")).toBe("true");
+    const contrastRegion = inspector.querySelector('[aria-labelledby="contrast-checks-trigger"]');
+    expect(contrastRegion?.textContent).toContain("Primary button label");
+    expect(contrastRegion?.textContent).not.toContain("Body text on page");
+  });
+
+  it("applies a mode-specific contrast suggestion as one undoable edit", async () => {
+    render(<App />);
+    fireEvent.change(screen.getByLabelText("Starting system"), {
+      target: { value: "expressive" },
+    });
+    fireEvent.change(screen.getByLabelText("Preview mode"), { target: { value: "dark" } });
+    fireEvent.click(screen.getByRole("button", { name: "Health" }));
+
+    const applySuggestion = await screen.findByRole("button", { name: "Apply suggestion" });
+    expect(applySuggestion.parentElement?.textContent).toContain("color.neutral.panel");
+    expect(applySuggestion.parentElement?.textContent).toContain("6.34:1");
+    fireEvent.click(applySuggestion);
+
+    expect(screen.getByLabelText("Preview mode")).toHaveProperty("value", "dark");
+    const inspector = await screen.findByLabelText("Token inspector");
+    const contrastRegion = inspector.querySelector('[aria-labelledby="contrast-checks-trigger"]');
+    expect(contrastRegion?.textContent).toContain("Passes 4.5:1");
+    expect(contrastRegion?.textContent).toContain("6.34:1");
+
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(contrastRegion?.textContent).toContain("2.53:1");
   });
 });

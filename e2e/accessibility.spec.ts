@@ -60,5 +60,5 @@ test("announces focused views and returns focus after overlays", async ({ page }
   const back = page.getByRole("button", { name: "Back to preview" });
   await back.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("button", { name: "Preview" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Preview", exact: true })).toBeFocused();
 });

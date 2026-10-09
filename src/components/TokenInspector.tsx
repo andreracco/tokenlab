@@ -25,6 +25,8 @@ type TokenInspectorProps = {
   consumers: ReturnType<typeof consumersForToken>;
   contrastResults: ReturnType<typeof checkContrast>;
   contrastFailures: number;
+  contrastFocusId: string | null;
+  onClearContrastFocus: () => void;
   onClose: () => void;
   onSelectToken: (tokenId: string) => void;
   onSelectComponent: (key: ComponentKey) => void;
@@ -42,6 +44,8 @@ export function TokenInspector({
   consumers,
   contrastResults,
   contrastFailures,
+  contrastFocusId,
+  onClearContrastFocus,
   onClose,
   onSelectToken,
   onSelectComponent,
@@ -51,6 +55,10 @@ export function TokenInspector({
 }: TokenInspectorProps) {
   const resolvedValue = resolveCssValue(document, token.id, mode);
   const activeValue = token.values[mode] ?? token.values.light;
+  const focusedContrast = contrastResults.find((result) => result.id === contrastFocusId);
+  const displayedContrastFailures = contrastFocusId
+    ? Number(focusedContrast?.passes === false)
+    : contrastFailures;
 
   return (
     <aside id="token-inspector" className={className} aria-label="Token inspector">
@@ -161,37 +169,45 @@ export function TokenInspector({
         </InspectorDisclosure>
       )}
       <InspectorDisclosure
-        key="contrast-checks"
+        key={`contrast-checks-${mode}-${contrastFocusId ?? "all"}`}
         id="contrast-checks"
         title="Contrast checks"
         badge={
-          contrastFailures === 0 ? (
+          displayedContrastFailures === 0 ? (
             <>
               <CheckCircle2 aria-hidden="true" />
               Pass
             </>
           ) : (
-            contrastFailures
+            displayedContrastFailures
           )
         }
-        badgeClassName={contrastFailures === 0 ? styles.passLabel : styles.failLabel}
+        badgeClassName={displayedContrastFailures === 0 ? styles.passLabel : styles.failLabel}
+        defaultOpen={Boolean(contrastFocusId)}
       >
         <div className={styles.contrastList}>
-          {contrastResults.map((result) => (
-            <div
-              key={result.id}
-              className={result.passes ? styles.contrastPass : styles.contrastFail}
-            >
-              <span>
-                {result.label}
-                <small>{result.component}</small>
-              </span>
-              <strong>{result.ratio}:1</strong>
-              <small>
-                {result.passes ? `Passes ${result.threshold}:1` : `Needs ${result.threshold}:1`}
-              </small>
-            </div>
-          ))}
+          {contrastFocusId && (
+            <button className={styles.textButton} onClick={onClearContrastFocus}>
+              Show all contrast checks
+            </button>
+          )}
+          {contrastResults
+            .filter((result) => !contrastFocusId || result.id === contrastFocusId)
+            .map((result) => (
+              <div
+                key={result.id}
+                className={result.passes ? styles.contrastPass : styles.contrastFail}
+              >
+                <span>
+                  {result.label}
+                  <small>{result.component}</small>
+                </span>
+                <strong>{result.ratio}:1</strong>
+                <small>
+                  {result.passes ? `Passes ${result.threshold}:1` : `Needs ${result.threshold}:1`}
+                </small>
+              </div>
+            ))}
         </div>
       </InspectorDisclosure>
     </aside>

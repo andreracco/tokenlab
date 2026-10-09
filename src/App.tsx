@@ -5,6 +5,7 @@ import {
   Download,
   Eye,
   FileSearch,
+  HeartPulse,
   History as HistoryIcon,
   Layers3,
   MousePointer2,
@@ -24,6 +25,8 @@ import { getTokenGroupId, TokenLibrary, type TokenGroupId } from "./components/T
 import { ComparisonView, ExportPanel, HistoryPanel } from "./components/WorkspacePanels";
 import { TokenInspector } from "./components/TokenInspector";
 import { StyleImportPanel } from "./components/StyleImportPanel";
+import { TokenHealthPanel } from "./components/TokenHealthPanel";
+import { analyzeTokenHealth } from "./domain/tokenHealth";
 import { useWorkspacePersistence } from "./persistence/useWorkspacePersistence";
 import styles from "./App.module.css";
 
@@ -31,6 +34,7 @@ type CanvasScreen =
   | { type: "preview" }
   | { type: "system" }
   | { type: "history" }
+  | { type: "health" }
   | { type: "style-import" }
   | { type: "export" }
   | { type: "comparison"; snapshotId: string };
@@ -54,6 +58,9 @@ export function App() {
   const [mode, setMode] = useState<TokenMode>("light");
   const [previewWidth, setPreviewWidth] = useState<720 | 960 | 1280>(1280);
   const [canvasScreen, setCanvasScreen] = useState<CanvasScreen>({ type: "preview" });
+  const [contrastFocus, setContrastFocus] = useState<{ mode: TokenMode; pairId: string } | null>(
+    null,
+  );
   const [selectedComponentKey, setSelectedComponentKey] = useState<ComponentKey | null>(null);
   const [openTokenGroupId, setOpenTokenGroupId] = useState<TokenGroupId | null>("foundations");
   const [snapshotName, setSnapshotName] = useState("");
@@ -92,10 +99,11 @@ export function App() {
       : undefined;
   const contrastResults = checkContrast(document, mode);
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
+  const tokenHealth = analyzeTokenHealth(document, componentRegistry);
   const spectrum = document.tokens
     .filter((token) => token.type === "color" && token.layer === "primitive")
     .slice(0, 6);
-  const focusedView = ["history", "comparison", "style-import", "export"].includes(
+  const focusedView = ["history", "comparison", "style-import", "export", "health"].includes(
     canvasScreen.type,
   );
   const canvasContentKey =
@@ -107,12 +115,18 @@ export function App() {
     setSnapshotError("");
     snapshotDialog.current?.showModal();
   };
-  const closeExport = () => {
+  const closeFocusedView = () => {
     setCanvasScreen({ type: "preview" });
     requestAnimationFrame(() => previewViewButton.current?.focus());
   };
-  const closeStyleImport = () => {
+  const inspectContrast = (targetMode: TokenMode, pairId: string, tokenId: string) => {
+    setMode(targetMode);
+    setContrastFocus({ mode: targetMode, pairId });
+    selectVisibleToken(tokenId);
+    setSelectedComponentKey(null);
     setCanvasScreen({ type: "preview" });
+    setMobilePanel("inspector");
+    setInspectorOpen(true);
     requestAnimationFrame(() => previewViewButton.current?.focus());
   };
   const applyStyleMappings = (mappings: StyleMapping[]) => {
@@ -207,6 +221,25 @@ export function App() {
                 <span className={styles.tabLabel}>
                   <HistoryIcon aria-hidden="true" />
                   History
+                </span>
+              </m.button>
+              <m.button
+                aria-pressed={canvasScreen.type === "health"}
+                className={canvasScreen.type === "health" ? styles.activeTab : ""}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setCanvasScreen({ type: "health" })}
+              >
+                {canvasScreen.type === "health" && (
+                  <m.span
+                    layoutId="header-view-indicator"
+                    className={styles.tabIndicator}
+                    transition={{ type: "spring", stiffness: 520, damping: 38 }}
+                    aria-hidden="true"
+                  />
+                )}
+                <span className={styles.tabLabel}>
+                  <HeartPulse aria-hidden="true" />
+                  Health
                 </span>
               </m.button>
             </nav>
@@ -391,7 +424,10 @@ export function App() {
                       className={styles.modeSelect}
                       aria-label="Preview mode"
                       value={mode}
-                      onChange={(event) => setMode(event.target.value as TokenMode)}
+                      onChange={(event) => {
+                        setMode(event.target.value as TokenMode);
+                        setContrastFocus(null);
+                      }}
                     >
                       <option value="light">Light</option>
                       <option value="dark">Dark</option>
@@ -486,16 +522,40 @@ export function App() {
                       document={document}
                       mode={mode}
                       onApply={applyStyleMappings}
-                      onClose={closeStyleImport}
+                      onClose={closeFocusedView}
                     />
                   ) : canvasScreen.type === "export" ? (
                     <ExportPanel
                       document={document}
                       snapshots={snapshots}
-                      onClose={closeExport}
+                      onClose={closeFocusedView}
                       onImport={(workspace) => {
                         hydrate(workspace.document, workspace.snapshots);
-                        closeExport();
+                        closeFocusedView();
+                      }}
+                    />
+                  ) : canvasScreen.type === "health" ? (
+                    <TokenHealthPanel
+                      report={tokenHealth}
+                      onClose={closeFocusedView}
+                      onSelectToken={(tokenId) => {
+                        selectVisibleToken(tokenId);
+                        setSelectedComponentKey(null);
+                        setCanvasScreen({ type: "preview" });
+                        setMobilePanel("inspector");
+                        setInspectorOpen(true);
+                      }}
+                      onInspectContrast={(targetMode, pairId, tokenId) => {
+                        inspectContrast(targetMode, pairId, tokenId);
+                      }}
+                      onApplyContrastSuggestion={(targetMode, pairId, tokenId, suggestion) => {
+                        execute({
+                          type: "set-token-reference",
+                          tokenId,
+                          mode: targetMode,
+                          targetId: suggestion.tokenId,
+                        });
+                        inspectContrast(targetMode, pairId, tokenId);
                       }}
                     />
                   ) : canvasScreen.type === "comparison" && comparisonSnapshot ? (
@@ -563,6 +623,8 @@ export function App() {
               consumers={consumers}
               contrastResults={contrastResults}
               contrastFailures={contrastFailures}
+              contrastFocusId={contrastFocus?.mode === mode ? contrastFocus.pairId : null}
+              onClearContrastFocus={() => setContrastFocus(null)}
               onClose={() => setInspectorOpen(false)}
               onSelectToken={selectVisibleToken}
               onSelectComponent={selectComponent}

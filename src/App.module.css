@@ -909,7 +909,9 @@
   min-width: 17px;
   padding: 2px 5px;
   border-radius: 8px;
-  background: #dfe3ef;
+  background: var(--tl-preview-border);
+  color: var(--tl-preview-text);
+  font-weight: 700;
   text-align: center;
 }
 .sidebarFooter {
@@ -2582,7 +2584,8 @@
 }
 
 .focusedPanel,
-.comparison {
+.comparison,
+.healthPanel {
   width: 100%;
   flex: 1;
   min-width: 0;
@@ -2590,6 +2593,231 @@
   padding: 32px;
   overflow: auto;
   background: var(--studio-bg);
+}
+.healthPanel {
+  color: var(--studio-text);
+}
+.healthHeader,
+.healthSectionHeading {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.healthHeader {
+  margin-bottom: 24px;
+}
+.healthHeader h2 {
+  margin: 6px 0;
+  font-size: 28px;
+  letter-spacing: -0.035em;
+}
+.healthHeader p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--studio-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.healthSummary,
+.healthSections {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.healthSummary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  background: var(--studio-panel);
+}
+.healthSummaryItem {
+  min-width: 0;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px 8px;
+  border-right: 1px solid var(--studio-border);
+}
+.healthSummaryItem:last-child {
+  border-right: 0;
+}
+.healthSummaryItem > svg {
+  width: 16px;
+  height: 16px;
+  color: var(--studio-muted);
+}
+.healthSummaryItem > span {
+  min-width: 0;
+  color: var(--studio-muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.healthSummaryItem > strong {
+  grid-column: 2;
+  font-size: 17px;
+}
+.healthSections {
+  display: grid;
+  gap: 16px;
+}
+.healthSection {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  background: var(--studio-panel);
+}
+.healthSectionHeading {
+  max-width: none;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.healthSectionHeading h3 {
+  margin: 4px 0 0;
+  font-size: 16px;
+}
+.healthSectionHeading > span {
+  color: var(--studio-muted);
+  font-size: 11px;
+  text-align: right;
+}
+.healthList,
+.healthTokenList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.healthList > li {
+  min-width: 0;
+  padding: 12px 0;
+  display: grid;
+  grid-template-columns: 100px minmax(140px, 1fr) minmax(150px, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid var(--studio-border);
+}
+.healthList > li:first-child {
+  border-top: 0;
+}
+.healthSuggestion {
+  grid-column: 1 / -1;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--studio-accent) 6%, var(--studio-panel));
+}
+.healthSuggestion > span {
+  min-width: 0;
+  color: var(--studio-muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.healthSuggestion code {
+  color: var(--studio-text);
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+.healthSuggestion .secondaryButton {
+  flex: 0 0 auto;
+}
+.healthPass,
+.healthAttention {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--studio-muted);
+  font-size: 11px;
+  text-transform: capitalize;
+}
+.healthPass svg,
+.healthAttention svg {
+  width: 14px;
+  height: 14px;
+}
+.healthPass svg {
+  color: var(--studio-muted);
+}
+.healthAttention svg {
+  color: var(--studio-muted);
+}
+.healthFindingMain,
+.healthFindingDetail,
+.healthTokenList > li > span {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.healthFindingMain strong,
+.healthFindingDetail > span {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.healthFindingMain > span,
+.healthFindingDetail strong,
+.healthTokenList small {
+  color: var(--studio-muted);
+  font-size: 11px;
+}
+.healthFindingDetail strong small {
+  font-weight: 400;
+}
+.healthNote,
+.healthEmpty {
+  margin: 10px 0 0;
+  color: var(--studio-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.healthEmpty {
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.healthEmpty svg {
+  width: 15px;
+  height: 15px;
+}
+.healthTokenList > li {
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid var(--studio-border);
+}
+.healthTokenPaths {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.textButton {
+  width: fit-content;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--studio-accent);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.textButton:hover {
+  background: color-mix(in srgb, var(--studio-accent) 10%, transparent);
+}
+.healthHeader h2:focus-visible {
+  outline: 2px solid var(--studio-accent);
+  outline-offset: 4px;
 }
 .focusedHeader {
   width: 100%;
@@ -3498,6 +3726,10 @@ select.valueInput,
 }
 
 @media (max-width: 1100px) {
+  .header {
+    padding-inline: 12px;
+    gap: 12px;
+  }
   .workspace {
     height: auto;
     min-height: calc(100vh - 68px);
@@ -3693,9 +3925,45 @@ select.valueInput,
   }
   .focusedPanel,
   .comparison,
+  .healthPanel,
   .exportPanel,
   .styleImportPanel {
     padding: 20px 16px;
+  }
+  .healthHeader,
+  .healthSectionHeading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .healthSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .healthSummaryItem {
+    border-bottom: 1px solid var(--studio-border);
+  }
+  .healthSummaryItem:nth-child(even) {
+    border-right: 0;
+  }
+  .healthSummaryItem:last-child {
+    border-bottom: 0;
+  }
+  .healthList > li {
+    grid-template-columns: 1fr auto;
+  }
+  .healthFindingMain,
+  .healthFindingDetail {
+    grid-column: 1 / -1;
+  }
+  .healthList > li > .textButton {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .healthSuggestion {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .healthSectionHeading > span {
+    text-align: left;
   }
   .focusedHeader {
     margin-bottom: 18px;

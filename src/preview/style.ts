@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import {
   resolveColorToken,
   resolveCssValue,
+  resolveToken,
   type ProjectDocument,
   type TokenMode,
 } from "../domain/tokens";
@@ -54,11 +55,23 @@ export function createPreviewStyle(document: ProjectDocument, mode: TokenMode): 
     "--tl-preview-card-gap": resolveCssValue(document, "layout.card.gap", mode),
     "--tl-preview-control-radius": resolveCssValue(document, "component.control.radius", mode),
     "--tl-preview-card-radius": resolveCssValue(document, "component.card.radius", mode),
-    "--tl-preview-card-shadow": resolveCssValue(document, "component.card.shadow", mode),
+    "--tl-preview-card-shadow": resolvePreviewShadow(document, mode),
     "--tl-preview-surface": resolveCssValue(document, "surface.page", mode),
     "--tl-preview-panel": resolveCssValue(document, "surface.panel", mode),
     "--tl-preview-border": resolveCssValue(document, "border.default", mode),
     "--tl-preview-text": resolveCssValue(document, "text.primary", mode),
     "--tl-preview-muted": resolveCssValue(document, "text.muted", mode),
   };
+}
+
+function resolvePreviewShadow(document: ProjectDocument, mode: TokenMode): string {
+  const value = resolveToken(document, "component.card.shadow", mode);
+  if (mode !== "dark" || typeof value !== "object" || !value || !("blur" in value)) {
+    return resolveCssValue(document, "component.card.shadow", mode);
+  }
+
+  // Dark previews soften opaque shadow tokens until the token model supports alpha.
+  const offsetY = Math.sign(value.offsetY) * Math.min(Math.abs(value.offsetY), 4);
+  const blur = Math.round(value.blur * 0.65);
+  return `${value.offsetX}px ${offsetY}px ${blur}px ${value.spread}px color-mix(in srgb, ${value.color} 14%, transparent)`;
 }
