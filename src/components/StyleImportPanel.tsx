@@ -19,7 +19,9 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
   const [filename, setFilename] = useState("");
   const [result, setResult] = useState<StyleScanResult | null>(null);
   const [targets, setTargets] = useState<Record<string, string>>({});
+  const [automaticTargets, setAutomaticTargets] = useState<Record<string, boolean>>({});
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [autoMapEnabled, setAutoMapEnabled] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -35,11 +37,12 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
     try {
       if (file.size > maximumFileSize) throw new Error("Choose a CSS file smaller than 1 MB.");
       const scan = scanStylesheet(await file.text());
-      const nextTargets = Object.fromEntries(scan.candidates.map((candidate) => [candidate.id, suggestedTarget(candidate, document)]));
+      const suggestions = autoMapEnabled ? addSuggestions(scan.candidates, {}, document, mode) : { targets: {}, automatic: {} };
       setFilename(file.name);
       setResult(scan);
-      setTargets(nextTargets);
-      setSelected(Object.fromEntries(scan.candidates.map((candidate) => [candidate.id, valueChanges(candidate, nextTargets[candidate.id], document, mode)])));
+      setTargets(suggestions.targets);
+      setAutomaticTargets(suggestions.automatic);
+      setSelected(Object.fromEntries(scan.candidates.map((candidate) => [candidate.id, valueChanges(candidate, suggestions.targets[candidate.id], document, mode)])));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Couldn't read this stylesheet.");
     } finally {
@@ -56,6 +59,22 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
   const selectableCandidates = result?.candidates.filter((candidate) => valueChanges(candidate, targets[candidate.id], document, mode)) ?? [];
   const allSelected = selectableCandidates.length > 0 && selectableCandidates.every((candidate) => selected[candidate.id]);
   const mappedCount = result?.candidates.filter((candidate) => targets[candidate.id]).length ?? 0;
+
+  const toggleAutoMap = (enabled: boolean) => {
+    setAutoMapEnabled(enabled);
+    if (!result) return;
+    if (enabled) {
+      const suggestions = addSuggestions(result.candidates, targets, document, mode);
+      setTargets(suggestions.targets);
+      setAutomaticTargets((current) => ({ ...current, ...suggestions.automatic }));
+      setSelected((current) => ({ ...current, ...Object.fromEntries(result.candidates.map((candidate) => [candidate.id, current[candidate.id] || valueChanges(candidate, suggestions.targets[candidate.id], document, mode)])) }));
+    } else {
+      setTargets((current) => Object.fromEntries(result.candidates.map((candidate) => [candidate.id, automaticTargets[candidate.id] ? "" : current[candidate.id]])));
+      setSelected((current) => Object.fromEntries(result.candidates.map((candidate) => [candidate.id, automaticTargets[candidate.id] ? false : current[candidate.id]])));
+      setAutomaticTargets({});
+    }
+    setMessage("");
+  };
 
   const applySelection = () => {
     if (mappings.length === 0) return;
@@ -100,7 +119,7 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
           {result.candidates.length === 0 ? <div className={styles.styleImportEmpty}><strong>No compatible values found</strong><p>TokenLab currently recognizes hex colors, px/rem dimensions, supported fonts, weights, line heights, and simple shadows.</p></div> : <>
             <div className={styles.styleImportTools}>
               <div><strong>Review mappings</strong><small>{mappings.length} of {selectableCandidates.length} changes selected</small></div>
-              <button className={styles.secondaryButton} disabled={selectableCandidates.length === 0} onClick={() => setSelected(Object.fromEntries(selectableCandidates.map((candidate) => [candidate.id, !allSelected])))}>{allSelected ? "Clear selection" : "Select all changes"}</button>
+              <span className={styles.styleImportToolActions}><label className={styles.autoMapToggle}><input type="checkbox" checked={autoMapEnabled} onChange={(event) => toggleAutoMap(event.target.checked)} />Auto-map obvious matches</label><button className={styles.secondaryButton} disabled={selectableCandidates.length === 0} onClick={() => setSelected(Object.fromEntries(selectableCandidates.map((candidate) => [candidate.id, !allSelected])))}>{allSelected ? "Clear selection" : "Select all changes"}</button></span>
             </div>
             <div className={styles.styleCandidateList}>{result.candidates.map((candidate) => {
               const compatibleTokens = document.tokens.filter((token) => token.layer === "primitive" && token.type === candidate.type);
@@ -112,7 +131,7 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
                 <span className={styles.candidatePreview}>{candidate.type === "color" ? <i style={{ background: candidate.value }} /> : candidate.type.slice(0, 2).toUpperCase()}</span>
                 <span className={styles.candidateValue}><code>{candidate.value}</code><small>{candidate.sources.join(", ")} · {candidate.occurrences} {candidate.occurrences === 1 ? "use" : "uses"}</small><span className={!target ? styles.mappingNeeded : changed ? styles.mappingReady : styles.mappingCurrent}>{!target ? "Needs mapping" : changed ? "Ready to apply" : "Already matches"}</span></span>
                 <span className={styles.candidateChange}><small>Current</small><code>{currentValue || "Choose a target"}</code><small>Imported</small><code>{candidate.value}</code></span>
-                <label>Map to<select value={target} onChange={(event) => { const tokenId = event.target.value; setTargets((current) => ({ ...current, [candidate.id]: tokenId })); setSelected((current) => ({ ...current, [candidate.id]: valueChanges(candidate, tokenId, document, mode) })); setMessage(""); }}><option value="">Choose token</option>{compatibleTokens.map((token) => <option key={token.id} value={token.id} disabled={Object.entries(targets).some(([candidateId, tokenId]) => candidateId !== candidate.id && tokenId === token.id)}>{token.path}</option>)}</select></label>
+                <label>Map to<select value={target} onChange={(event) => { const tokenId = event.target.value; setTargets((current) => ({ ...current, [candidate.id]: tokenId })); setAutomaticTargets((current) => ({ ...current, [candidate.id]: false })); setSelected((current) => ({ ...current, [candidate.id]: valueChanges(candidate, tokenId, document, mode) })); setMessage(""); }}><option value="">Choose token</option>{compatibleTokens.map((token) => <option key={token.id} value={token.id} disabled={Object.entries(targets).some(([candidateId, tokenId]) => candidateId !== candidate.id && tokenId === token.id)}>{token.path}</option>)}</select></label>
               </article>;
             })}</div>
 
@@ -125,11 +144,29 @@ export function StyleImportPanel({ document, mode, onApply, onClose }: StyleImpo
   );
 }
 
-function suggestedTarget(candidate: StyleCandidate, document: ProjectDocument) {
-  const variable = candidate.sources.find((source) => source.startsWith("--"));
-  if (!variable) return "";
-  const path = variable.slice(2).replaceAll("-", ".");
-  return document.tokens.find((token) => token.layer === "primitive" && token.type === candidate.type && token.path === path)?.id ?? "";
+function addSuggestions(candidates: StyleCandidate[], current: Record<string, string>, document: ProjectDocument, mode: TokenMode) {
+  const targets = { ...current };
+  const automatic: Record<string, boolean> = {};
+  const claimed = new Set(Object.values(current).filter(Boolean));
+  for (const candidate of candidates) {
+    if (targets[candidate.id]) continue;
+    const target = suggestedTarget(candidate, document, mode);
+    if (!target || claimed.has(target)) continue;
+    targets[candidate.id] = target;
+    automatic[candidate.id] = true;
+    claimed.add(target);
+  }
+  return { targets, automatic };
+}
+
+function suggestedTarget(candidate: StyleCandidate, document: ProjectDocument, mode: TokenMode) {
+  for (const variable of candidate.sources.filter((source) => source.startsWith("--"))) {
+    const path = variable.slice(2).replaceAll("-", ".");
+    const exact = document.tokens.find((token) => token.layer === "primitive" && token.type === candidate.type && token.path === path);
+    if (exact) return exact.id;
+  }
+  const valueMatches = document.tokens.filter((token) => token.layer === "primitive" && token.type === candidate.type && resolveCssValue(document, token.id, mode) === candidate.value);
+  return valueMatches.length === 1 ? valueMatches[0].id : "";
 }
 
 function valueChanges(candidate: StyleCandidate, tokenId: string, document: ProjectDocument, mode: TokenMode) {

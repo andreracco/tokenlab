@@ -317,6 +317,9 @@ select.modeSelect, .presetPicker select, select.valueInput, .comparisonHeader se
 .styleImportTools { margin: 18px 0 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .styleImportTools > div { display: grid; gap: 3px; }
 .styleImportTools strong { font-size: 13px; }.styleImportTools small { color: var(--studio-muted); font-size: 10px; }
+.styleImportToolActions { display: flex; align-items: center; gap: 8px; }
+.autoMapToggle { min-height: 32px; padding: 0 10px; display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--studio-border); border-radius: 7px; background: var(--studio-panel); color: var(--studio-text); font-size: 10px; font-weight: 650; cursor: pointer; }
+.autoMapToggle input { width: 14px; height: 14px; margin: 0; accent-color: var(--studio-accent); }
 .styleCandidateList { overflow: hidden; border: 1px solid var(--studio-border); border-radius: 10px; background: var(--studio-panel); }
 .styleCandidate { min-height: 78px; padding: 12px; display: grid; grid-template-columns: 16px 38px minmax(150px, 1fr) minmax(180px, 220px) minmax(190px, 240px); align-items: center; gap: 12px; border-bottom: 1px solid var(--studio-border); }
 .styleCandidate:last-child { border-bottom: 0; }
@@ -332,7 +335,7 @@ select.modeSelect, .presetPicker select, select.valueInput, .comparisonHeader se
 .candidateChange small { color: var(--studio-muted); font-size: 8px; font-weight: 700; text-transform: uppercase; }
 .candidateChange code { overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .styleCandidate label { display: grid; gap: 4px; color: var(--studio-muted); font-size: 9px; font-weight: 700; text-transform: uppercase; }
-.styleCandidate select { width: 100%; min-height: 34px; padding: 0 32px 0 9px; appearance: none; border: 1px solid var(--studio-border); border-radius: 7px; background-color: #fff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3 4.5 3 3 3-3' stroke='%2368717c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; font-size: 10px; cursor: pointer; }
+.styleCandidate select { width: 100%; min-height: 34px; padding: 0 32px 0 9px; appearance: none; border: 1px solid var(--studio-border); border-radius: 7px; background-color: #fff; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='m3 4.5 3 3 3-3' stroke='%2368717c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; color: var(--studio-text); font-family: inherit; font-size: 10px; cursor: pointer; }
 .importContrastWarning, .importContrastClear { margin-top: 10px; padding: 11px 12px; display: flex; align-items: flex-start; gap: 9px; border: 1px solid; border-radius: 9px; font-size: 10px; }
 .importContrastWarning { border-color: #dfb0a8; background: #fff2ef; color: #853d35; }.importContrastClear { border-color: #afd0ba; background: #eef8f1; color: #327351; }
 .importContrastWarning > svg, .importContrastClear > svg { width: 15px; height: 15px; flex: 0 0 auto; }
@@ -405,6 +408,7 @@ select.modeSelect, .presetPicker select, select.valueInput, .comparisonHeader se
   .styleImportSummary span { border-right: 0; border-bottom: 1px solid var(--studio-border); }
   .styleImportSummary span:last-child { border-bottom: 0; }
   .styleImportTools { align-items: flex-start; }
+  .styleImportToolActions { align-items: stretch; flex-direction: column; }
   .styleCandidate { grid-template-columns: 16px 38px minmax(0, 1fr); align-items: center; }
   .candidateChange, .styleCandidate label { grid-column: 1 / -1; }
   .styleImportActions { align-items: stretch; flex-direction: column; }

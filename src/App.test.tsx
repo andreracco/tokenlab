@@ -242,6 +242,7 @@ describe("TokenLab first slice", () => {
     expect(screen.getByRole("checkbox", { name: "Select #C2415D" })).toHaveProperty("checked", true);
     expect(screen.getByRole("checkbox", { name: "Select 18px" })).toHaveProperty("checked", true);
     expect(screen.getAllByRole("combobox", { name: "Map to" }).map((select) => (select as HTMLSelectElement).value)).toEqual(["color.brand.600", "space.medium"]);
+    expect((screen.getAllByRole("combobox", { name: "Map to" })[0] as HTMLSelectElement).selectedOptions[0].text).toBe("color.brand.600");
     fireEvent.click(screen.getByRole("button", { name: "Apply 2" }));
     expect(screen.getByText("2 token changes applied as one undo step.")).toBeTruthy();
     expect(useTokenLabStore.getState().history).toHaveLength(1);
@@ -262,5 +263,23 @@ describe("TokenLab first slice", () => {
     expect(await screen.findByText("1 new contrast issue")).toBeTruthy();
     expect(screen.getByText(/Primary button label: 1:1, requires 4.5:1/)).toBeTruthy();
     expect(useTokenLabStore.getState().history).toHaveLength(0);
+  });
+
+  it("lets users disable and restore safe automatic stylesheet mappings", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Import CSS" }));
+    fireEvent.change(screen.getByLabelText(/Choose a CSS file/i), { target: { files: [{ name: "brand.css", size: 44, text: async () => ":root { --color-brand-600: #c2415d; }" }] } });
+
+    const autoMap = await screen.findByRole("checkbox", { name: "Auto-map obvious matches" });
+    const target = screen.getByRole("combobox", { name: "Map to" });
+    expect(target).toHaveProperty("value", "color.brand.600");
+
+    fireEvent.click(autoMap);
+    expect(target).toHaveProperty("value", "");
+    expect(screen.getByRole("checkbox", { name: "Select #C2415D" })).toHaveProperty("disabled", true);
+
+    fireEvent.click(autoMap);
+    expect(target).toHaveProperty("value", "color.brand.600");
+    expect(screen.getByRole("checkbox", { name: "Select #C2415D" })).toHaveProperty("checked", true);
   });
 });
