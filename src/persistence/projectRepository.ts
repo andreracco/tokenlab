@@ -1,7 +1,16 @@
 import { projectSchema, upgradeProject, type ProjectDocument } from "../domain/tokens";
 import type { ProjectSnapshot } from "../domain/projects";
+import {
+  emptyPreviewProjectWorkspace,
+  previewProjectWorkspaceSchema,
+  type PreviewProjectWorkspace,
+} from "../preview/workspace";
 
-export type SavedWorkspace = { document: ProjectDocument; snapshots: ProjectSnapshot[] };
+export type SavedWorkspace = {
+  document: ProjectDocument;
+  snapshots: ProjectSnapshot[];
+  preview?: PreviewProjectWorkspace;
+};
 
 const databaseName = "tokenlab";
 const storeName = "workspaces";
@@ -15,12 +24,16 @@ export async function loadWorkspace(): Promise<SavedWorkspace | null> {
     database.transaction(storeName).objectStore(storeName).get(workspaceKey),
   );
   if (!record) return null;
+  const previewResult = previewProjectWorkspaceSchema.safeParse(
+    record.preview ?? emptyPreviewProjectWorkspace,
+  );
   return {
     document: upgradeProject(projectSchema.parse(record.document)),
     snapshots: (record.snapshots ?? []).map((snapshot: ProjectSnapshot) => ({
       ...snapshot,
       document: upgradeProject(projectSchema.parse(snapshot.document)),
     })),
+    preview: previewResult.success ? previewResult.data : emptyPreviewProjectWorkspace,
   };
 }
 

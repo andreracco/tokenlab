@@ -51,6 +51,9 @@ export function App() {
   const undo = useTokenLabStore((state) => state.undo);
   const redo = useTokenLabStore((state) => state.redo);
   const snapshots = useTokenLabStore((state) => state.snapshots);
+  const previewWorkspace = useTokenLabStore((state) => state.previewWorkspace);
+  const createPreviewProject = useTokenLabStore((state) => state.createPreviewProject);
+  const updatePreviewProject = useTokenLabStore((state) => state.updatePreviewProject);
   const captureSnapshot = useTokenLabStore((state) => state.captureSnapshot);
   const restoreSnapshot = useTokenLabStore((state) => state.restoreSnapshot);
   const hydrate = useTokenLabStore((state) => state.hydrate);
@@ -68,7 +71,6 @@ export function App() {
   const [snapshotError, setSnapshotError] = useState("");
   const [mobilePanel, setMobilePanel] = useState<"tokens" | "canvas" | "inspector">("canvas");
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [createdProjects, setCreatedProjects] = useState<{ id: string; name: string }[]>([]);
   const snapshotDialog = useRef<HTMLDialogElement>(null);
   const snapshotNameInput = useRef<HTMLInputElement>(null);
   const previewViewButton = useRef<HTMLButtonElement>(null);
@@ -583,17 +585,13 @@ export function App() {
                     />
                   ) : canvasScreen.type === "preview" ? (
                     <FormaPreview
-                      createdProjects={createdProjects}
+                      workspace={previewWorkspace}
                       inspectEnabled={inspectEnabled}
                       highlightedComponents={consumers.map((consumer) => consumer.key)}
                       selectedComponentKey={selectedComponentKey}
                       onInspect={selectComponent}
-                      onCreateProject={(name) =>
-                        setCreatedProjects((projects) => [
-                          ...projects,
-                          { id: `preview-project-${projects.length + 1}`, name },
-                        ])
-                      }
+                      onCreateProject={createPreviewProject}
+                      onUpdateProject={updatePreviewProject}
                       style={previewStyle}
                     />
                   ) : (

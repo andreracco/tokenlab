@@ -1214,12 +1214,195 @@
   color: var(--forma-muted);
   font-size: 0.72em;
 }
+.projectDetails {
+  display: grid;
+  gap: 18px;
+}
+.backToProjects {
+  width: max-content;
+  min-height: 36px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--forma-line);
+  border-radius: var(--tl-preview-control-radius);
+  background: var(--tl-preview-panel);
+  color: var(--forma-text);
+  font-size: 0.78em;
+  font-weight: 650;
+  cursor: pointer;
+}
+.backToProjects:hover {
+  background: color-mix(in srgb, var(--tl-preview-panel) 75%, var(--forma-line));
+}
+.backToProjects svg {
+  width: 15px;
+  height: 15px;
+}
+.backToProjects:focus-visible,
+.projectDetails h1:focus-visible {
+  outline: 2px solid var(--tl-preview-action-primary-background);
+  outline-offset: 3px;
+}
+.projectDetails .pageHeading > div {
+  min-width: 0;
+}
+.projectDetails .pageHeading h1 {
+  overflow-wrap: anywhere;
+}
+.projectDetailStatus {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: var(--tl-preview-surface);
+  color: var(--forma-muted);
+  font-size: 0.72em;
+  font-weight: 700;
+}
+.projectDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--tl-preview-card-gap);
+}
+.projectDetailCard {
+  min-width: 0;
+  padding: var(--tl-preview-card-padding);
+  border: 1px solid var(--forma-line);
+  border-radius: var(--tl-preview-card-radius);
+  background: var(--tl-preview-panel);
+}
+.projectDetailCard h2 {
+  margin: 0;
+  font-size: 0.9em;
+}
+.projectDetailForm {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+.projectDetailMetricHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.projectDetailCard .progressTrack {
+  height: 7px;
+  margin: 12px 0 8px;
+}
+.projectDetailForm .progressTrack {
+  margin: 0;
+}
+.projectDetailField {
+  display: grid;
+  gap: 6px;
+  color: var(--forma-muted);
+  font-size: 0.72em;
+  font-weight: 650;
+}
+.projectDetailField > .selectControl {
+  width: 100%;
+}
+.projectDetailField input,
+.projectDetailField .selectControl > select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 36px 0 12px;
+  border: 1px solid var(--forma-line);
+  border-radius: var(--tl-preview-control-radius);
+  background: var(--tl-preview-panel);
+  color: var(--forma-text);
+  font-family: inherit;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+.projectDetailField input:focus-visible,
+.projectDetailField .selectControl > select:focus-visible {
+  outline: 2px solid var(--tl-preview-action-primary-background);
+  outline-offset: 2px;
+}
+.projectDetailError {
+  color: var(--tl-preview-feedback-error-text);
+  font-size: 0.92em;
+  font-weight: 600;
+}
+.projectDetailActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.projectDetailSave {
+  width: max-content;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--tl-preview-control-radius);
+  background: var(--tl-preview-action-primary-background);
+  color: var(--tl-preview-action-primary-foreground);
+  font: inherit;
+  font-size: 0.74em;
+  font-weight: 700;
+  cursor: pointer;
+}
+.projectDetailSave:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.projectDetailSave:focus-visible {
+  outline: 2px solid var(--forma-text);
+  outline-offset: 2px;
+}
+.projectDetailActions small {
+  margin: 0;
+  color: var(--forma-muted);
+  font-size: 0.72em;
+  line-height: 1.4;
+}
+.projectDetailTeam {
+  margin-top: 12px;
+  display: grid;
+  gap: 9px;
+}
+.projectDetailMember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78em;
+}
+.projectDetailMember .avatar {
+  width: 26px;
+  height: 26px;
+}
+.projectDetailActivity {
+  margin: 14px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.78em;
+}
+.projectDetailActivity > span:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.projectDetailActivity small,
+.projectDetailEmpty {
+  color: var(--forma-muted);
+}
+.projectDetailEmpty {
+  margin: 12px 0 0;
+  font-size: 0.78em;
+}
 .projectGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--tl-preview-card-gap);
 }
 .projectCard {
+  position: relative;
   min-width: 0;
   padding: var(--tl-preview-card-padding);
   border: 1px solid var(--forma-line);
@@ -1230,11 +1413,27 @@
     border-color 0.16s ease,
     box-shadow 0.16s ease,
     transform 0.16s ease;
+  cursor: pointer;
 }
 .projectCard:hover {
   border-color: color-mix(in srgb, var(--forma-line) 55%, var(--forma-muted));
   box-shadow: 0 8px 22px rgba(25, 25, 25, 0.06);
   transform: translateY(-1px);
+}
+.projectCardAction {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.projectCardAction:focus-visible {
+  outline: 2px solid var(--tl-preview-action-primary-background);
+  outline-offset: 3px;
 }
 .projectCard > div:first-child,
 .progressLabel,
@@ -1488,6 +1687,9 @@
   .teamGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .projectDetailGrid {
+    grid-template-columns: 1fr;
+  }
   .projectToolbar {
     flex-wrap: wrap;
   }
@@ -1500,6 +1702,7 @@
   .previewRoot {
     height: 650px;
     min-height: 650px;
+    min-width: 0;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }

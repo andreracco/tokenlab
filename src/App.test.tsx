@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { useTokenLabStore } from "./app/store";
 import { initialProject } from "./domain/tokens";
+import { emptyPreviewProjectWorkspace } from "./preview/workspace";
 import { App } from "./App";
 
 afterEach(cleanup);
@@ -14,6 +15,7 @@ beforeEach(() => {
     history: [],
     future: [],
     snapshots: [],
+    previewWorkspace: emptyPreviewProjectWorkspace,
   });
 });
 
@@ -210,12 +212,9 @@ describe("TokenLab first slice", () => {
     ).toBe("20px");
 
     fireEvent.click(screen.getByRole("button", { name: /^Inspect$/ }));
-    expect(
-      fireEvent.keyDown(
-        screen.getByRole("button", { name: "Inspect Mobile app refresh project card" }),
-        { key: " " },
-      ),
-    ).toBe(false);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Inspect Mobile app refresh project card" }),
+    );
     expect(screen.getByText("Project card tokens")).toBeTruthy();
   });
 

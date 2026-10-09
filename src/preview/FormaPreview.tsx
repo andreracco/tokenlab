@@ -1,5 +1,6 @@
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import {
+  ArrowLeft,
   Bell,
   CheckCircle2,
   CheckSquare2,
@@ -13,30 +14,58 @@ import {
 import type { ComponentKey } from "./registry";
 import type { PreviewStyle } from "./style";
 import { SelectControl } from "../components/SelectControl";
+import {
+  projectStatusSchema,
+  type PreviewProjectChanges,
+  type PreviewProjectStatus,
+  type PreviewProjectWorkspace,
+} from "./workspace";
 import styles from "../App.module.css";
 
 type FormaPreviewProps = {
-  createdProjects: { id: string; name: string }[];
+  workspace: PreviewProjectWorkspace;
   inspectEnabled: boolean;
   highlightedComponents: ComponentKey[];
   selectedComponentKey: ComponentKey | null;
   onInspect: (key: ComponentKey) => void;
   onCreateProject: (name: string) => void;
+  onUpdateProject: (id: string, title: string, changes: PreviewProjectChanges) => void;
   style: PreviewStyle;
 };
 
+type PreviewProject = {
+  id: string;
+  title: string;
+  category: string;
+  status: PreviewProjectStatus;
+  progress: number;
+  color: string;
+  members: string[];
+};
+
+type ProjectActivity = {
+  id: string;
+  projectId: string;
+  initials: string;
+  name: string;
+  action: string;
+  meta: string;
+};
+
 export function FormaPreview({
-  createdProjects,
+  workspace,
   inspectEnabled,
   highlightedComponents,
   selectedComponentKey,
   onInspect,
   onCreateProject,
+  onUpdateProject,
   style,
 }: FormaPreviewProps) {
   const createProjectDialog = useRef<HTMLDialogElement>(null);
   const createProjectButton = useRef<HTMLButtonElement>(null);
   const projectNameInput = useRef<HTMLInputElement>(null);
+  const projectListHeading = useRef<HTMLHeadingElement>(null);
   const [activeSection, setActiveSection] = useState<"overview" | "projects" | "tasks" | "team">(
     "projects",
   );
@@ -47,6 +76,7 @@ export function FormaPreview({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [projectNameError, setProjectNameError] = useState("");
   const [createdProjectName, setCreatedProjectName] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const inspectClass = (key: ComponentKey) =>
     selectedComponentKey === key
       ? styles.inspectSelected
@@ -65,7 +95,7 @@ export function FormaPreview({
   const taskHighlight = inspectClass("task-row");
   const teamHighlight = inspectClass("team-card");
   const overviewActionHighlight = inspectClass("overview-action");
-  const projects = [
+  const baseProjects: PreviewProject[] = [
     {
       id: "mobile-refresh",
       title: "Mobile app refresh",
@@ -93,16 +123,21 @@ export function FormaPreview({
       color: "#5A69C8",
       members: ["AK", "JL", "OR"],
     },
-    ...createdProjects.map((project) => ({
-      ...project,
-      title: project.name,
-      category: "New project",
-      status: "planning",
-      progress: 0,
-      color: "#6F7785",
-      members: ["MS"],
-    })),
   ];
+  const projects = baseProjects
+    .map((project) => ({ ...project, ...workspace.projectChanges[project.id] }))
+    .concat(
+      workspace.createdProjects.map((project) => ({
+        ...project,
+        title: project.name,
+        category: "New project",
+        status: "planning",
+        progress: 0,
+        color: "#6F7785",
+        members: ["MS"],
+        ...workspace.projectChanges[project.id],
+      })),
+    );
   const visibleProjects = projects
     .filter((project) => projectStatus === "all" || project.status === projectStatus)
     .filter((project) =>
@@ -115,6 +150,8 @@ export function FormaPreview({
         ? left.title.localeCompare(right.title)
         : right.progress - left.progress,
     );
+  const activities: ProjectActivity[] = [...workspace.projectUpdates, ...sampleActivities];
+  const selectedProject = projects.find(({ id }) => id === selectedProjectId);
   const navItems = [
     { id: "overview" as const, label: "Overview", icon: LayoutDashboard },
     { id: "projects" as const, label: "Projects", icon: FolderKanban },
@@ -153,9 +190,13 @@ export function FormaPreview({
                 className={`${activeSection === id ? styles.navSelected : ""} ${inspectEnabled ? styles.inspectable : ""} ${inspectEnabled ? navigationHighlight : ""}`}
                 aria-current={activeSection === id ? "page" : undefined}
                 aria-label={inspectEnabled ? `Inspect ${label} navigation item` : undefined}
-                onClick={() =>
-                  inspectEnabled ? onInspect("workspace-navigation") : setActiveSection(id)
-                }
+                onClick={() => {
+                  if (inspectEnabled) onInspect("workspace-navigation");
+                  else {
+                    setSelectedProjectId(null);
+                    setActiveSection(id);
+                  }
+                }}
               >
                 <Icon aria-hidden="true" />
                 <span>{label}</span>
@@ -188,16 +229,28 @@ export function FormaPreview({
                 placeholder="Search projects"
                 value={projectQuery}
                 readOnly={inspectEnabled}
-                onFocus={() =>
-                  inspectEnabled ? onInspect("project-search") : setActiveSection("projects")
-                }
+                onFocus={() => {
+                  if (inspectEnabled) onInspect("project-search");
+                  else {
+                    setSelectedProjectId(null);
+                    setActiveSection("projects");
+                  }
+                }}
                 onChange={(event) => {
                   setProjectQuery(event.target.value);
+                  setSelectedProjectId(null);
                   setActiveSection("projects");
                 }}
               />
               {projectQuery && (
-                <button aria-label="Clear Forma search" onClick={() => setProjectQuery("")}>
+                <button
+                  aria-label="Clear Forma search"
+                  onClick={() => {
+                    setProjectQuery("");
+                    setSelectedProjectId(null);
+                    setActiveSection("projects");
+                  }}
+                >
                   <X aria-hidden="true" />
                 </button>
               )}
@@ -231,12 +284,27 @@ export function FormaPreview({
             <span className={styles.avatar}>MS</span>
           </div>
           <div className={styles.formaContent}>
-            {activeSection === "projects" && (
+            {activeSection === "projects" && selectedProject && (
+              <ProjectDetails
+                project={selectedProject}
+                activities={activities.filter(({ projectId }) => projectId === selectedProject.id)}
+                onSave={(changes) =>
+                  onUpdateProject(selectedProject.id, selectedProject.title, changes)
+                }
+                onBack={() => {
+                  setSelectedProjectId(null);
+                  requestAnimationFrame(() => projectListHeading.current?.focus());
+                }}
+              />
+            )}
+            {activeSection === "projects" && !selectedProject && (
               <>
                 <div className={styles.pageHeading}>
                   <div>
                     <span className={styles.breadcrumb}>Workspace / Projects</span>
-                    <h1>Projects</h1>
+                    <h1 ref={projectListHeading} tabIndex={-1}>
+                      Projects
+                    </h1>
                     <p>Plan, track, and ship your team’s best work.</p>
                   </div>
                   <button
@@ -348,6 +416,7 @@ export function FormaPreview({
                         inspectEnabled={inspectEnabled}
                         highlightClass={cardHighlight}
                         onInspect={() => onInspect("project-card")}
+                        onOpen={() => setSelectedProjectId(project.id)}
                       />
                     ))}
                   </div>
@@ -372,7 +441,7 @@ export function FormaPreview({
                   </div>
                 )}
                 <ActivityPanel
-                  createdProjects={createdProjects}
+                  activities={activities}
                   expanded={showAllActivity}
                   inspectEnabled={inspectEnabled}
                   highlightClass={activityHighlight}
@@ -384,7 +453,7 @@ export function FormaPreview({
             )}
             {activeSection === "overview" && (
               <OverviewPanel
-                createdProjects={createdProjects}
+                activities={activities}
                 inspectEnabled={inspectEnabled}
                 activityHighlight={activityHighlight}
                 activitySelected={selectedComponentKey === "recent-activity"}
@@ -393,7 +462,10 @@ export function FormaPreview({
                 onInspectActivity={() => onInspect("recent-activity")}
                 onInspectMetric={() => onInspect("metric-card")}
                 onInspectAction={() => onInspect("overview-action")}
-                onOpenProjects={() => setActiveSection("projects")}
+                onOpenProjects={() => {
+                  setSelectedProjectId(null);
+                  setActiveSection("projects");
+                }}
               />
             )}
             {activeSection === "tasks" && (
@@ -478,6 +550,7 @@ export function FormaPreview({
 const sampleActivities = [
   {
     id: "activity-navigation-review",
+    projectId: "mobile-refresh",
     initials: "JL",
     name: "Jon Lee",
     action: "completed “Review navigation patterns”",
@@ -485,6 +558,7 @@ const sampleActivities = [
   },
   {
     id: "activity-files-uploaded",
+    projectId: "design-system",
     initials: "AK",
     name: "Ana Kim",
     action: "uploaded 3 files",
@@ -492,6 +566,7 @@ const sampleActivities = [
   },
   {
     id: "activity-campaign-milestones",
+    projectId: "q4-campaign",
     initials: "OR",
     name: "Owen Reed",
     action: "updated campaign milestones",
@@ -499,6 +574,7 @@ const sampleActivities = [
   },
   {
     id: "activity-new-brief",
+    projectId: "mobile-refresh",
     initials: "MS",
     name: "Maya Santos",
     action: "created a new project brief",
@@ -507,7 +583,7 @@ const sampleActivities = [
 ];
 
 function ActivityPanel({
-  createdProjects,
+  activities,
   expanded,
   inspectEnabled,
   highlightClass,
@@ -515,7 +591,7 @@ function ActivityPanel({
   onInspect,
   onToggle,
 }: {
-  createdProjects: { id: string; name: string }[];
+  activities: ProjectActivity[];
   expanded: boolean;
   inspectEnabled: boolean;
   highlightClass: string;
@@ -523,19 +599,6 @@ function ActivityPanel({
   onInspect: () => void;
   onToggle: () => void;
 }) {
-  const activities = [
-    ...createdProjects
-      .slice()
-      .reverse()
-      .map(({ id, name }) => ({
-        id,
-        initials: "MS",
-        name: "Maya Santos",
-        action: `created project “${name}”`,
-        meta: "New project · Just now",
-      })),
-    ...sampleActivities,
-  ];
   return (
     <div
       className={`${styles.activityPanel} ${inspectEnabled ? styles.inspectable : ""} ${inspectEnabled ? highlightClass : ""}`}
@@ -570,8 +633,173 @@ function ActivityPanel({
   );
 }
 
+function ProjectDetails({
+  project,
+  activities,
+  onSave,
+  onBack,
+}: {
+  project: PreviewProject;
+  activities: ProjectActivity[];
+  onSave: (changes: PreviewProjectChanges) => void;
+  onBack: () => void;
+}) {
+  const heading = useRef<HTMLHeadingElement>(null);
+  const progressInput = useRef<HTMLInputElement>(null);
+  const [status, setStatus] = useState(project.status);
+  const [progressDraft, setProgressDraft] = useState(String(project.progress));
+  const [showProgressError, setShowProgressError] = useState(false);
+  const progress = Number(progressDraft);
+  const progressError =
+    /^\d+$/.test(progressDraft) && progress >= 0 && progress <= 100
+      ? ""
+      : "Enter a whole number from 0 to 100.";
+  const isDirty = status !== project.status || progressDraft !== String(project.progress);
+  const statusLabel =
+    project.status === "in-progress"
+      ? "In progress"
+      : project.status === "review"
+        ? "In review"
+        : "Planning";
+
+  useEffect(() => {
+    heading.current?.focus();
+  }, []);
+
+  return (
+    <div className={styles.projectDetails}>
+      <button type="button" className={styles.backToProjects} onClick={onBack}>
+        <ArrowLeft aria-hidden="true" /> Back to projects
+      </button>
+      <div className={styles.pageHeading}>
+        <div>
+          <span className={styles.breadcrumb}>Workspace / Projects / Overview</span>
+          <h1 ref={heading} tabIndex={-1}>
+            {project.title}
+          </h1>
+          <p>{project.category} project overview</p>
+        </div>
+        <span className={styles.projectDetailStatus}>{statusLabel}</span>
+      </div>
+
+      <div className={styles.projectDetailGrid}>
+        <form
+          className={`${styles.projectDetailCard} ${styles.projectDetailForm}`}
+          aria-labelledby="project-progress-title"
+          noValidate
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (progressError) {
+              setShowProgressError(true);
+              progressInput.current?.focus();
+              return;
+            }
+            if (isDirty) onSave({ status, progress });
+          }}
+        >
+          <div className={styles.projectDetailMetricHeading}>
+            <h2 id="project-progress-title">Progress</h2>
+            <strong>{progress}%</strong>
+          </div>
+          <div
+            className={styles.progressTrack}
+            role="progressbar"
+            aria-label={`${project.title} progress`}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+          >
+            <span style={{ width: `${progress}%`, background: project.color }} />
+          </div>
+          <label className={styles.projectDetailField}>
+            Status
+            <SelectControl
+              aria-label="Project status"
+              value={status}
+              onChange={(event) => {
+                const value = projectStatusSchema.safeParse(event.target.value);
+                if (value.success) setStatus(value.data);
+              }}
+            >
+              <option value="planning">Planning</option>
+              <option value="in-progress">In progress</option>
+              <option value="review">In review</option>
+            </SelectControl>
+          </label>
+          <label className={styles.projectDetailField}>
+            Progress (%)
+            <input
+              ref={progressInput}
+              aria-label="Project progress"
+              aria-invalid={showProgressError && Boolean(progressError)}
+              aria-describedby={
+                showProgressError && progressError ? "project-progress-error" : undefined
+              }
+              type="number"
+              min={0}
+              max={100}
+              step={1}
+              value={progressDraft}
+              onChange={(event) => setProgressDraft(event.target.value)}
+            />
+            {showProgressError && progressError && (
+              <small id="project-progress-error" className={styles.projectDetailError} role="alert">
+                {progressError}
+              </small>
+            )}
+          </label>
+          <div className={styles.projectDetailActions}>
+            <button type="submit" className={styles.projectDetailSave} disabled={!isDirty}>
+              Save changes
+            </button>
+            <small>
+              {progress === 0 ? "Ready to get started" : `${100 - progress}% remaining`}
+            </small>
+          </div>
+        </form>
+
+        <section className={styles.projectDetailCard} aria-labelledby="project-team-title">
+          <h2 id="project-team-title">Team</h2>
+          <div className={styles.projectDetailTeam}>
+            {project.members.map((member) => (
+              <span className={styles.projectDetailMember} key={member}>
+                <span className={styles.avatar}>{member}</span>
+                {teamMemberNames[member] ?? member}
+              </span>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <section className={styles.projectDetailCard} aria-labelledby="project-activity-title">
+        <h2 id="project-activity-title">Recent activity</h2>
+        {activities.length > 0 ? (
+          activities.map((activity) => (
+            <p className={styles.projectDetailActivity} key={activity.id}>
+              <span className={styles.avatar}>{activity.initials}</span>
+              <span>
+                <strong>{activity.name}</strong> {activity.action}
+                <small>{activity.meta}</small>
+              </span>
+            </p>
+          ))
+        ) : (
+          <p className={styles.projectDetailEmpty}>No recent activity for this project.</p>
+        )}
+      </section>
+    </div>
+  );
+}
+
+const teamMemberNames: Record<string, string> = {
+  MS: "Maya Santos",
+  JL: "Jon Lee",
+  AK: "Ana Kim",
+  OR: "Owen Reed",
+};
+
 function OverviewPanel({
-  createdProjects,
+  activities,
   inspectEnabled,
   activityHighlight,
   activitySelected,
@@ -582,7 +810,7 @@ function OverviewPanel({
   onInspectAction,
   onOpenProjects,
 }: {
-  createdProjects: { id: string; name: string }[];
+  activities: ProjectActivity[];
   inspectEnabled: boolean;
   activityHighlight: string;
   activitySelected: boolean;
@@ -641,7 +869,7 @@ function OverviewPanel({
         ))}
       </div>
       <ActivityPanel
-        createdProjects={createdProjects}
+        activities={activities}
         expanded={false}
         inspectEnabled={inspectEnabled}
         highlightClass={activityHighlight}
@@ -769,6 +997,7 @@ function ProjectCard({
   inspectEnabled,
   highlightClass,
   onInspect,
+  onOpen,
 }: {
   title: string;
   category: string;
@@ -779,24 +1008,12 @@ function ProjectCard({
   inspectEnabled: boolean;
   highlightClass: string;
   onInspect: () => void;
+  onOpen: () => void;
 }) {
+  const activate = inspectEnabled ? onInspect : onOpen;
   return (
     <article
       className={`${styles.projectCard} ${inspectEnabled ? styles.inspectable : ""} ${inspectEnabled ? highlightClass : ""}`}
-      role={inspectEnabled ? "button" : undefined}
-      aria-label={inspectEnabled ? `Inspect ${title} project card` : undefined}
-      tabIndex={inspectEnabled ? 0 : undefined}
-      onClick={inspectEnabled ? onInspect : undefined}
-      onKeyDown={
-        inspectEnabled
-          ? (event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onInspect();
-              }
-            }
-          : undefined
-      }
     >
       <div>
         <span className={styles.projectIcon} style={{ background: color }}>
@@ -829,6 +1046,12 @@ function ProjectCard({
         </div>
         <span>Today</span>
       </div>
+      <button
+        type="button"
+        className={inspectEnabled ? styles.inspectOverlay : styles.projectCardAction}
+        aria-label={inspectEnabled ? `Inspect ${title} project card` : `Open project: ${title}`}
+        onClick={activate}
+      />
     </article>
   );
 }

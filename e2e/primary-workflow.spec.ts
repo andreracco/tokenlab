@@ -107,6 +107,65 @@ test("project creation uses the active system's error and success feedback", asy
   await preview.getByRole("button", { name: "Overview" }).click();
   await expect(page.getByText("created project “Portfolio refresh”")).toBeVisible();
   await preview.getByRole("button", { name: "Projects", exact: true }).click();
+
+  const createdProjectCard = preview.getByRole("button", {
+    name: "Open project: Portfolio refresh",
+  });
+  await createdProjectCard.focus();
+  await page.keyboard.press("Enter");
+  await expect(preview.getByRole("heading", { name: "Portfolio refresh" })).toBeFocused();
+  await expect(
+    preview.getByRole("progressbar", { name: "Portfolio refresh progress" }),
+  ).toHaveAttribute("aria-valuenow", "0");
+  await expect(
+    preview
+      .getByRole("region", { name: "Recent activity" })
+      .getByText("created project “Portfolio refresh”"),
+  ).toBeVisible();
+  await preview.getByRole("combobox", { name: "Project status" }).selectOption("in-progress");
+  await preview.getByRole("spinbutton", { name: "Project progress" }).fill("120");
+  await preview.getByRole("button", { name: "Save changes" }).click();
+  await expect(preview.getByRole("alert")).toHaveText("Enter a whole number from 0 to 100.");
+  await expect(preview.getByRole("spinbutton", { name: "Project progress" })).toBeFocused();
+  await preview.getByRole("spinbutton", { name: "Project progress" }).fill("35");
+  await preview.getByRole("button", { name: "Save changes" }).click();
+  await expect(
+    preview.getByRole("progressbar", { name: "Portfolio refresh progress" }),
+  ).toHaveAttribute("aria-valuenow", "35");
+  await expect(
+    preview.getByRole("region", { name: "Recent activity" }).getByText("updated Portfolio refresh"),
+  ).toBeVisible();
+  await preview.getByRole("button", { name: "Back to projects" }).click();
+  await expect(preview.getByRole("heading", { name: "Projects", exact: true })).toBeFocused();
+  const updatedProjectCard = preview.getByRole("article").filter({ hasText: "Portfolio refresh" });
+  await expect(updatedProjectCard).toContainText("In progress");
+  await expect(updatedProjectCard).toContainText("35%");
+  await expect(page.getByText("Saving…").first()).toBeVisible();
+  await expect(page.getByText("Saved locally").first()).toBeVisible();
   await page.getByRole("button", { name: "Dismiss project confirmation" }).click();
   await expect(confirmation).toHaveCount(0);
+
+  await page.reload();
+  await preview.getByRole("button", { name: "Open project: Portfolio refresh" }).click();
+  await expect(
+    preview.getByRole("progressbar", { name: "Portfolio refresh progress" }),
+  ).toHaveAttribute("aria-valuenow", "35");
+  await expect(preview.getByRole("combobox", { name: "Project status" })).toHaveValue(
+    "in-progress",
+  );
+  await expect(
+    preview.getByRole("region", { name: "Recent activity" }).getByText("updated Portfolio refresh"),
+  ).toBeVisible();
+  await preview.getByRole("button", { name: "Back to projects" }).click();
+
+  await preview.getByRole("button", { name: "Open project: Mobile app refresh" }).click();
+  await expect(
+    preview.getByRole("progressbar", { name: "Mobile app refresh progress" }),
+  ).toHaveAttribute("aria-valuenow", "72");
+  await expect(
+    preview
+      .getByRole("region", { name: "Recent activity" })
+      .getByText(/completed “Review navigation patterns”/),
+  ).toBeVisible();
+  await preview.getByRole("button", { name: "Back to projects" }).click();
 });
