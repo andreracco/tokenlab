@@ -37,14 +37,51 @@ test("honors reduced-motion preference", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  const durations = await page.getByRole("button", { name: "Export" }).evaluate((button) => {
+  const motion = await page.getByRole("button", { name: "Export" }).evaluate((button) => {
     const style = getComputedStyle(button);
-    return [
-      Number.parseFloat(style.animationDuration),
-      Number.parseFloat(style.transitionDuration),
-    ];
+    return {
+      animation: Number.parseFloat(style.animationDuration),
+      transition: Number.parseFloat(style.transitionDuration),
+      properties: style.transitionProperty,
+    };
   });
-  expect(durations).toEqual([0.00001, 0.00001]);
+  // Feedback stays as a short fade; movement and long waits are removed.
+  expect(motion.animation).toBeLessThanOrEqual(0.15);
+  expect(motion.transition).toBeLessThanOrEqual(0.15);
+  expect(motion.properties).not.toContain("transform");
+});
+
+test("reduces the System reveal to a brief fade without staggered delays", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  // The reveal lasts ~150ms, so record animations as they start instead of reading them afterwards.
+  await page.evaluate(() => {
+    const seen: { delay: number; end: number; movement: boolean }[] = [];
+    (window as unknown as { __reveal: typeof seen }).__reveal = seen;
+    new MutationObserver(() => {
+      for (const animation of document.getAnimations()) {
+        if (!(animation instanceof CSSAnimation)) continue;
+        const timing = animation.effect?.getComputedTiming();
+        const keyframes = animation.effect?.getKeyframes() ?? [];
+        seen.push({
+          delay: Number(timing?.delay ?? 0),
+          end: Number(timing?.endTime ?? 0),
+          movement: keyframes.some((k) => "transform" in k || "filter" in k),
+        });
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  });
+  await page.getByRole("button", { name: "System", exact: true }).first().click();
+  await expect(page.getByText("Forma design system")).toBeVisible();
+
+  const reveal = await page.evaluate(
+    () =>
+      (window as unknown as { __reveal: { delay: number; end: number; movement: boolean }[] })
+        .__reveal,
+  );
+  expect(reveal.length).toBeGreaterThan(0);
+  expect(reveal.every((a) => a.delay === 0 && a.end <= 150 && !a.movement)).toBe(true);
 });
 
 test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
@@ -126,7 +163,8 @@ test("fits the preview to a phone-width canvas without horizontal scrolling", as
           const content = preview
             ?.querySelector("aside")
             ?.nextElementSibling?.getBoundingClientRect();
-          return Boolean(navigation && content && navigation.bottom <= content.top);
+          // Firefox lays out fractional rows at a different sub-pixel grid, so allow rounding.
+          return Boolean(navigation && content && navigation.bottom <= content.top + 0.5);
         })(),
       };
     });
