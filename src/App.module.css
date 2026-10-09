@@ -35,6 +35,7 @@
 .tokenPanel { min-height: 0; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--studio-border); }
 .inspectorPanel { overflow: auto; }
 .inspectorPanel { border-left: 1px solid var(--studio-border); }
+.tokenPanel.focusedViewHidden, .inspectorPanel.focusedViewHidden { display: none; }
 .panelHeading { height: 60px; padding: 0 16px; justify-content: space-between; border-bottom: 1px solid var(--studio-border); background: #eff0ed; }
 .panelHeading > div { flex-direction: column; align-items: flex-start; gap: 3px; font-size: 14px; font-weight: 700; }
 .iconButton { width: 32px; padding: 0; font-size: 18px; }
@@ -72,14 +73,15 @@
 .presetPicker small { min-height: 28px; color: var(--studio-muted); font-size: 10px; line-height: 1.4; }
 .canvasPanel { position: relative; min-width: 0; background: var(--studio-bg); display: flex; flex-direction: column; overflow: hidden; }
 .canvasToolbar { min-height: 60px; padding: 0 16px; justify-content: space-between; border-bottom: 1px solid var(--studio-border); background: #f7f6f2; }
-.workspaceFocused .canvasToolbar { padding-left: 268px; }
-.canvasToolbar > div:first-child { gap: 20px; }
 .canvasToolbar strong { font-size: 14px; }
 .viewTabs { padding: 3px; display: flex; gap: 2px; border: 1px solid var(--studio-border); border-radius: 7px; background: #e7e9e8; }
 .viewTabs button { padding: 5px 9px; border: 0; border-radius: 5px; background: transparent; font-size: 11px; cursor: pointer; }
 .viewTabs button { display: inline-flex; align-items: center; gap: 5px; }
 .viewTabs button svg { width: 12px; height: 12px; }
 .viewTabs .activeTab { background: var(--studio-ink); color: #fff; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.viewTabs.headerViewTabs { flex: 0 0 auto; border-color: #3c4655; background: #222b38; }
+.headerViewTabs button { color: #a9b2bd; }
+.viewTabs.headerViewTabs .activeTab { background: #f7f6f2; color: var(--studio-ink); }
 .canvasControls { gap: 12px; color: var(--studio-muted); font-size: 11px; }
 .modeSelect { min-height: 30px; padding: 0 7px; border: 1px solid var(--studio-border); border-radius: 6px; background: #fff; color: var(--studio-text); font-size: 11px; }
 .interactionModes { padding: 3px; display: inline-flex; gap: 2px; border: 1px solid var(--studio-border); border-radius: 7px; background: #e7e9e8; }
@@ -179,12 +181,20 @@
 .createProjectDialog::backdrop { background: rgba(23, 24, 28, .45); }
 .createProjectDialog form { padding: 20px; display: grid; gap: 12px; }
 .createProjectDialog h2, .createProjectDialog p { margin: 0; }.createProjectDialog p { color: var(--forma-muted); font-size: 10px; }.createProjectDialog label { display: grid; gap: 6px; font-size: 9px; font-weight: 700; }.createProjectDialog input { min-height: 34px; padding: 0 10px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-control-radius); }.createProjectDialog form > div { display: flex; justify-content: flex-end; gap: 7px; }.createProjectDialog form > div button { min-height: 34px; padding: 0 12px; border: 1px solid var(--forma-line); border-radius: var(--tl-preview-control-radius); }.createProjectDialog .formaPrimary { border: 0; }
-.inspectorHeading { padding: 20px 18px 16px; border-bottom: 1px solid var(--studio-border); display: grid; gap: 6px; }
-.inspectorHeading strong { font: 600 13px ui-monospace, SFMono-Regular, monospace; overflow-wrap: anywhere; }
+.inspectorHeading { padding: 18px; border-bottom: 1px solid var(--studio-border); background: #eff0ed; display: grid; gap: 12px; }
+.inspectorIdentity { min-width: 0; display: grid; grid-template-columns: 38px minmax(0, 1fr); align-items: center; gap: 10px; }
+.inspectorIdentity > div { min-width: 0; display: grid; gap: 7px; }
+.inspectorIdentity strong { font: 650 12px ui-monospace, SFMono-Regular, monospace; overflow-wrap: anywhere; }
+.inspectorSwatch, .inspectorTypeIcon { width: 38px; height: 38px; border: 1px solid rgba(0,0,0,.14); border-radius: 9px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+.inspectorTypeIcon { display: grid; place-items: center; background: #e4e2dc; color: #69665f; font: 700 10px ui-monospace, monospace; text-transform: uppercase; }
+.inspectorBadges { display: flex; flex-wrap: wrap; gap: 4px; }
+.inspectorBadges small { padding: 3px 6px; border-radius: 5px; background: #e2e3df; color: #626963; font-size: 8px; font-weight: 700; text-transform: uppercase; }
+.inspectorHeading p { margin: 0; color: var(--studio-muted); font-size: 11px; line-height: 1.45; }
 .eyebrow, .fieldLabel { color: var(--studio-muted); font-size: 10px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
-.layerBadge { width: fit-content; padding: 3px 6px; border-radius: 5px; background: #ebe8e1; color: #63615c; font-size: 9px; }
-.description { margin: 0; padding: 16px 18px 0; color: var(--studio-muted); font-size: 12px; line-height: 1.5; }
-.editor { padding: 18px; border-bottom: 1px solid var(--studio-border); }
+.editor { padding: 16px 18px 18px; border-bottom: 1px solid var(--studio-border); background: var(--studio-panel); }
+.editorHeading { margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+.editorHeading span { font-size: 12px; font-weight: 750; }
+.editorHeading small { color: var(--studio-muted); font-size: 9px; text-transform: capitalize; }
 .editor label { display: block; margin-bottom: 7px; color: var(--studio-muted); font-size: 11px; font-weight: 650; }
 .colorField { display: grid; grid-template-columns: 38px 1fr; gap: 7px; }
 .colorField input[type="color"] { width: 38px; height: 36px; padding: 3px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; }
@@ -192,20 +202,21 @@
 .colorField input[aria-invalid="true"] { border-color: #b84e4e; }
 .valueInput { width: 100%; min-height: 36px; padding: 0 10px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; color: var(--studio-text); font: 11px ui-monospace, monospace; }
 .valueInput[aria-invalid="true"] { border-color: #b84e4e; }
-.validationSlot { min-height: 25px; padding-top: 5px; color: #a13c3c; font-size: 10px; }
+.fieldMessage { min-height: 28px; margin: 0; padding-top: 6px; color: var(--studio-muted); font-size: 10px; line-height: 1.4; }
+.fieldError { color: #a13c3c; }
 .editorActions { display: flex; justify-content: flex-end; gap: 7px; }
-.aliasTarget { width: 100%; margin-top: 8px; padding: 9px; display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 8px; border: 1px solid var(--studio-border); border-radius: 8px; background: white; text-align: left; cursor: pointer; }
-.aliasTarget code { overflow: hidden; font-size: 10px; text-overflow: ellipsis; }
-.resolvedRow { margin-top: 12px; display: flex; justify-content: space-between; color: var(--studio-muted); font-size: 10px; }
-.resolvedRow code { color: var(--studio-text); }
-.readOnlyValue { margin-top: 8px; padding: 10px; overflow-wrap: anywhere; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; font: 11px ui-monospace, monospace; }
-.inspectorSection { padding: 18px; }
+.resolvedRow { margin: 10px 0 14px; padding: 9px 10px; display: flex; justify-content: space-between; gap: 10px; border: 1px solid var(--studio-border); border-radius: 7px; background: #fff; color: var(--studio-muted); font-size: 10px; }
+.resolvedRow code { color: var(--studio-text); overflow-wrap: anywhere; text-align: right; }
 .inspectorDisclosure { border-bottom: 1px solid var(--studio-border); }
 .inspectorDisclosure summary { min-height: 44px; padding: 0 18px; display: flex; align-items: center; gap: 8px; color: var(--studio-text); font-size: 11px; font-weight: 700; cursor: pointer; }
 .inspectorDisclosure summary::marker { color: var(--studio-muted); }
 .inspectorDisclosure summary span { margin-left: auto; color: var(--studio-muted); font-size: 9px; font-weight: 600; }
+.passLabel, .failLabel { display: inline-flex !important; align-items: center; gap: 4px; }
+.passLabel { color: #327351 !important; }.failLabel { color: #9c3e3e !important; }
+.passLabel svg { width: 12px; height: 12px; }
 .inspectorDisclosure > div { padding: 0 18px 18px; }
 .usageRow { width: 100%; margin-top: 9px; padding: 10px; display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; border: 1px solid var(--studio-border); border-radius: 8px; background: white; text-align: left; cursor: pointer; }
+.usageRow:hover, .registryToken:hover { border-color: #9ca5ad; background: #f8f9f7; }
 .componentGlyph { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; background: #ece9e3; }
 .usageRow > span:nth-child(2) { display: flex; flex-direction: column; gap: 2px; }
 .usageRow strong { font-size: 11px; }
@@ -277,7 +288,6 @@ select.modeSelect, .presetPicker select, select.valueInput, .comparisonHeader se
   .tokenSpectrum > div { width: 120px; }
   .contrastStatus { display: none; }
   .canvasToolbar { min-height: auto; padding: 10px 12px; flex-wrap: wrap; gap: 10px; }
-  .workspaceFocused .canvasToolbar { padding-left: 232px; }
   .canvasToolbar > div { flex-wrap: wrap; }
   .canvasControls { width: 100%; justify-content: flex-start; gap: 8px; }
   .previewStage { width: 100%; min-width: 0; }
@@ -289,8 +299,10 @@ select.modeSelect, .presetPicker select, select.valueInput, .comparisonHeader se
 }
 
 @media (max-width: 760px) {
-  .header { height: auto; padding: 12px; align-items: flex-start; }
-  .headerActions { flex-wrap: wrap; justify-content: flex-end; }
+  .header { height: auto; padding: 12px; align-items: flex-start; flex-wrap: wrap; gap: 10px; }
+  .headerActions { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+  .headerViewTabs { width: 100%; order: 3; }
+  .headerViewTabs button { flex: 1; justify-content: center; }
   .savedStatus, .headerActions button[title] { display: none; }
   .contrastStatus { display: none; }
   .tokenSpectrum { display: none; }
@@ -308,8 +320,10 @@ select.modeSelect, .presetPicker select, select.valueInput, .comparisonHeader se
   .tokenGroupOpen { display: block; }
   .tokenGroup > div { overflow: visible; scrollbar-gutter: auto; }
   .canvasToolbar { align-items: flex-start; padding: 12px; gap: 12px; }
-  .workspaceFocused .canvasToolbar { padding-left: 12px; }
   .canvasToolbar, .canvasToolbar > div { flex-wrap: wrap; }
+  .focusedPanel, .comparison, .exportPanel { padding: 20px 16px; }
+  .focusedHeader { margin-bottom: 18px; flex-direction: column; gap: 14px; }
+  .historyEmpty { min-height: 280px; padding: 24px 16px; }
   .previewStage { padding: 12px; }
   .inspectorPanel { grid-column: auto; }
   .comparisonGrid { grid-template-columns: 1fr; }

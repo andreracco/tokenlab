@@ -66,7 +66,7 @@ The interface uses the installed-system `interface` stack for compact, readable 
 
 ## Layout
 
-The desktop workbench is a three-panel grid: compact library, elastic canvas, comfortable inspector. The preview stage uses a 24px calibration grid and a 30px breathing zone. In the token library, one category expands at a time and owns the row scroll area so every category header and the Starting system footer stay reachable. Below 1100px the inspector becomes the existing drawer; below 760px the existing panel navigation keeps one task surface visible at a time. Scroll ownership remains inside each panel.
+The desktop workbench is a three-panel grid: compact library, elastic canvas, comfortable inspector. Preview, Components, and History are global workspace views and remain in the studio header so their location does not change between views. History and export are focused views that temporarily remove the editing sidebars. The preview stage uses a 24px calibration grid and a 30px breathing zone. In the token library, one category expands at a time and owns the row scroll area so every category header and the Starting system footer stay reachable. Below 1100px the inspector becomes the existing drawer; below 760px the existing panel navigation keeps one task surface visible at a time. Scroll ownership remains inside each panel.
 
 ## Elevation & Depth
 
@@ -88,7 +88,7 @@ Primary studio actions use `studio-accent`; neutral controls use white or transp
 
 ### Navigation and data display
 
-Selected token rows combine a left accent rule, tint, and border so selection never depends on color alone. Segmented controls use dark selected states for faster scanning. Token counts and paths remain compact technical metadata.
+Selected token rows combine a left accent rule, tint, and border so selection never depends on color alone. The header view switcher uses a light selected state against the dark shell and stays in one position across Preview, Components, and History. Token counts and paths remain compact technical metadata. The inspector leads with token identity, type, layer, and active mode; edit state and contrast thresholds are stated in text rather than color alone.
 
 ### Forms and overlays
 

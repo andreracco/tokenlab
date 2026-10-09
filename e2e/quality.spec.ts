@@ -56,6 +56,8 @@ test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
 
   const previewTabX = await page.getByRole("button", { name: "Preview" }).evaluate((button) => button.getBoundingClientRect().x);
   await page.getByRole("button", { name: "History" }).click();
+  await expect(page.getByRole("complementary", { name: "Token library" })).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Saved baselines" })).toBeVisible();
   const focusedView = await page.evaluate(() => {
     const panel = document.querySelector("main > section > div:last-child")?.getBoundingClientRect();
     return {
@@ -66,6 +68,17 @@ test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
   expect(focusedView).toEqual({ documentFits: true, panelFits: true });
   const focusedPreviewTabX = await page.getByRole("button", { name: "Preview" }).evaluate((button) => button.getBoundingClientRect().x);
   expect(Math.abs(focusedPreviewTabX - previewTabX)).toBeLessThanOrEqual(1);
+});
+
+test("keeps History focused at high browser zoom", async ({ page }) => {
+  await page.setViewportSize({ width: 512, height: 700 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "History" }).click();
+
+  await expect(page.getByRole("navigation", { name: "Canvas views" })).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "Token library" })).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Saved baselines" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);
 });
 
 test("keeps token categories and presets visible while the active category scrolls", async ({ page }) => {
