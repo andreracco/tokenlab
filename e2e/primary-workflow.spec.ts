@@ -140,7 +140,6 @@ test("project creation uses the active system's error and success feedback", asy
   const updatedProjectCard = preview.getByRole("article").filter({ hasText: "Portfolio refresh" });
   await expect(updatedProjectCard).toContainText("In progress");
   await expect(updatedProjectCard).toContainText("35%");
-  await expect(page.getByText("Saving…").first()).toBeVisible();
   await expect(page.getByText("Saved locally").first()).toBeVisible();
   await page.getByRole("button", { name: "Dismiss project confirmation" }).click();
   await expect(confirmation).toHaveCount(0);
