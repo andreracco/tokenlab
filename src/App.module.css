@@ -772,6 +772,7 @@
 .previewStage {
   flex: 1;
   min-height: 0;
+  container-type: inline-size;
   padding: 30px;
   overflow: auto;
   background-color: #dfe3e6;
@@ -791,7 +792,7 @@
   --forma-muted: var(--tl-preview-muted);
   --forma-line: var(--tl-preview-border);
   width: min(var(--tl-preview-viewport-width, 1280px), 100%);
-  min-width: 720px;
+  min-width: 0;
   min-height: 650px;
   margin: 0 auto;
   display: grid;
@@ -1494,6 +1495,96 @@
     width: 100%;
   }
 }
+
+@container (max-width: 600px) {
+  .previewRoot {
+    height: 650px;
+    min-height: 650px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .formaSidebar {
+    padding: 10px;
+    display: grid;
+    gap: 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--forma-line);
+  }
+  .formaLogo {
+    padding: 0;
+  }
+  .workspaceSwitcher,
+  .sidebarFooter {
+    display: none;
+  }
+  .formaSidebar nav {
+    margin: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .formaSidebar nav button {
+    position: relative;
+    min-width: 0;
+    padding: 7px 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.68em;
+    text-align: center;
+  }
+  .formaSidebar nav button span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .formaSidebar nav small {
+    position: absolute;
+    top: 0;
+    right: 6px;
+  }
+  .formaMain {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .formaTopbar {
+    height: 50px;
+    flex: 0 0 auto;
+    padding: 0 10px;
+  }
+  .formaContent {
+    min-height: 0;
+    flex: 1;
+    padding: 14px;
+    overflow: auto;
+  }
+  .pageHeading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pageHeading h1 {
+    font-size: 1.8em;
+  }
+  .projectGrid,
+  .teamGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .projectToolbar .formaSearch,
+  .projectFilters {
+    width: 100%;
+  }
+  .projectFilters .selectControl {
+    flex: 1;
+    min-width: 0;
+  }
+  .projectFilters select {
+    width: 100%;
+  }
+}
+
 .createProjectDialog {
   width: min(360px, calc(100vw - 32px));
   padding: 0;

@@ -104,6 +104,45 @@ test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
   expect(Math.abs(focusedPreviewTabX - previewTabX)).toBeLessThanOrEqual(1);
 });
 
+test("fits the preview to a phone-width canvas without horizontal scrolling", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const dimensions = await page.evaluate(() => {
+    const stage = document.querySelector<HTMLElement>("[data-testid='preview-root']")?.parentElement;
+    const preview = document.querySelector<HTMLElement>("[data-testid='preview-root']");
+    return {
+      documentFits: document.documentElement.scrollWidth === document.documentElement.clientWidth,
+      stageFits: Boolean(stage && stage.scrollWidth <= stage.clientWidth),
+      previewFits: Boolean(preview && preview.scrollWidth <= preview.clientWidth),
+      previewWidth: preview?.getBoundingClientRect().width ?? 0,
+      previewColumns: preview ? getComputedStyle(preview).gridTemplateColumns : "",
+      navigationClearsContent: (() => {
+        const navigation = preview?.querySelector("aside")?.getBoundingClientRect();
+        const content = preview?.querySelector("aside")?.nextElementSibling?.getBoundingClientRect();
+        return Boolean(navigation && content && navigation.bottom <= content.top);
+      })(),
+    };
+  });
+
+  expect(dimensions.documentFits).toBe(true);
+  expect(dimensions.stageFits).toBe(true);
+  expect(dimensions.previewFits).toBe(true);
+  expect(dimensions.previewWidth).toBeLessThanOrEqual(390);
+  expect(dimensions.previewColumns.split(" ")).toHaveLength(1);
+  expect(dimensions.navigationClearsContent).toBe(true);
+
+  const canvasHeight = await page.locator("#living-canvas").evaluate((canvas) =>
+    canvas.getBoundingClientRect().height,
+  );
+  await page.getByRole("button", { name: "My tasks" }).click();
+  await expect(page.getByRole("heading", { name: "My tasks" })).toBeVisible();
+  const tasksCanvasHeight = await page.locator("#living-canvas").evaluate((canvas) =>
+    canvas.getBoundingClientRect().height,
+  );
+  expect(tasksCanvasHeight).toBe(canvasHeight);
+});
+
 test("keeps project search and filters the same height across presets", async ({ page }) => {
   await page.goto("/");
 
