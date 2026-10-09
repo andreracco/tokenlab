@@ -84,6 +84,22 @@ test("keeps project search and filters the same height across presets", async ({
   }
 });
 
+test("keeps the active design system inspectable and responsive", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "System" }).click();
+
+  await expect(page.getByRole("heading", { name: "From decision to interface." })).toBeVisible();
+  await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Inspect color.neutral.canvas" }).click();
+  await expect(page.getByRole("complementary", { name: "Token inspector" }).getByText("color.neutral.canvas", { exact: true })).toBeVisible();
+
+  await page.setViewportSize({ width: 512, height: 760 });
+  await page.getByRole("button", { name: "Canvas" }).click();
+  await expect(page.getByRole("region", { name: "Design system" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);
+});
+
 test("keeps History focused at high browser zoom", async ({ page }) => {
   await page.setViewportSize({ width: 512, height: 700 });
   await page.goto("/");

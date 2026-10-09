@@ -14,23 +14,6 @@ type FormaPreviewProps = {
   style: PreviewStyle;
 };
 
-export function SpecimenPreview({ style }: { style: PreviewStyle }) {
-  return (
-    <div className={styles.previewStage}>
-      <div className={`${styles.previewRoot} ${styles.specimenRoot}`} style={style} data-testid="preview-root">
-        <header><span>Forma components</span><small>Visual reference · examples only</small></header>
-        <div className={styles.specimenExamples} inert>
-          <section><h2>Buttons</h2><div className={styles.specimenRow}><button className={`${styles.formaPrimary} ${styles.specimenDisplay}`} disabled>Primary</button><button className={`${styles.formaPrimary} ${styles.simulatedFocus} ${styles.specimenDisplay}`} disabled>Focus</button><button className={styles.formaPrimary} disabled>Disabled</button><button className={`${styles.formaPrimary} ${styles.specimenDisplay}`} disabled>••• Loading</button></div></section>
-          <section><h2>Inputs</h2><div className={styles.specimenRow}><input placeholder="Default input" /><input className={styles.simulatedFocus} defaultValue="Focused value" /><input className={styles.inputError} defaultValue="Invalid value" /><input disabled placeholder="Disabled" /></div></section>
-          <section><h2>Cards and badges</h2><div className={styles.specimenRow}><article className={styles.specimenCard}><span className={styles.specimenBadge}>In progress</span><h3>Design system</h3><p>Build reusable foundations for Forma.</p></article><article className={styles.specimenCard}><span className={styles.specimenBadge}>Complete</span><h3>Navigation audit</h3><p>Improve structure and wayfinding.</p></article></div></section>
-          <section><h2>Tabs and menu</h2><div className={styles.specimenRow}><div className={styles.specimenTabs}><button className={styles.specimenDisplay} disabled>Overview</button><button className={`${styles.activeTab} ${styles.specimenDisplay}`} disabled>Activity</button><button className={styles.specimenDisplay} disabled>Files</button></div><div className={styles.specimenMenu}><button className={styles.specimenDisplay} disabled>Edit project</button><button className={styles.specimenDisplay} disabled>Duplicate</button><button className={styles.specimenDisplay} disabled>Archive</button></div></div></section>
-          <section><h2>Modal preview</h2><div className={styles.specimenDialog}><strong>Create project</strong><p>Start with a clear name and an owner.</p><input placeholder="Project name" /><div><button className={styles.specimenDisplay} disabled>Cancel</button><button className={`${styles.formaPrimary} ${styles.specimenDisplay}`} disabled>Create project</button></div></div></section>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, selectedComponentKey, onInspect, onCreateProject, style }: FormaPreviewProps) {
   const createProjectDialog = useRef<HTMLDialogElement>(null);
   const createProjectButton = useRef<HTMLButtonElement>(null);

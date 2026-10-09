@@ -5,7 +5,8 @@ import { createStyleImportCommand, type StyleMapping } from "./domain/styleImpor
 import { checkContrast } from "./domain/contrast";
 import { useTokenLabStore } from "./app/store";
 import { componentRegistry, consumersForToken, type ComponentKey } from "./preview/registry";
-import { FormaPreview, SpecimenPreview } from "./preview/FormaPreview";
+import { FormaPreview } from "./preview/FormaPreview";
+import { SystemPreview } from "./preview/SystemPreview";
 import { createPreviewStyle } from "./preview/style";
 import { getTokenGroupId, TokenLibrary, type TokenGroupId } from "./components/TokenLibrary";
 import { ComparisonView, ExportPanel, HistoryPanel } from "./components/WorkspacePanels";
@@ -104,7 +105,7 @@ export function App() {
         </div>
         <nav className={`${styles.viewTabs} ${styles.headerViewTabs}`} aria-label="Canvas views">
           <button ref={previewViewButton} aria-pressed={canvasView === "app" && !exportOpen && !styleImportOpen} className={canvasView === "app" && !exportOpen && !styleImportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setStyleImportOpen(false); setComparisonSnapshotId(null); setCanvasView("app"); }}>Preview</button>
-          <button aria-pressed={canvasView === "components" && !exportOpen && !styleImportOpen} className={canvasView === "components" && !exportOpen && !styleImportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setStyleImportOpen(false); setComparisonSnapshotId(null); setCanvasView("components"); }}>Components</button>
+          <button aria-pressed={canvasView === "components" && !exportOpen && !styleImportOpen} className={canvasView === "components" && !exportOpen && !styleImportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setStyleImportOpen(false); setComparisonSnapshotId(null); setCanvasView("components"); }}>System</button>
           <button aria-pressed={canvasView === "history" && !exportOpen && !styleImportOpen} className={canvasView === "history" && !exportOpen && !styleImportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setStyleImportOpen(false); setComparisonSnapshotId(null); setCanvasView("history"); }}><HistoryIcon aria-hidden="true" />History</button>
         </nav>
         <div className={styles.headerActions}>
@@ -146,20 +147,20 @@ export function App() {
           onSelectPreset={(presetId) => execute({ type: "select-preset", presetId })}
         />
 
-        <section id="living-canvas" className={`${styles.canvasPanel} ${mobilePanel !== "canvas" ? styles.mobilePanelHidden : ""}`} aria-label="Living Canvas">
+        <section id="living-canvas" className={`${styles.canvasPanel} ${mobilePanel !== "canvas" ? styles.mobilePanelHidden : ""}`} aria-label={canvasView === "components" ? "Design system" : "Living Canvas"}>
           {!focusedView && <div className={styles.canvasToolbar}>
-            <strong>Living Canvas</strong>
+            <strong>{canvasView === "components" ? "Design system" : "Living Canvas"}</strong>
             <div className={styles.canvasControls}>
               <select className={styles.modeSelect} aria-label="Preview mode" value={mode} onChange={(event) => setMode(event.target.value as TokenMode)}><option value="light">Light</option><option value="dark">Dark</option></select>
               <select className={styles.modeSelect} aria-label="Preview width" value={previewWidth} onChange={(event) => setPreviewWidth(Number(event.target.value) as typeof previewWidth)}><option value={1280}>Desktop 1280</option><option value={960}>Compact 960</option><option value={720}>Narrow 720</option></select>
               <button className={styles.inspectorDrawerButton} aria-expanded={inspectorOpen} aria-controls="token-inspector" onClick={() => setInspectorOpen(true)}>Open inspector</button>
-              <span className={styles.interactionModes} aria-label="Preview interaction mode">
+              {canvasView === "app" && <span className={styles.interactionModes} aria-label="Preview interaction mode">
                 <button className={!inspectEnabled ? styles.activeInteractionMode : ""} aria-pressed={!inspectEnabled} onClick={() => setInspectEnabled(false)}><MousePointer2 aria-hidden="true" />Interact</button>
                 <button className={inspectEnabled ? styles.activeInteractionMode : ""} aria-pressed={inspectEnabled} onClick={() => setInspectEnabled(true)}><Eye aria-hidden="true" />Inspect</button>
-              </span>
+              </span>}
             </div>
           </div>}
-          {inspectEnabled && !focusedView && <div className={styles.inspectNotice} role="status"><Sparkles aria-hidden="true" /><span><strong>Inspect mode</strong> — select a preview element to reveal its tokens.</span></div>}
+          {inspectEnabled && !focusedView && canvasView === "app" && <div className={styles.inspectNotice} role="status"><Sparkles aria-hidden="true" /><span><strong>Inspect mode</strong> — select a preview element to reveal its tokens.</span></div>}
           {styleImportOpen ? <StyleImportPanel document={document} mode={mode} onApply={applyStyleMappings} onClose={closeStyleImport} /> : exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={closeExport} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); closeExport(); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); setCanvasView("app"); requestAnimationFrame(() => previewViewButton.current?.focus()); }} /> : canvasView === "history" ? <HistoryPanel snapshots={snapshots} onCreate={openSnapshotDialog} onCompare={setComparisonSnapshotId} /> : canvasView === "app" ? <FormaPreview
               createdProjects={createdProjects}
               inspectEnabled={inspectEnabled}
@@ -168,7 +169,7 @@ export function App() {
               onInspect={selectComponent}
               onCreateProject={(name) => setCreatedProjects((projects) => [...projects, { id: `preview-project-${projects.length + 1}`, name }])}
               style={previewStyle}
-            /> : <SpecimenPreview style={previewStyle} />}
+            /> : <SystemPreview document={document} mode={mode} style={previewStyle} contrastResults={contrastResults} onSelectToken={(tokenId) => { setSelectedComponentKey(null); selectVisibleToken(tokenId); setMobilePanel("inspector"); setInspectorOpen(true); }} onSelectComponent={selectComponent} />}
         </section>
 
         <TokenInspector

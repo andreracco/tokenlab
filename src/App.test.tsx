@@ -106,12 +106,15 @@ describe("TokenLab first slice", () => {
     expect(open.getAttribute("aria-expanded")).toBe("false");
   });
 
-  it("renders component examples and switches the canvas to dark mode", () => {
+  it("documents the active system and opens its tokens in the inspector", () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Components" }));
-    expect(screen.getByText("Forma components")).toBeTruthy();
-    expect(screen.getByText("Visual reference · examples only")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "System" }));
+    expect(screen.getByRole("heading", { name: "From decision to interface." })).toBeTruthy();
+    expect(screen.getByText("39")).toBeTruthy();
+    expect(screen.getByText("4/4")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Inspect color.neutral.canvas" }));
+    expect(screen.getByText("color.neutral.canvas", { selector: "strong" })).toBeTruthy();
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-font-family")).toContain("sans-serif");
 
     fireEvent.change(screen.getByLabelText("Preview mode"), { target: { value: "dark" } });
@@ -136,7 +139,7 @@ describe("TokenLab first slice", () => {
     fireEvent.submit(dialog.querySelector("form")!);
     expect(screen.getByRole("heading", { name: "Client portal" })).toBeTruthy();
     expect(screen.getByText("4 projects")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Components" }));
+    fireEvent.click(screen.getByRole("button", { name: "System" }));
     fireEvent.click(screen.getByRole("button", { name: "Preview" }));
     expect(screen.getByRole("heading", { name: "Client portal" })).toBeTruthy();
   });
