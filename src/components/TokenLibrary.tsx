@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronRight, Search, X } from "lucide-react";
+import { AnimatePresence, m } from "framer-motion";
 import { presetOptions, presetSpecs, resolveCssValue, type ProjectDocument, type Token, type TokenMode } from "../domain/tokens";
 import styles from "../App.module.css";
 
@@ -46,8 +47,12 @@ export function TokenLibrary({ className, document, mode, selectedTokenId, openG
           if (group.tokens.length === 0) return null;
           const open = visibleOpenGroupId === group.id;
           return <section className={`${styles.tokenGroup} ${open ? styles.tokenGroupOpen : ""}`} key={group.id}>
-            <button className={styles.tokenGroupTrigger} aria-expanded={open} onClick={() => onOpenGroupChange(open ? null : group.id)}><ChevronRight aria-hidden="true" /><span>{group.label}</span><small>{group.tokens.length}</small></button>
-            {open && <div role="region" aria-label={`${group.label} tokens`}>{group.tokens.map((token) => <TokenRow key={token.id} token={token} value={resolveCssValue(document, token.id, mode)} selected={token.id === selectedTokenId} onSelect={() => onSelectToken(token.id)} />)}</div>}
+            <m.button className={styles.tokenGroupTrigger} aria-expanded={open} aria-controls={`token-group-${group.id}`} whileTap={{ scale: 0.985 }} onClick={() => onOpenGroupChange(open ? null : group.id)}><m.span className={styles.tokenGroupChevron} animate={{ rotate: open ? 90 : 0 }} transition={{ type: "spring", stiffness: 420, damping: 28 }}><ChevronRight aria-hidden="true" /></m.span><span>{group.label}</span><small>{group.tokens.length}</small></m.button>
+            <AnimatePresence initial={false}>
+              {open && <m.div key={group.id} id={`token-group-${group.id}`} role="region" aria-label={`${group.label} tokens`} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ height: { duration: 0.26, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.16 } }} className={styles.tokenGroupContent}>
+                <div className={styles.tokenGroupRows}>{group.tokens.map((token) => <TokenRow key={token.id} token={token} value={resolveCssValue(document, token.id, mode)} selected={token.id === selectedTokenId} onSelect={() => onSelectToken(token.id)} />)}</div>
+              </m.div>}
+            </AnimatePresence>
           </section>;
         })}
         {visibleTokens.length === 0 && <p className={styles.emptyTokens}>No matching tokens.</p>}
@@ -65,8 +70,8 @@ export function TokenLibrary({ className, document, mode, selectedTokenId, openG
 
 function TokenRow({ token, value, selected, onSelect }: { token: Token; value: string; selected: boolean; onSelect: () => void }) {
   const swatchValue = token.type === "color" ? value : null;
-  return <button className={`${styles.tokenRow} ${selected ? styles.tokenRowSelected : ""}`} onClick={onSelect} aria-pressed={selected}>
+  return <m.button className={`${styles.tokenRow} ${selected ? styles.tokenRowSelected : ""}`} onClick={onSelect} aria-pressed={selected} whileTap={{ scale: 0.985 }}>
     {swatchValue ? <span className={styles.swatch} style={{ background: swatchValue }} /> : <span className={styles.tokenTypeIcon}>{token.type.slice(0, 2)}</span>}
     <span><strong>{token.path.split(".").at(-1)}</strong><span className={styles.tokenMeta}><small>{token.path}</small><code>{token.values.light.kind === "reference" ? "↗ alias" : value}</code></span></span>
-  </button>;
+  </m.button>;
 }

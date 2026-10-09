@@ -11,6 +11,7 @@
     "test:browsers": "playwright test --config playwright.cross-browser.config.ts"
   },
   "dependencies": {
+    "framer-motion": "^14.0.0",
     "lucide-react": "1.53.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",

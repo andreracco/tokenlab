@@ -1,5 +1,6 @@
-import { useState, type KeyboardEvent } from "react";
+import { useState, type KeyboardEvent, type ReactNode } from "react";
 import { CheckCircle2, ChevronRight, Grid2X2, X } from "lucide-react";
+import { m } from "framer-motion";
 import type { checkContrast } from "../domain/contrast";
 import { colorValueSchema, getAliasTargets, parseTokenInput, resolveColorToken, resolveCssValue, type ProjectDocument, type ResolvedTokenValue, type Token, type TokenMode } from "../domain/tokens";
 import type { componentRegistry, ComponentKey, consumersForToken } from "../preview/registry";
@@ -43,17 +44,29 @@ export function TokenInspector({ className, document, token, mode, selectedCompo
     ) : (
       <AliasEditor document={document} token={token} mode={mode} resolvedValue={resolvedValue} onApply={onApplyReference} />
     )}
-    {selectedComponent && <details className={styles.inspectorDisclosure} open><summary>{selectedComponent.label} tokens <span>{selectedComponent.tokenIds.length}</span></summary><div>{selectedComponent.tokenIds.map((tokenId) => <button className={styles.registryToken} key={tokenId} onClick={() => onSelectToken(tokenId)}><code>{tokenId}</code><ChevronRight aria-hidden="true" /></button>)}</div></details>}
-    {consumers.length > 0 && <details className={styles.inspectorDisclosure} open>
-      <summary>Used by <span>{consumers.length}</span></summary>
+    {selectedComponent && <InspectorDisclosure key="component-tokens" id="component-tokens" title={`${selectedComponent.label} tokens`} badge={selectedComponent.tokenIds.length} defaultOpen><div>{selectedComponent.tokenIds.map((tokenId) => <button className={styles.registryToken} key={tokenId} onClick={() => onSelectToken(tokenId)}><code>{tokenId}</code><ChevronRight aria-hidden="true" /></button>)}</div></InspectorDisclosure>}
+    {consumers.length > 0 && <InspectorDisclosure key="token-consumers" id="token-consumers" title="Used by" badge={consumers.length} defaultOpen>
       <div>{consumers.map((consumer) => <button className={styles.usageRow} key={consumer.key} onClick={() => onSelectComponent(consumer.key)}>
         <span className={styles.componentGlyph}><Grid2X2 aria-hidden="true" /></span>
         <span><strong>{consumer.label}</strong><small>Forma · {consumer.location}</small></span>
         <ChevronRight aria-hidden="true" />
       </button>)}</div>
-    </details>}
-    <details className={styles.inspectorDisclosure}><summary>Contrast checks <span className={contrastFailures === 0 ? styles.passLabel : styles.failLabel}>{contrastFailures === 0 ? <><CheckCircle2 aria-hidden="true" />Pass</> : contrastFailures}</span></summary><div className={styles.contrastList}>{contrastResults.map((result) => <div key={result.id} className={result.passes ? styles.contrastPass : styles.contrastFail}><span>{result.label}<small>{result.component}</small></span><strong>{result.ratio}:1</strong><small>{result.passes ? `Passes ${result.threshold}:1` : `Needs ${result.threshold}:1`}</small></div>)}</div></details>
+    </InspectorDisclosure>}
+    <InspectorDisclosure key="contrast-checks" id="contrast-checks" title="Contrast checks" badge={contrastFailures === 0 ? <><CheckCircle2 aria-hidden="true" />Pass</> : contrastFailures} badgeClassName={contrastFailures === 0 ? styles.passLabel : styles.failLabel}><div className={styles.contrastList}>{contrastResults.map((result) => <div key={result.id} className={result.passes ? styles.contrastPass : styles.contrastFail}><span>{result.label}<small>{result.component}</small></span><strong>{result.ratio}:1</strong><small>{result.passes ? `Passes ${result.threshold}:1` : `Needs ${result.threshold}:1`}</small></div>)}</div></InspectorDisclosure>
   </aside>;
+}
+
+function InspectorDisclosure({ id, title, badge, badgeClassName, defaultOpen = false, children }: { id: string; title: string; badge: ReactNode; badgeClassName?: string; defaultOpen?: boolean; children: ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return <section className={styles.inspectorDisclosure}>
+    <button id={`${id}-trigger`} className={styles.inspectorDisclosureTrigger} type="button" aria-expanded={open} aria-controls={`${id}-content`} onClick={() => setOpen((current) => !current)}>
+      <m.span className={styles.disclosureChevron} animate={{ rotate: open ? 90 : 0 }} transition={{ type: "spring", stiffness: 420, damping: 30 }}><ChevronRight aria-hidden="true" /></m.span>
+      {title}<span className={badgeClassName}>{badge}</span>
+    </button>
+    <m.div id={`${id}-content`} className={styles.inspectorDisclosureContent} role="region" aria-labelledby={`${id}-trigger`} aria-hidden={!open} inert={!open} initial={false} animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }} transition={{ height: { duration: 0.24, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.16 } }}>
+      {children}
+    </m.div>
+  </section>;
 }
 
 function ColorEditor({ initialValue, mode, onApply }: { initialValue: string; mode: TokenMode; onApply: (value: string) => void }) {
