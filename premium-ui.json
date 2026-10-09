@@ -1,0 +1,7 @@
+{
+  "sourceRoots": ["src"],
+  "requiredCapabilities": ["Select/Listbox"],
+  "ownership": {
+    "Select/Listbox": "native"
+  }
+}

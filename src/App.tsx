@@ -54,6 +54,7 @@ export function App() {
   const [exportOpen, setExportOpen] = useState(false);
   const [tokenQuery, setTokenQuery] = useState("");
   const [snapshotName, setSnapshotName] = useState("");
+  const [snapshotError, setSnapshotError] = useState("");
   const [mobilePanel, setMobilePanel] = useState<"tokens" | "canvas" | "inspector">("canvas");
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [createdProjects, setCreatedProjects] = useState<{ id: string; name: string }[]>([]);
@@ -74,6 +75,7 @@ export function App() {
   const comparisonSnapshot = snapshots.find((snapshot) => snapshot.id === comparisonSnapshotId);
   const contrastResults = checkContrast(document, mode);
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
+  const spectrum = document.tokens.filter((token) => token.type === "color" && token.layer === "primitive").slice(0, 6);
   const visibleTokens = document.tokens.filter((token) => `${token.path} ${token.type}`.toLowerCase().includes(tokenQuery.trim().toLowerCase()));
   const tokenGroups = [
     { id: "foundations", label: "Foundations", tokens: visibleTokens.filter((token) => token.layer === "primitive" && !token.path.startsWith("color.error")) },
@@ -92,6 +94,10 @@ export function App() {
             <span>{document.name}</span>
           </div>
         </div>
+        <div className={styles.tokenSpectrum} aria-label={`Active palette for ${document.name}`}>
+          <span>Active spectrum</span>
+          <div>{spectrum.map((token) => <i key={token.id} style={{ background: resolveCssValue(document, token.id, mode) }} title={`${token.path}: ${resolveCssValue(document, token.id, mode)}`} />)}</div>
+        </div>
         <div className={styles.headerActions}>
           <span className={styles.savedStatus} role="status" aria-live="polite"><CheckCircle2 aria-hidden="true" /> {saveStatus}</span>
           <span className={styles.contrastStatus}>{contrastFailures === 0 ? "Contrast checks pass" : `${contrastFailures} contrast pairs need attention`}</span>
@@ -104,10 +110,11 @@ export function App() {
       </header>
 
       <dialog ref={snapshotDialog} className={styles.studioDialog} aria-labelledby="snapshot-title">
-        <form method="dialog" onSubmit={() => captureSnapshot(snapshotName.trim())}>
+        <form method="dialog" noValidate onSubmit={(event) => { if (!snapshotName.trim()) { event.preventDefault(); setSnapshotError("Enter a snapshot name."); return; } captureSnapshot(snapshotName.trim()); }}>
           <h2 id="snapshot-title">Name snapshot</h2>
           <p>Save the current token system as a comparison baseline.</p>
-          <label>Snapshot name<input autoFocus required value={snapshotName} onChange={(event) => setSnapshotName(event.target.value)} /></label>
+          <label>Snapshot name<input autoFocus required aria-invalid={Boolean(snapshotError)} aria-describedby={snapshotError ? "snapshot-error" : undefined} value={snapshotName} onChange={(event) => { setSnapshotName(event.target.value); setSnapshotError(""); }} /></label>
+          <span id="snapshot-error" className={styles.dialogError} role="alert">{snapshotError}</span>
           <div><button type="button" onClick={() => snapshotDialog.current?.close()}>Cancel</button><button className={styles.primaryStudioButton} disabled={!snapshotName.trim()}>Save snapshot</button></div>
         </form>
       </dialog>
@@ -121,7 +128,7 @@ export function App() {
           <div className={styles.panelHeading}>
             <div><span>Token library</span><small>{tokenQuery ? `${visibleTokens.length} of ${document.tokens.length}` : document.tokens.length} tokens</small></div>
           </div>
-          <label className={styles.tokenSearch}><Search aria-hidden="true" /><input type="search" aria-label="Search tokens" placeholder="Search tokens" value={tokenQuery} onChange={(event) => setTokenQuery(event.target.value)} /></label>
+          <div className={styles.tokenSearch}><Search aria-hidden="true" /><input type="search" aria-label="Search tokens" placeholder="Search tokens" value={tokenQuery} onChange={(event) => setTokenQuery(event.target.value)} />{tokenQuery && <button aria-label="Clear token search" onClick={() => setTokenQuery("")}><X aria-hidden="true" /></button>}</div>
           <div className={styles.tokenList}>
             {tokenGroups.map((group) => group.tokens.length > 0 && <details className={styles.tokenGroup} key={group.id} open={group.tokens.some((token) => token.id === selectedTokenId)}>
               <summary><span>{group.label}</span><small>{group.tokens.length}</small></summary>
@@ -290,7 +297,7 @@ function ComparisonView({ snapshot, snapshots, current, mode, onSelect, onClose,
 }
 
 function ComparisonPreview({ label, style }: { label: string; style: PreviewStyle }) {
-  return <div className={styles.comparisonPreview} style={style}><strong>{label}</strong><div><h2>Projects</h2><p>Plan, track, and ship your team’s best work.</p><article><span>In progress</span><h3>Design system</h3><p>Build reusable foundations for Forma.</p></article><button>Create project</button></div></div>;
+  return <div className={styles.comparisonPreview} style={style}><strong>{label}</strong><div><h2>Projects</h2><p>Plan, track, and ship your team’s best work.</p><article><span>In progress</span><h3>Design system</h3><p>Build reusable foundations for Forma.</p></article><button className={styles.specimenDisplay} disabled>Create project</button></div></div>;
 }
 
 function TokenRow({ token, value, selected, onSelect }: { token: Token; value: string; selected: boolean; onSelect: () => void }) {
@@ -376,11 +383,11 @@ function SpecimenPreview({ style }: { style: PreviewStyle }) {
       <div className={`${styles.previewRoot} ${styles.specimenRoot}`} style={style} data-testid="preview-root">
         <header><span>Forma components</span><small>Visual reference · examples only</small></header>
         <div className={styles.specimenExamples} inert>
-        <section><h2>Buttons</h2><div className={styles.specimenRow}><button className={styles.formaPrimary}>Primary</button><button className={`${styles.formaPrimary} ${styles.simulatedFocus}`}>Focus</button><button className={styles.formaPrimary} disabled>Disabled</button><button className={styles.formaPrimary}>••• Loading</button></div></section>
+        <section><h2>Buttons</h2><div className={styles.specimenRow}><button className={`${styles.formaPrimary} ${styles.specimenDisplay}`} disabled>Primary</button><button className={`${styles.formaPrimary} ${styles.simulatedFocus} ${styles.specimenDisplay}`} disabled>Focus</button><button className={styles.formaPrimary} disabled>Disabled</button><button className={`${styles.formaPrimary} ${styles.specimenDisplay}`} disabled>••• Loading</button></div></section>
         <section><h2>Inputs</h2><div className={styles.specimenRow}><input placeholder="Default input" /><input className={styles.simulatedFocus} defaultValue="Focused value" /><input className={styles.inputError} defaultValue="Invalid value" /><input disabled placeholder="Disabled" /></div></section>
         <section><h2>Cards and badges</h2><div className={styles.specimenRow}><article className={styles.specimenCard}><span className={styles.specimenBadge}>In progress</span><h3>Design system</h3><p>Build reusable foundations for Forma.</p></article><article className={styles.specimenCard}><span className={styles.specimenBadge}>Complete</span><h3>Navigation audit</h3><p>Improve structure and wayfinding.</p></article></div></section>
-        <section><h2>Tabs and menu</h2><div className={styles.specimenRow}><div className={styles.specimenTabs}><button>Overview</button><button className={styles.activeTab}>Activity</button><button>Files</button></div><div className={styles.specimenMenu}><button>Edit project</button><button>Duplicate</button><button>Archive</button></div></div></section>
-        <section><h2>Modal preview</h2><div className={styles.specimenDialog}><strong>Create project</strong><p>Start with a clear name and an owner.</p><input placeholder="Project name" /><div><button>Cancel</button><button className={styles.formaPrimary}>Create project</button></div></div></section>
+        <section><h2>Tabs and menu</h2><div className={styles.specimenRow}><div className={styles.specimenTabs}><button className={styles.specimenDisplay} disabled>Overview</button><button className={`${styles.activeTab} ${styles.specimenDisplay}`} disabled>Activity</button><button className={styles.specimenDisplay} disabled>Files</button></div><div className={styles.specimenMenu}><button className={styles.specimenDisplay} disabled>Edit project</button><button className={styles.specimenDisplay} disabled>Duplicate</button><button className={styles.specimenDisplay} disabled>Archive</button></div></div></section>
+        <section><h2>Modal preview</h2><div className={styles.specimenDialog}><strong>Create project</strong><p>Start with a clear name and an owner.</p><input placeholder="Project name" /><div><button className={styles.specimenDisplay} disabled>Cancel</button><button className={`${styles.formaPrimary} ${styles.specimenDisplay}`} disabled>Create project</button></div></div></section>
         </div>
       </div>
     </div>
@@ -396,6 +403,7 @@ function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, 
   const [projectSort, setProjectSort] = useState("updated");
   const [showAllActivity, setShowAllActivity] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [projectNameError, setProjectNameError] = useState("");
   const primarySelected = highlightedComponents.includes("primary-button") || selectedComponentKey === "primary-button";
   const cardSelected = highlightedComponents.includes("project-card") || selectedComponentKey === "project-card";
   const projects = [
@@ -428,7 +436,7 @@ function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, 
         </aside>
         <div className={styles.formaMain}>
           <div className={styles.formaTopbar}>
-            <label><Search aria-hidden="true" /><input aria-label="Search Forma" placeholder="Search projects" value={projectQuery} onFocus={() => setActiveSection("projects")} onChange={(event) => { setProjectQuery(event.target.value); setActiveSection("projects"); }} /></label>
+            <div className={styles.formaSearch}><Search aria-hidden="true" /><input aria-label="Search Forma" placeholder="Search projects" value={projectQuery} onFocus={() => setActiveSection("projects")} onChange={(event) => { setProjectQuery(event.target.value); setActiveSection("projects"); }} />{projectQuery && <button aria-label="Clear Forma search" onClick={() => setProjectQuery("")}><X aria-hidden="true" /></button>}</div>
             <div className={styles.notificationControl}>
               <button className={styles.formaIconButton} aria-label="Notifications" aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen((open) => !open)}><Bell aria-hidden="true" /><span className={styles.notificationDot} /></button>
               {notificationsOpen && <div className={styles.notificationPopover}><strong>Notifications</strong><span><CheckCircle2 aria-hidden="true" /> Design system moved to review</span><span><Users aria-hidden="true" /> Ana mentioned you in Q4 campaign</span></div>}
@@ -450,7 +458,7 @@ function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, 
                 </button>
               </div>
               <div className={styles.projectToolbar}>
-                <label><Search aria-hidden="true" /><input aria-label="Search projects" placeholder="Search projects" value={projectQuery} onChange={(event) => setProjectQuery(event.target.value)} /></label>
+                <div className={styles.formaSearch}><Search aria-hidden="true" /><input aria-label="Search projects" placeholder="Search projects" value={projectQuery} onChange={(event) => setProjectQuery(event.target.value)} />{projectQuery && <button aria-label="Clear project search" onClick={() => setProjectQuery("")}><X aria-hidden="true" /></button>}</div>
                 <select aria-label="Project status" value={projectStatus} onChange={(event) => setProjectStatus(event.target.value)}><option value="all">All statuses</option><option value="in-progress">In progress</option><option value="planning">Planning</option><option value="review">In review</option></select>
                 <select aria-label="Project sort" value={projectSort} onChange={(event) => setProjectSort(event.target.value)}><option value="updated">Most progressed</option><option value="name">Name</option></select>
                 <span>{visibleProjects.length} {visibleProjects.length === 1 ? "project" : "projects"}</span>
@@ -465,11 +473,12 @@ function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, 
             {activeSection === "team" && <TeamPanel />}
           </div>
         </div>
-        <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title" onClose={(event) => { event.currentTarget.querySelector("form")?.reset(); createProjectButton.current?.focus(); }}>
-          <form method="dialog" onSubmit={(event) => { const name = String(new FormData(event.currentTarget).get("projectName") ?? "").trim(); if (name) onCreateProject(name); event.currentTarget.reset(); }}>
+        <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title" onClose={(event) => { event.currentTarget.querySelector("form")?.reset(); setProjectNameError(""); createProjectButton.current?.focus(); }}>
+          <form method="dialog" noValidate onSubmit={(event) => { const name = String(new FormData(event.currentTarget).get("projectName") ?? "").trim(); if (!name) { event.preventDefault(); setProjectNameError("Enter a project name."); return; } onCreateProject(name); event.currentTarget.reset(); }}>
             <h2 id="create-project-title">Create project</h2>
             <p>Start with a clear name and an owner.</p>
-            <label>Project name<input name="projectName" autoFocus required /></label>
+            <label>Project name<input name="projectName" autoFocus required aria-invalid={Boolean(projectNameError)} aria-describedby={projectNameError ? "project-name-error" : undefined} onChange={() => setProjectNameError("")} /></label>
+            <span id="project-name-error" className={styles.dialogError} role="alert">{projectNameError}</span>
             <div><button type="button" onClick={() => createProjectDialog.current?.close()}>Cancel</button><button className={styles.formaPrimary} value="create">Create project</button></div>
           </form>
         </dialog>

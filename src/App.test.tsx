@@ -61,6 +61,9 @@ describe("TokenLab first slice", () => {
 
     fireEvent.change(search, { target: { value: "missing token" } });
     expect(screen.getByText("No matching tokens.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Clear token search" }));
+    expect(search).toHaveProperty("value", "");
+    expect(screen.getByRole("button", { name: /color\.brand\.600/i })).toBeTruthy();
   });
 
   it("defaults to interaction and clearly labels deliberate inspection", () => {
@@ -170,6 +173,18 @@ describe("TokenLab first slice", () => {
     fireEvent.change(input, { target: { value: "18px" } });
     fireEvent.blur(input);
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-card-padding")).toBe("18px");
+  });
+
+  it("keeps an unnamed snapshot dialog open with actionable validation", () => {
+    render(<App />);
+    const dialog = screen.getByRole("heading", { name: "Name snapshot", hidden: true }).closest("dialog")!;
+    dialog.showModal = () => { dialog.open = true; };
+    fireEvent.click(screen.getByRole("button", { name: "History" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save baseline" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Snapshot name" }), { target: { value: "" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save snapshot" }).closest("form")!);
+    expect(screen.getByRole("alert").textContent).toBe("Enter a snapshot name.");
+    expect(useTokenLabStore.getState().snapshots).toHaveLength(0);
   });
 
   it("compares against a snapshot and restores it as one undoable action", () => {
