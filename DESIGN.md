@@ -66,7 +66,7 @@ The interface uses the installed-system `interface` stack for compact, readable 
 
 ## Layout
 
-The desktop workbench is a three-panel grid: compact library, elastic canvas, comfortable inspector. The preview stage uses a 24px calibration grid and a 30px breathing zone. Below 1100px the inspector becomes the existing drawer; below 760px the existing panel navigation keeps one task surface visible at a time. Scroll ownership remains inside each panel.
+The desktop workbench is a three-panel grid: compact library, elastic canvas, comfortable inspector. The preview stage uses a 24px calibration grid and a 30px breathing zone. In the token library, one category expands at a time and owns the row scroll area so every category header and the Starting system footer stay reachable. Below 1100px the inspector becomes the existing drawer; below 760px the existing panel navigation keeps one task surface visible at a time. Scroll ownership remains inside each panel.
 
 ## Elevation & Depth
 
