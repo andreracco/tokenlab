@@ -32,3 +32,33 @@ test("supports the core edit and dialog flow from the keyboard", async ({ page }
   await expect(projectName).toBeHidden();
   await expect(createProject).toBeFocused();
 });
+
+test("announces focused views and returns focus after overlays", async ({ page }) => {
+  await page.goto("/");
+
+  const history = page.getByRole("button", { name: "History" });
+  await history.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Saved baselines" })).toBeFocused();
+
+  const saveFirstBaseline = page.getByRole("button", { name: "Save first baseline" });
+  await saveFirstBaseline.focus();
+  await page.keyboard.press("Enter");
+  const snapshotName = page.getByRole("textbox", { name: "Snapshot name" });
+  await expect(snapshotName).toBeFocused();
+  await snapshotName.fill("");
+  await page.keyboard.press("Enter");
+  await expect(snapshotName).toBeFocused();
+  await expect(snapshotName).toHaveAttribute("aria-invalid", "true");
+  await page.keyboard.press("Escape");
+  await expect(saveFirstBaseline).toBeFocused();
+
+  const exportButton = page.getByRole("button", { name: "Export" });
+  await exportButton.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: "Production-ready token files" })).toBeFocused();
+  const back = page.getByRole("button", { name: "Back to preview" });
+  await back.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Preview" })).toBeFocused();
+});

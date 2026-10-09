@@ -180,10 +180,11 @@ describe("TokenLab first slice", () => {
     const dialog = screen.getByRole("heading", { name: "Name snapshot", hidden: true }).closest("dialog")!;
     dialog.showModal = () => { dialog.open = true; };
     fireEvent.click(screen.getByRole("button", { name: "History" }));
-    fireEvent.click(screen.getByRole("button", { name: "Save baseline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save first baseline" }));
     fireEvent.change(screen.getByRole("textbox", { name: "Snapshot name" }), { target: { value: "" } });
     fireEvent.submit(screen.getByRole("button", { name: "Save snapshot" }).closest("form")!);
     expect(screen.getByRole("alert").textContent).toBe("Enter a snapshot name.");
+    expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Snapshot name" }));
     expect(useTokenLabStore.getState().snapshots).toHaveLength(0);
   });
 
@@ -192,7 +193,7 @@ describe("TokenLab first slice", () => {
     const dialog = screen.getByRole("heading", { name: "Name snapshot", hidden: true }).closest("dialog")!;
     dialog.showModal = () => { dialog.open = true; };
     fireEvent.click(screen.getByRole("button", { name: "History" }));
-    fireEvent.click(screen.getByRole("button", { name: "Save baseline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save first baseline" }));
     fireEvent.change(screen.getByRole("textbox", { name: "Snapshot name" }), { target: { value: "Before brand refresh" } });
     fireEvent.submit(screen.getByRole("button", { name: "Save snapshot" }).closest("form")!);
     fireEvent.click(screen.getByRole("button", { name: "Preview" }));
@@ -201,7 +202,7 @@ describe("TokenLab first slice", () => {
     fireEvent.click(screen.getByRole("button", { name: "History" }));
     fireEvent.click(screen.getByRole("button", { name: "Compare" }));
 
-    expect(screen.getByText("1 token changes")).toBeTruthy();
+    expect(screen.getByText("1 token change")).toBeTruthy();
     expect(screen.getByRole("option", { name: "Before brand refresh" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Restore baseline" }));
     expect(screen.getByTestId("preview-root").style.getPropertyValue("--tl-preview-action-primary-background")).toBe("#3157D5");

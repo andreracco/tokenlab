@@ -66,7 +66,7 @@ The interface uses the installed-system `interface` stack for compact, readable 
 
 ## Layout
 
-The desktop workbench is a three-panel grid: compact library, elastic canvas, comfortable inspector. Preview, Components, and History are global workspace views and remain in the studio header so their location does not change between views. History and export are focused views that temporarily remove the editing sidebars. The preview stage uses a 24px calibration grid and a 30px breathing zone. In the token library, one category expands at a time and owns the row scroll area so every category header and the Starting system footer stay reachable. Below 1100px the inspector becomes the existing drawer; below 760px the existing panel navigation keeps one task surface visible at a time. Scroll ownership remains inside each panel.
+The desktop workbench is a three-panel grid: compact library, elastic canvas, comfortable inspector. Preview, Components, and History are global workspace views and remain in the studio header so their location does not change between views. History, comparison, and export are focused views that temporarily remove the editing sidebars and constrain primary content to a readable 960–1120px measure. The preview stage uses a 24px calibration grid and a 30px breathing zone. In the token library, one category expands at a time and owns the row scroll area so every category header and the Starting system footer stay reachable. Below 1100px the inspector becomes the existing drawer; below 760px the existing panel navigation keeps one task surface visible at a time. Scroll ownership remains inside each panel.
 
 ## Elevation & Depth
 
@@ -92,7 +92,7 @@ Selected token rows combine a left accent rule, tint, and border so selection ne
 
 ### Forms and overlays
 
-Fields use native controls where platform popup ownership is acceptable. Search fields expose a keyboard-accessible clear action when non-empty. Dialogs retain native modal semantics, labeled headings, Escape behavior, and focus restoration.
+Fields use native controls where platform popup ownership is acceptable. Search fields expose a keyboard-accessible clear action when non-empty. Dialogs retain native modal semantics, labeled headings, inline correction guidance, Escape behavior, and focus restoration. Focused workspace views announce themselves by moving focus to their labeled heading; their back action restores focus to the owning view control.
 
 ### Iconography
 

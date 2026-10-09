@@ -36,7 +36,7 @@ export function TokenLibrary({ className, document, mode, selectedTokenId, openG
       : groups.find((group) => group.tokens.length > 0)?.id ?? null;
 
   return (
-    <aside className={className} aria-label="Token library">
+    <aside id="token-library" className={className} aria-label="Token library">
       <div className={styles.panelHeading}>
         <div><span>Token library</span><small>{query ? `${visibleTokens.length} of ${document.tokens.length}` : document.tokens.length} tokens</small></div>
       </div>

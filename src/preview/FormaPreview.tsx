@@ -34,6 +34,7 @@ export function SpecimenPreview({ style }: { style: PreviewStyle }) {
 export function FormaPreview({ createdProjects, inspectEnabled, highlightedComponents, selectedComponentKey, onInspect, onCreateProject, style }: FormaPreviewProps) {
   const createProjectDialog = useRef<HTMLDialogElement>(null);
   const createProjectButton = useRef<HTMLButtonElement>(null);
+  const projectNameInput = useRef<HTMLInputElement>(null);
   const [activeSection, setActiveSection] = useState<"overview" | "projects" | "tasks" | "team">("projects");
   const [projectQuery, setProjectQuery] = useState("");
   const [projectStatus, setProjectStatus] = useState("all");
@@ -103,11 +104,11 @@ export function FormaPreview({ createdProjects, inspectEnabled, highlightedCompo
             {activeSection === "team" && <TeamPanel />}
           </div>
         </div>
-        <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title" onClose={(event) => { event.currentTarget.querySelector("form")?.reset(); setProjectNameError(""); createProjectButton.current?.focus(); }}>
-          <form method="dialog" noValidate onSubmit={(event) => { const name = String(new FormData(event.currentTarget).get("projectName") ?? "").trim(); if (!name) { event.preventDefault(); setProjectNameError("Enter a project name."); return; } onCreateProject(name); event.currentTarget.reset(); }}>
+        <dialog ref={createProjectDialog} className={styles.createProjectDialog} aria-labelledby="create-project-title" aria-describedby="create-project-description" onClose={(event) => { event.currentTarget.querySelector("form")?.reset(); setProjectNameError(""); createProjectButton.current?.focus(); }}>
+          <form method="dialog" noValidate onSubmit={(event) => { const name = String(new FormData(event.currentTarget).get("projectName") ?? "").trim(); if (!name) { event.preventDefault(); setProjectNameError("Enter a project name."); projectNameInput.current?.focus(); return; } onCreateProject(name); event.currentTarget.reset(); }}>
             <h2 id="create-project-title">Create project</h2>
-            <p>Start with a clear name and an owner.</p>
-            <label>Project name<input name="projectName" autoFocus required aria-invalid={Boolean(projectNameError)} aria-describedby={projectNameError ? "project-name-error" : undefined} onChange={() => setProjectNameError("")} /></label>
+            <p id="create-project-description">Start with a clear name and an owner.</p>
+            <label>Project name<input ref={projectNameInput} name="projectName" autoFocus required aria-invalid={Boolean(projectNameError)} aria-describedby={projectNameError ? "project-name-error" : "create-project-description"} onChange={() => setProjectNameError("")} /></label>
             <span id="project-name-error" className={styles.dialogError} role="alert">{projectNameError}</span>
             <div><button type="button" onClick={() => createProjectDialog.current?.close()}>Cancel</button><button className={styles.formaPrimary} value="create">Create project</button></div>
           </form>

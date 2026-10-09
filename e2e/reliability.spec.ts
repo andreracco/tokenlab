@@ -22,7 +22,7 @@ test("restores a snapshot as one undoable action", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("status").filter({ hasText: "Saved locally" })).toBeVisible();
   await page.getByRole("button", { name: "History" }).click();
-  await page.getByRole("button", { name: "Save baseline" }).click();
+  await page.getByRole("button", { name: "Save first baseline" }).click();
   await page.getByRole("textbox", { name: "Snapshot name" }).fill("Original brand");
   await page.getByRole("button", { name: "Save snapshot" }).click();
   await page.getByRole("button", { name: "Preview" }).click();

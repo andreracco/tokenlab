@@ -40,6 +40,8 @@ export function App() {
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [createdProjects, setCreatedProjects] = useState<{ id: string; name: string }[]>([]);
   const snapshotDialog = useRef<HTMLDialogElement>(null);
+  const snapshotNameInput = useRef<HTMLInputElement>(null);
+  const previewViewButton = useRef<HTMLButtonElement>(null);
 
   const selectedToken = document.tokens.find((token) => token.id === selectedTokenId)!;
   const selectVisibleToken = (tokenId: string) => {
@@ -62,6 +64,16 @@ export function App() {
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
   const spectrum = document.tokens.filter((token) => token.type === "color" && token.layer === "primitive").slice(0, 6);
   const focusedView = exportOpen || canvasView === "history";
+  const openSnapshotDialog = () => {
+    setSnapshotName(`Baseline ${snapshots.length + 1}`);
+    setSnapshotError("");
+    snapshotDialog.current?.showModal();
+  };
+  const closeExport = () => {
+    setExportOpen(false);
+    setCanvasView("app");
+    requestAnimationFrame(() => previewViewButton.current?.focus());
+  };
 
   return (
     <div className={styles.app}>
@@ -78,7 +90,7 @@ export function App() {
           <div>{spectrum.map((token) => <i key={token.id} style={{ background: resolveCssValue(document, token.id, mode) }} title={`${token.path}: ${resolveCssValue(document, token.id, mode)}`} />)}</div>
         </div>
         <nav className={`${styles.viewTabs} ${styles.headerViewTabs}`} aria-label="Canvas views">
-          <button aria-pressed={canvasView === "app" && !exportOpen} className={canvasView === "app" && !exportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setComparisonSnapshotId(null); setCanvasView("app"); }}>Preview</button>
+          <button ref={previewViewButton} aria-pressed={canvasView === "app" && !exportOpen} className={canvasView === "app" && !exportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setComparisonSnapshotId(null); setCanvasView("app"); }}>Preview</button>
           <button aria-pressed={canvasView === "components" && !exportOpen} className={canvasView === "components" && !exportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setComparisonSnapshotId(null); setCanvasView("components"); }}>Components</button>
           <button aria-pressed={canvasView === "history" && !exportOpen} className={canvasView === "history" && !exportOpen ? styles.activeTab : ""} onClick={() => { setExportOpen(false); setComparisonSnapshotId(null); setCanvasView("history"); }}><HistoryIcon aria-hidden="true" />History</button>
         </nav>
@@ -93,19 +105,20 @@ export function App() {
         </div>
       </header>
 
-      <dialog ref={snapshotDialog} className={styles.studioDialog} aria-labelledby="snapshot-title">
-        <form method="dialog" noValidate onSubmit={(event) => { if (!snapshotName.trim()) { event.preventDefault(); setSnapshotError("Enter a snapshot name."); return; } captureSnapshot(snapshotName.trim()); }}>
+      <dialog ref={snapshotDialog} className={styles.studioDialog} aria-labelledby="snapshot-title" aria-describedby="snapshot-description" onClose={() => setSnapshotError("")}>
+        <form method="dialog" noValidate onSubmit={(event) => { if (!snapshotName.trim()) { event.preventDefault(); setSnapshotError("Enter a snapshot name."); snapshotNameInput.current?.focus(); return; } captureSnapshot(snapshotName.trim()); }}>
           <h2 id="snapshot-title">Name snapshot</h2>
-          <p>Save the current token system as a comparison baseline.</p>
-          <label>Snapshot name<input autoFocus required aria-invalid={Boolean(snapshotError)} aria-describedby={snapshotError ? "snapshot-error" : undefined} value={snapshotName} onChange={(event) => { setSnapshotName(event.target.value); setSnapshotError(""); }} /></label>
+          <p id="snapshot-description">Save the current token system as a comparison baseline.</p>
+          <label>Snapshot name<input ref={snapshotNameInput} autoFocus required aria-invalid={Boolean(snapshotError)} aria-describedby={snapshotError ? "snapshot-error" : "snapshot-description"} value={snapshotName} onChange={(event) => { setSnapshotName(event.target.value); setSnapshotError(""); }} /></label>
           <span id="snapshot-error" className={styles.dialogError} role="alert">{snapshotError}</span>
-          <div><button type="button" className={styles.secondaryButton} onClick={() => snapshotDialog.current?.close()}>Cancel</button><button className={styles.primaryStudioButton} disabled={!snapshotName.trim()}>Save snapshot</button></div>
+          <div><button type="button" className={styles.secondaryButton} onClick={() => snapshotDialog.current?.close()}>Cancel</button><button className={styles.primaryStudioButton}>Save snapshot</button></div>
         </form>
       </dialog>
 
       <nav className={`${styles.mobilePanelNav} ${focusedView ? styles.focusedViewHidden : ""}`} aria-label="Mobile workspace">
-        {(["tokens", "canvas", "inspector"] as const).map((panel) => <button key={panel} aria-pressed={mobilePanel === panel} onClick={() => setMobilePanel(panel)}>{panel[0].toUpperCase() + panel.slice(1)}</button>)}
+        {(["tokens", "canvas", "inspector"] as const).map((panel) => <button key={panel} aria-controls={panel === "tokens" ? "token-library" : panel === "canvas" ? "living-canvas" : "token-inspector"} aria-pressed={mobilePanel === panel} onClick={() => setMobilePanel(panel)}>{panel[0].toUpperCase() + panel.slice(1)}</button>)}
       </nav>
+      <p className={styles.srOnly} role="status" aria-live="polite">{selectedComponent ? `${selectedComponent.label} selected. ${selectedComponent.tokenIds.length} related tokens are available in the inspector.` : ""}</p>
 
       <main className={`${styles.workspace} ${focusedView ? styles.workspaceFocused : ""}`}>
         <TokenLibrary
@@ -119,7 +132,7 @@ export function App() {
           onSelectPreset={(presetId) => execute({ type: "select-preset", presetId })}
         />
 
-        <section className={`${styles.canvasPanel} ${mobilePanel !== "canvas" ? styles.mobilePanelHidden : ""}`} aria-label="Living Canvas">
+        <section id="living-canvas" className={`${styles.canvasPanel} ${mobilePanel !== "canvas" ? styles.mobilePanelHidden : ""}`} aria-label="Living Canvas">
           {!focusedView && <div className={styles.canvasToolbar}>
             <strong>Living Canvas</strong>
             <div className={styles.canvasControls}>
@@ -132,8 +145,8 @@ export function App() {
               </span>
             </div>
           </div>}
-          {inspectEnabled && !focusedView && <div className={styles.inspectNotice}><Sparkles aria-hidden="true" /><span><strong>Inspect mode</strong> — select a preview element to reveal its tokens.</span></div>}
-          {exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={() => setExportOpen(false)} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); setExportOpen(false); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); setCanvasView("app"); }} /> : canvasView === "history" ? <HistoryPanel snapshots={snapshots} onCreate={() => { setSnapshotName(`Baseline ${snapshots.length + 1}`); snapshotDialog.current?.showModal(); }} onCompare={setComparisonSnapshotId} /> : canvasView === "app" ? <FormaPreview
+          {inspectEnabled && !focusedView && <div className={styles.inspectNotice} role="status"><Sparkles aria-hidden="true" /><span><strong>Inspect mode</strong> — select a preview element to reveal its tokens.</span></div>}
+          {exportOpen ? <ExportPanel document={document} snapshots={snapshots} onClose={closeExport} onImport={(workspace) => { hydrate(workspace.document, workspace.snapshots); closeExport(); }} /> : comparisonSnapshot ? <ComparisonView snapshot={comparisonSnapshot} snapshots={snapshots} current={document} mode={mode} onSelect={setComparisonSnapshotId} onClose={() => setComparisonSnapshotId(null)} onRestore={() => { restoreSnapshot(comparisonSnapshot.id); setComparisonSnapshotId(null); setCanvasView("app"); requestAnimationFrame(() => previewViewButton.current?.focus()); }} /> : canvasView === "history" ? <HistoryPanel snapshots={snapshots} onCreate={openSnapshotDialog} onCompare={setComparisonSnapshotId} /> : canvasView === "app" ? <FormaPreview
               createdProjects={createdProjects}
               inspectEnabled={inspectEnabled}
               highlightedComponents={consumers.map((consumer) => consumer.key)}

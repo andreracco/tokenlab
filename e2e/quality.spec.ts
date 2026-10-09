@@ -81,6 +81,44 @@ test("keeps History focused at high browser zoom", async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);
 });
 
+test("keeps export cards readable across wide and narrow viewports", async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 800 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Export" }).click();
+
+  const wideCards = await page.locator("article").filter({ has: page.getByRole("button", { name: /^Download tokenlab/ }) }).evaluateAll((cards) => cards.map((card) => {
+    const bounds = card.getBoundingClientRect();
+    return { x: bounds.x, width: bounds.width };
+  }));
+  expect(wideCards).toHaveLength(5);
+  expect(Math.max(...wideCards.map(({ width }) => width))).toBeLessThan(380);
+  expect(new Set(wideCards.slice(0, 3).map(({ x }) => Math.round(x))).size).toBe(3);
+
+  await page.setViewportSize({ width: 512, height: 700 });
+  const narrowCards = await page.locator("article").filter({ has: page.getByRole("button", { name: /^Download tokenlab/ }) }).evaluateAll((cards) => cards.map((card) => {
+    const bounds = card.getBoundingClientRect();
+    return { x: bounds.x, right: bounds.right };
+  }));
+  expect(new Set(narrowCards.map(({ x }) => Math.round(x))).size).toBe(1);
+  expect(narrowCards.every(({ x, right }) => x >= 0 && right <= 512)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);
+});
+
+test("keeps comparison actions reachable at high browser zoom", async ({ page }) => {
+  await page.setViewportSize({ width: 512, height: 700 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "History" }).click();
+  await page.getByRole("button", { name: "Save first baseline" }).click();
+  await page.getByRole("textbox", { name: "Snapshot name" }).fill("Zoom baseline");
+  await page.getByRole("button", { name: "Save snapshot" }).click();
+  await page.getByRole("button", { name: "Compare" }).click();
+
+  await expect(page.getByRole("heading", { name: "Baseline and current system" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Back to history" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Restore baseline" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth === document.documentElement.clientWidth)).toBe(true);
+});
+
 test("keeps token categories and presets visible while the active category scrolls", async ({ page }) => {
   await page.setViewportSize({ width: 936, height: 624 });
   await page.goto("/");
