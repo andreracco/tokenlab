@@ -105,7 +105,13 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.brandBlock,
+.headerActions {
+  flex-shrink: 0;
+}
 .tokenSpectrum > div {
+  min-width: 72px;
+  flex: 0 1 168px;
   width: 168px;
   height: 18px;
   display: flex;
@@ -126,8 +132,6 @@
   gap: 6px;
 }
 .savedStatus {
-  /* Reserve the longest status ("Loading local draft…") so the centered view tabs don't slide as it changes. */
-  min-width: 8.25rem;
   margin-right: 6px;
   display: inline-flex;
   align-items: center;
@@ -803,7 +807,7 @@
   min-height: 650px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 184px 1fr;
+  grid-template-columns: 196px 1fr;
   overflow: hidden;
   container-type: inline-size;
   border: 1px solid rgba(17, 23, 34, 0.16);
@@ -818,6 +822,10 @@
   font-size: var(--tl-preview-font-size);
   font-weight: var(--tl-preview-font-weight);
   line-height: var(--tl-preview-line-height);
+}
+/* Browser default <small> shrinks again inside already-small text; keep it readable. */
+.previewRoot small {
+  font-size: max(0.75rem, 0.83em);
 }
 .previewRoot strong,
 .previewRoot h1,
@@ -847,13 +855,13 @@
   border-radius: 7px;
   background: var(--tl-preview-action-primary-background);
   color: #fff;
-  font-size: 0.78em;
+  font-size: max(0.75rem, 0.78em);
 }
 .workspaceSwitcher {
   position: relative;
   width: 100%;
-  padding: 9px;
-  gap: 8px;
+  padding: 8px;
+  gap: 7px;
   border: 1px solid var(--forma-line);
   border-radius: var(--tl-preview-control-radius);
   background: var(--tl-preview-panel);
@@ -863,16 +871,20 @@
 }
 .workspaceSwitcher > span:nth-child(2),
 .sidebarFooter > span:nth-child(2) {
+  min-width: 0;
   flex: 1;
   display: flex;
   flex-direction: column;
-  font-size: 0.86em;
+  font-size: max(0.75rem, 0.86em);
   font-weight: 700;
 }
 .workspaceSwitcher small,
 .sidebarFooter small {
+  overflow: hidden;
   color: var(--forma-muted);
-  font-size: 0.78em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: max(0.75rem, 0.78em);
   font-weight: 500;
 }
 .avatar {
@@ -903,7 +915,7 @@
   border-radius: 7px;
   background: transparent;
   color: var(--forma-muted);
-  font-size: 0.86em;
+  font-size: max(0.75rem, 0.86em);
   text-align: left;
   cursor: pointer;
 }
@@ -956,6 +968,7 @@
 }
 .formaSidebar nav small {
   min-width: 17px;
+  font-size: max(0.75rem, 1em);
   padding: 2px 5px;
   border-radius: 8px;
   background: var(--tl-preview-border);
@@ -972,7 +985,7 @@
 .sidebarFooter button {
   border: 0;
   background: transparent;
-  font-size: 0.78em;
+  font-size: max(0.75rem, 0.78em);
 }
 .formaMain {
   min-width: 0;
@@ -998,7 +1011,7 @@
   border: 1px solid var(--forma-line);
   border-radius: 8px;
   color: var(--forma-muted);
-  font-size: 0.86em;
+  font-size: max(0.75rem, 0.86em);
 }
 .formaTopbar .formaSearch > svg,
 .projectToolbar .formaSearch > svg {
@@ -1013,7 +1026,7 @@
   outline: 0;
   background: transparent;
   color: var(--forma-text);
-  font-size: 0.9em;
+  font-size: max(0.75rem, 0.9em);
 }
 .formaIconButton {
   position: relative;
@@ -1064,7 +1077,7 @@
 }
 .notificationPopover strong {
   padding: 4px 5px 7px;
-  font-size: 0.85em;
+  font-size: max(0.75rem, 0.85em);
 }
 .notificationPopover span {
   padding: 8px;
@@ -1074,7 +1087,7 @@
   gap: 7px;
   border-radius: 7px;
   background: var(--tl-preview-surface);
-  font-size: 0.74em;
+  font-size: max(0.75rem, 0.74em);
 }
 .notificationPopover svg {
   width: 14px;
@@ -1091,7 +1104,7 @@
 }
 .breadcrumb {
   color: var(--forma-muted);
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.72em);
 }
 .pageHeading h1 {
   margin: 6px 0 4px;
@@ -1101,7 +1114,7 @@
 .pageHeading p {
   margin: 0;
   color: var(--forma-muted);
-  font-size: 0.9em;
+  font-size: max(0.75rem, 0.9em);
 }
 .formaPrimary {
   position: relative;
@@ -1115,7 +1128,7 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  font-size: 0.86em;
+  font-size: max(0.75rem, 0.86em);
   font-weight: var(--tl-preview-strong-weight);
   cursor: pointer;
   box-shadow: 0 2px 5px
@@ -1134,9 +1147,8 @@
   border-radius: 4px;
   background: #282724;
   color: white;
-  font:
-    0.7em ui-monospace,
-    monospace;
+  font-family: ui-monospace, monospace;
+  font-size: max(0.75rem, 0.7em);
   white-space: nowrap;
 }
 .projectToolbar {
@@ -1153,7 +1165,7 @@
   border-radius: var(--tl-preview-control-radius);
   background: var(--tl-preview-feedback-success-surface);
   color: var(--tl-preview-feedback-success-text);
-  font-size: 0.8em;
+  font-size: max(0.75rem, 0.8em);
 }
 .projectCreatedNotice > svg {
   width: 16px;
@@ -1193,7 +1205,7 @@
   border-radius: 7px;
   background: var(--tl-preview-panel);
   color: var(--forma-muted);
-  font-size: 0.8em;
+  font-size: max(0.75rem, 0.8em);
 }
 .projectFilters {
   position: relative;
@@ -1201,7 +1213,7 @@
   gap: 7px;
 }
 .projectToolbar select {
-  width: 125px;
+  width: 138px;
   height: 34px;
   padding: 0 34px 0 9px;
   box-sizing: border-box;
@@ -1210,16 +1222,16 @@
   border-radius: 7px;
   background-color: var(--tl-preview-panel);
   color: var(--forma-muted);
-  font-size: 0.76em;
+  font-size: max(0.75rem, 0.76em);
   cursor: pointer;
 }
 .projectToolbar .selectControl:last-of-type select {
-  width: 140px;
+  width: 160px;
 }
 .projectToolbar > span {
   margin-left: auto;
   color: var(--forma-muted);
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.72em);
 }
 .projectDetails {
   display: grid;
@@ -1236,7 +1248,7 @@
   border-radius: var(--tl-preview-control-radius);
   background: var(--tl-preview-panel);
   color: var(--forma-text);
-  font-size: 0.78em;
+  font-size: max(0.75rem, 0.86em);
   font-weight: 650;
   cursor: pointer;
 }
@@ -1264,7 +1276,7 @@
   border-radius: 999px;
   background: var(--tl-preview-surface);
   color: var(--forma-muted);
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.86em);
   font-weight: 700;
 }
 .projectDetailGrid {
@@ -1281,7 +1293,7 @@
 }
 .projectDetailCard h2 {
   margin: 0;
-  font-size: 0.9em;
+  font-size: max(0.75rem, 0.9em);
 }
 .projectDetailForm {
   display: grid;
@@ -1305,7 +1317,7 @@
   display: grid;
   gap: 6px;
   color: var(--forma-muted);
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.86em);
   font-weight: 650;
 }
 .projectDetailField > .selectControl {
@@ -1321,7 +1333,7 @@
   background: var(--tl-preview-panel);
   color: var(--forma-text);
   font-family: inherit;
-  font-size: 0.9em;
+  font-size: 1.1em;
   font-weight: 500;
 }
 .projectDetailField input:focus-visible,
@@ -1331,7 +1343,7 @@
 }
 .projectDetailError {
   color: var(--tl-preview-feedback-error-text);
-  font-size: 0.92em;
+  font-size: 1em;
   font-weight: 600;
 }
 .projectDetailActions {
@@ -1349,7 +1361,7 @@
   background: var(--tl-preview-action-primary-background);
   color: var(--tl-preview-action-primary-foreground);
   font: inherit;
-  font-size: 0.74em;
+  font-size: max(0.75rem, 0.86em);
   font-weight: 700;
   cursor: pointer;
 }
@@ -1364,7 +1376,7 @@
 .projectDetailActions small {
   margin: 0;
   color: var(--forma-muted);
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.86em);
   line-height: 1.4;
 }
 .projectDetailTeam {
@@ -1376,7 +1388,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.78em;
+  font-size: max(0.75rem, 0.86em);
 }
 .projectDetailMember .avatar {
   width: 26px;
@@ -1387,7 +1399,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  font-size: 0.78em;
+  font-size: max(0.75rem, 0.86em);
 }
 .projectDetailActivity > span:last-child {
   min-width: 0;
@@ -1399,9 +1411,15 @@
 .projectDetailEmpty {
   color: var(--forma-muted);
 }
+.projectDetailActivity small {
+  font-size: 1em;
+}
+.projectDetails .breadcrumb {
+  font-size: max(0.75rem, 0.86em);
+}
 .projectDetailEmpty {
   margin: 12px 0 0;
-  font-size: 0.78em;
+  font-size: max(0.75rem, 0.86em);
 }
 .projectGrid {
   display: grid;
@@ -1462,24 +1480,24 @@
   border-radius: 999px;
   background: var(--tl-preview-surface);
   color: var(--forma-muted);
-  font-size: 0.64em;
+  font-size: max(0.75rem, 0.64em);
   font-weight: 700;
 }
 .projectCard h2 {
   margin: 16px 0 4px;
   overflow: hidden;
-  font-size: 0.92em;
+  font-size: max(0.75rem, 0.92em);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .projectCard p {
   margin: 0 0 18px;
   color: var(--forma-muted);
-  font-size: 0.78em;
+  font-size: max(0.75rem, 0.78em);
 }
 .progressLabel {
   color: var(--forma-muted);
-  font-size: 0.76em;
+  font-size: max(0.75rem, 0.76em);
 }
 .progressLabel strong {
   color: var(--forma-text);
@@ -1500,7 +1518,7 @@
   padding-top: 12px;
   border-top: 1px solid var(--forma-line);
   color: var(--forma-muted);
-  font-size: 0.7em;
+  font-size: max(0.75rem, 0.7em);
 }
 .cardFooter > div {
   display: flex;
@@ -1522,7 +1540,7 @@
 }
 .activityPanel > div {
   justify-content: space-between;
-  font-size: 0.86em;
+  font-size: max(0.75rem, 0.86em);
 }
 .activityPanel > div button {
   padding: 4px 6px;
@@ -1530,7 +1548,7 @@
   border-radius: 5px;
   background: transparent;
   color: var(--tl-preview-action-primary-background);
-  font-size: 0.78em;
+  font-size: max(0.75rem, 0.78em);
   font-weight: 700;
   cursor: pointer;
 }
@@ -1540,7 +1558,7 @@
 .activityPanel p {
   margin: 13px 0 0;
   gap: 9px;
-  font-size: 0.78em;
+  font-size: max(0.75rem, 0.78em);
 }
 .activityPanel p > span:last-child {
   display: flex;
@@ -1568,11 +1586,11 @@
   color: var(--forma-muted);
 }
 .projectEmpty strong {
-  font-size: 0.9em;
+  font-size: max(0.75rem, 0.9em);
 }
 .projectEmpty span {
   color: var(--forma-muted);
-  font-size: 0.74em;
+  font-size: max(0.75rem, 0.74em);
 }
 .projectEmpty button {
   margin-top: 5px;
@@ -1581,7 +1599,7 @@
   border-radius: var(--tl-preview-control-radius);
   background: var(--tl-preview-panel);
   color: var(--forma-text);
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.72em);
   cursor: pointer;
 }
 .secondaryPage {
@@ -1603,7 +1621,7 @@
 }
 .metricGrid span {
   color: var(--forma-muted);
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.72em);
 }
 .metricGrid strong {
   font-size: 1.8em;
@@ -1611,7 +1629,7 @@
 }
 .metricGrid small {
   color: var(--forma-muted);
-  font-size: 0.68em;
+  font-size: max(0.75rem, 0.68em);
 }
 .taskList {
   overflow: hidden;
@@ -1635,12 +1653,12 @@
   gap: 2px;
 }
 .taskList strong {
-  font-size: 0.86em;
+  font-size: max(0.75rem, 0.86em);
 }
 .taskList small,
 .taskList time {
   color: var(--forma-muted);
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.72em);
 }
 .taskCheck {
   width: 18px;
@@ -1676,16 +1694,16 @@
   font-size: 0.78em;
 }
 .teamGrid strong {
-  font-size: 0.86em;
+  font-size: max(0.75rem, 0.86em);
 }
 .teamGrid small {
   color: var(--forma-muted);
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.72em);
 }
 .onlineStatus {
   margin-top: 5px;
   color: #31885e;
-  font-size: 0.66em;
+  font-size: max(0.75rem, 0.66em);
   font-weight: 700;
 }
 
@@ -1739,7 +1757,7 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    font-size: 0.68em;
+    font-size: max(0.75rem, 0.68em);
     text-align: center;
   }
   .formaSidebar nav button span {
@@ -2174,6 +2192,7 @@
   margin-top: 6px;
   padding: 8px;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
   border: 1px solid var(--studio-border);
@@ -2365,12 +2384,12 @@
   gap: 2px;
 }
 .systemHeader > div > span {
-  font-size: 0.9em;
+  font-size: max(0.75rem, 0.9em);
   font-weight: var(--tl-preview-strong-weight);
 }
 .systemHeader small {
   color: var(--forma-muted);
-  font-size: 0.68em;
+  font-size: max(0.75rem, 0.68em);
   text-transform: capitalize;
 }
 .systemMode {
@@ -2381,7 +2400,7 @@
   border: 1px solid var(--forma-line);
   border-radius: 999px;
   color: var(--forma-muted);
-  font-size: 0.65em;
+  font-size: max(0.75rem, 0.65em);
   font-weight: 700;
   text-transform: capitalize;
 }
@@ -2399,7 +2418,7 @@
 }
 .systemEyebrow {
   color: var(--tl-preview-action-primary-background);
-  font-size: 0.68em;
+  font-size: max(0.75rem, 0.68em);
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -2415,7 +2434,7 @@
   max-width: 540px;
   margin: 0;
   color: var(--forma-muted);
-  font-size: 0.9em;
+  font-size: max(0.75rem, 0.9em);
   line-height: 1.55;
 }
 .systemStats {
@@ -2437,7 +2456,7 @@
 }
 .systemStats dt {
   color: var(--forma-muted);
-  font-size: 0.62em;
+  font-size: max(0.75rem, 0.62em);
 }
 .systemStats dd {
   margin: 0;
@@ -2482,7 +2501,7 @@
   border: 1px solid var(--forma-line);
   border-radius: 50%;
   color: var(--tl-preview-action-primary-background);
-  font-size: 0.62em;
+  font-size: max(0.75rem, 0.62em);
   font-weight: 800;
   animation: markerEnter 0.3s 0.18s both;
 }
@@ -2498,7 +2517,7 @@
 .systemSectionHeading p {
   margin: 3px 0 0;
   color: var(--forma-muted);
-  font-size: 0.7em;
+  font-size: max(0.75rem, 0.7em);
 }
 .systemFlowTrack {
   display: grid;
@@ -2562,7 +2581,7 @@
 .systemTokenNode > span,
 .systemComponentNode > span {
   color: var(--forma-muted);
-  font-size: 0.58em;
+  font-size: max(0.75rem, 0.58em);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2571,9 +2590,9 @@
 .systemComponentNode strong {
   max-width: 100%;
   overflow: hidden;
-  font:
-    700 0.72em ui-monospace,
-    monospace;
+  font-family: ui-monospace, monospace;
+  font-size: max(0.75rem, 0.72em);
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2583,7 +2602,7 @@
   align-items: center;
   gap: 6px;
   color: var(--forma-muted);
-  font-size: 0.64em;
+  font-size: max(0.75rem, 0.64em);
 }
 .systemTokenNode small i {
   width: 14px;
@@ -2610,11 +2629,11 @@
   gap: 10px;
 }
 .foundationCard > header strong {
-  font-size: 0.76em;
+  font-size: max(0.75rem, 0.76em);
 }
 .foundationCard > header small {
   color: var(--forma-muted);
-  font-size: 0.6em;
+  font-size: max(0.75rem, 0.6em);
 }
 .colorFoundation > div {
   display: grid;
@@ -2664,11 +2683,11 @@
   white-space: nowrap;
 }
 .colorFoundation button strong {
-  font-size: 0.65em;
+  font-size: max(0.75rem, 0.65em);
 }
 .colorFoundation button code {
   color: var(--forma-muted);
-  font-size: 0.58em;
+  font-size: max(0.75rem, 0.58em);
 }
 .typeSpecimen {
   min-height: 138px;
@@ -2685,16 +2704,15 @@
 }
 .typeSpecimen p {
   margin: 0;
-  font-size: 0.85em;
+  font-size: max(0.75rem, 0.85em);
   font-weight: var(--tl-preview-strong-weight);
 }
 .typeSpecimen small {
   margin-top: 5px;
   display: block;
   color: var(--forma-muted);
-  font:
-    0.58em ui-monospace,
-    monospace;
+  font-family: ui-monospace, monospace;
+  font-size: max(0.75rem, 0.58em);
   line-height: 1.5;
 }
 .rhythmTokens {
@@ -2726,12 +2744,12 @@
 }
 .rhythmTokens code,
 .radiusTokens code {
-  font-size: 0.62em;
+  font-size: max(0.75rem, 0.62em);
 }
 .rhythmTokens small,
 .radiusTokens small {
   color: var(--forma-muted);
-  font-size: 0.58em;
+  font-size: max(0.75rem, 0.58em);
 }
 .radiusTokens {
   margin-top: 14px;
@@ -2811,18 +2829,18 @@
   gap: 2px;
 }
 .systemComponentRegistry strong {
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.72em);
 }
 .systemComponentRegistry small {
   color: var(--forma-muted);
-  font-size: 0.6em;
+  font-size: max(0.75rem, 0.6em);
 }
 .systemComponentRegistry button > span:last-child {
   display: flex;
   align-items: center;
   gap: 5px;
   color: var(--forma-muted);
-  font-size: 0.58em;
+  font-size: max(0.75rem, 0.58em);
 }
 .systemComponentRegistry button > span:last-child svg {
   width: 11px;
@@ -2844,7 +2862,7 @@
 .systemRoot .specimenExamples > section > h3 {
   margin: 0 0 10px;
   color: var(--forma-muted);
-  font-size: 0.62em;
+  font-size: max(0.75rem, 0.62em);
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
@@ -2860,12 +2878,12 @@
 }
 .formControlSpecimens > header h3 {
   margin: 0;
-  font-size: 0.72em;
+  font-size: max(0.75rem, 0.72em);
 }
 .formControlSpecimens > header p {
   margin: 4px 0 0;
   color: var(--forma-muted);
-  font-size: 0.62em;
+  font-size: max(0.75rem, 0.62em);
 }
 .formControlGrid {
   display: grid;
@@ -2885,7 +2903,7 @@
 .formControlGrid legend {
   padding: 0;
   color: var(--forma-muted);
-  font-size: 0.6em;
+  font-size: max(0.75rem, 0.6em);
   font-weight: 700;
 }
 .formControlGrid select {
@@ -2897,7 +2915,7 @@
   background: var(--tl-preview-panel);
   color: var(--forma-text);
   font: inherit;
-  font-size: 0.68em;
+  font-size: max(0.75rem, 0.68em);
 }
 .formControlGrid select:focus-visible,
 .formControlGrid input:focus-visible {
@@ -2910,7 +2928,7 @@
 }
 .formControlGrid > label > small {
   color: var(--forma-muted);
-  font-size: 0.58em;
+  font-size: max(0.75rem, 0.58em);
 }
 .formControlGrid fieldset {
   padding: 0;
@@ -2925,7 +2943,7 @@
   align-items: center;
   gap: 7px;
   color: var(--forma-text);
-  font-size: 0.65em;
+  font-size: max(0.75rem, 0.65em);
   cursor: pointer;
 }
 .formControlGrid .specimenDisabledOption {
@@ -3061,10 +3079,10 @@
   gap: 3px;
 }
 .feedbackAlert strong {
-  font-size: 0.66em;
+  font-size: max(0.75rem, 0.66em);
 }
 .feedbackAlert small {
-  font-size: 0.58em;
+  font-size: max(0.75rem, 0.58em);
   line-height: 1.45;
 }
 .feedbackExamples {
@@ -3086,7 +3104,7 @@
 .feedbackExamples h3 {
   margin: 0;
   color: var(--forma-muted);
-  font-size: 0.58em;
+  font-size: max(0.75rem, 0.58em);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -3095,7 +3113,7 @@
   justify-content: space-between;
   gap: 8px;
   color: var(--forma-muted);
-  font-size: 0.64em;
+  font-size: max(0.75rem, 0.64em);
 }
 .feedbackProgressLabel strong {
   color: var(--forma-text);
@@ -3125,7 +3143,7 @@
 }
 .feedbackExamples > section > small {
   color: var(--forma-muted);
-  font-size: 0.58em;
+  font-size: max(0.75rem, 0.58em);
   line-height: 1.45;
 }
 .feedbackEmpty {
@@ -3151,12 +3169,12 @@
   height: 14px;
 }
 .feedbackEmpty strong {
-  font-size: 0.66em;
+  font-size: max(0.75rem, 0.66em);
 }
 .feedbackEmpty small {
   max-width: 34ch;
   color: var(--forma-muted);
-  font-size: 0.58em;
+  font-size: max(0.75rem, 0.58em);
   line-height: 1.45;
 }
 .systemRoot button:focus-visible {
@@ -3199,12 +3217,12 @@
   text-align: right;
 }
 .systemQuality strong {
-  font-size: 0.68em;
+  font-size: max(0.75rem, 0.68em);
 }
 .systemQuality small {
   overflow: hidden;
   color: var(--forma-muted);
-  font-size: 0.56em;
+  font-size: max(0.75rem, 0.56em);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4577,6 +4595,28 @@
   font-size: var(--studio-type-meta);
 }
 
+@media (max-width: 1366px) {
+  .tokenSpectrum > span {
+    display: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .header {
+    padding-inline: 12px;
+    gap: 12px;
+  }
+  .tokenSpectrum {
+    padding-left: 16px;
+  }
+  .tokenSpectrum > div {
+    min-width: 48px;
+  }
+  .contrastStatus {
+    display: none;
+  }
+}
+
 @media (max-width: 1100px) {
   .header {
     padding-inline: 12px;
@@ -4598,6 +4638,10 @@
   }
   .tokenSpectrum > span {
     display: none;
+  }
+  /* Reserve the longest status ("Loading local draft…") so the centered view tabs don't slide as it changes. */
+  .savedStatus {
+    min-width: 8.25rem;
   }
   .contrastStatus {
     display: none;
@@ -4666,8 +4710,26 @@
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1100px) {
   .tokenSpectrum {
+    display: none;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 960px) {
+  .brandBlock span {
+    display: none;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 860px) {
+  .header {
+    gap: 8px;
+  }
+  .savedStatus {
+    min-width: 0;
+  }
+  .headerViewTabs button svg {
     display: none;
   }
 }
