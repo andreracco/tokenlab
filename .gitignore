@@ -7,3 +7,13 @@ test-results
 *.md
 !DESIGN.md
 .vercel
+
+# Local AI tooling
+CLAUDE.md
+AGENTS.md
+PRODUCT.md
+.claude/
+.codex/
+.cursor/
+.codegraph/
+.github/hooks/
