@@ -82,7 +82,7 @@ Borders and tonal contrast organize the fixed controls. The preview is the one s
 
 ## Shapes
 
-Controls use a compact 7px radius, panels about 10px, and technical elements 4px. Pills are reserved for status badges. The spectrum rail is a small rectangular strip so its colors read as swatches rather than decoration.
+Controls use a compact 7px radius, panels 10px, and technical elements 4px; studio rules use only these three steps (`--studio-radius-sm`, `-control`, `-panel`) plus full pills and circles. Preview fixtures keep their own radii. Pills are reserved for status badges. The spectrum rail is a small rectangular strip so its colors read as swatches rather than decoration.
 
 ## Components
 
