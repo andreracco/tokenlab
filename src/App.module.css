@@ -2304,22 +2304,22 @@
   background: var(--tl-preview-surface);
 }
 .systemRoot > :nth-child(2) {
-  animation: systemReveal 0.42s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+  animation: systemReveal 0.26s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 .systemRoot > :nth-child(3) {
-  animation: systemReveal 0.42s 0.07s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+  animation: systemReveal 0.26s 0.03s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 .systemRoot > :nth-child(4) {
-  animation: systemReveal 0.42s 0.14s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+  animation: systemReveal 0.26s 0.06s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 .systemRoot > :nth-child(5) {
-  animation: systemReveal 0.42s 0.21s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+  animation: systemReveal 0.26s 0.09s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 .systemRoot > :nth-child(6) {
-  animation: systemReveal 0.42s 0.28s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+  animation: systemReveal 0.26s 0.12s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 .systemRoot > :nth-child(7) {
-  animation: systemReveal 0.42s 0.35s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+  animation: systemReveal 0.26s 0.15s cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 @keyframes systemReveal {
   from {
@@ -2463,16 +2463,16 @@
   font-size: 1.35em;
   font-weight: var(--tl-preview-strong-weight);
   letter-spacing: -0.03em;
-  animation: systemMetric 0.3s both;
+  animation: systemMetric 0.2s both;
 }
 .systemStats div:nth-child(2) dd {
-  animation-delay: 0.08s;
+  animation-delay: 0.04s;
 }
 .systemStats div:nth-child(3) dd {
-  animation-delay: 0.16s;
+  animation-delay: 0.08s;
 }
 .systemStats div:nth-child(4) dd {
-  animation-delay: 0.24s;
+  animation-delay: 0.12s;
 }
 .systemFlow,
 .systemSection {
@@ -2503,7 +2503,7 @@
   color: var(--tl-preview-action-primary-background);
   font-size: max(0.75rem, 0.62em);
   font-weight: 800;
-  animation: markerEnter 0.3s 0.18s both;
+  animation: markerEnter 0.2s 0.1s both;
 }
 .systemSectionHeading > span svg {
   width: 13px;
@@ -2529,22 +2529,22 @@
   width: 15px;
   height: 15px;
   color: var(--forma-muted);
-  animation: flowArrowEnter 0.22s both;
+  animation: flowArrowEnter 0.14s both;
 }
 .systemFlowTrack > :nth-child(1) {
-  animation: flowNodeEnter 0.3s 0.34s both;
+  animation: flowNodeEnter 0.2s 0.06s both;
 }
 .systemFlowTrack > :nth-child(2) {
-  animation-delay: 0.53s;
+  animation-delay: 0.16s;
 }
 .systemFlowTrack > :nth-child(3) {
-  animation: flowNodeEnter 0.3s 0.62s both;
+  animation: flowNodeEnter 0.2s 0.2s both;
 }
 .systemFlowTrack > :nth-child(4) {
-  animation-delay: 0.81s;
+  animation-delay: 0.3s;
 }
 .systemFlowTrack > :nth-child(5) {
-  animation: flowNodeEnter 0.3s 0.9s both;
+  animation: flowNodeEnter 0.2s 0.34s both;
 }
 .systemTokenNode,
 .systemComponentNode {
