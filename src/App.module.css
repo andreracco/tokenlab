@@ -271,7 +271,7 @@
 }
 .dialogError {
   min-height: 14px;
-  color: #a13c3c;
+  color: var(--studio-danger);
   font-size: var(--studio-type-meta);
 }
 .mobilePanelNav {
@@ -1702,7 +1702,7 @@
 }
 .onlineStatus {
   margin-top: 5px;
-  color: #31885e;
+  color: var(--studio-success);
   font-size: max(0.75rem, 0.66em);
   font-weight: 700;
 }
@@ -1994,7 +1994,7 @@
     monospace;
 }
 .colorField input[aria-invalid="true"] {
-  border-color: #b84e4e;
+  border-color: var(--studio-danger);
 }
 .valueInput {
   width: 100%;
@@ -2009,7 +2009,7 @@
     monospace;
 }
 .valueInput[aria-invalid="true"] {
-  border-color: #b84e4e;
+  border-color: var(--studio-danger);
 }
 .fontChoices {
   margin: 0;
@@ -2067,7 +2067,7 @@
   line-height: 1.4;
 }
 .fieldError {
-  color: #a13c3c;
+  color: var(--studio-danger);
 }
 .editorActions {
   display: flex;
@@ -2344,11 +2344,11 @@
 @keyframes flowNodeEnter {
   from {
     opacity: 0;
-    filter: blur(3px);
+    transform: scale(0.96);
   }
   to {
     opacity: 1;
-    filter: blur(0);
+    transform: scale(1);
   }
 }
 @keyframes flowArrowEnter {
@@ -3227,7 +3227,7 @@
   white-space: nowrap;
 }
 .systemQualityPass > svg {
-  color: #31885e;
+  color: var(--studio-success);
 }
 .systemQualityFail > svg {
   color: #b64b42;
