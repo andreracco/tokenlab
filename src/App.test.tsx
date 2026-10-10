@@ -293,6 +293,29 @@ describe("TokenLab first slice", () => {
     ).toBe("#C2415D");
   });
 
+  it("opens the palette from the header, filters by layer and selects a token", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /Active palette/ }));
+
+    const panel = await screen.findByRole("region", { name: "Color palette" });
+    fireEvent.click(within(panel).getByRole("button", { name: /^Semantic/ }));
+    expect(within(panel).queryByText("neutral.canvas")).toBeNull();
+    fireEvent.click(within(panel).getByRole("button", { name: /^Primitive/ }));
+    fireEvent.click(within(panel).getByText("neutral.canvas"));
+
+    expect(useTokenLabStore.getState().selectedTokenId).toBe("color.neutral.canvas");
+    expect(screen.queryByRole("region", { name: "Color palette" })).toBeNull();
+  });
+
+  it("offers a zip download and previews a chosen export", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+    expect(await screen.findByRole("button", { name: "Download all (.zip)" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Preview tokenlab.tailwind.css" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Preview tokenlab.tailwind.css" }));
+    expect(screen.getByText("Previewing tokenlab.tailwind.css")).toBeTruthy();
+  });
+
   it("shows downloadable production formats", async () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: "Export" }));

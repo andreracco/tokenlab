@@ -1,12 +1,23 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import {
+  Archive,
   ArrowLeft,
   Camera,
+  Check,
+  Copy,
   Download,
+  Eye,
+  FileCode2,
+  FileJson,
+  FileText,
   GitCompareArrows,
   History as HistoryIcon,
+  Upload,
+  Wind,
+  type LucideIcon,
 } from "lucide-react";
 import { buildExports, parseProjectFile, type ExportArtifact } from "../domain/exports";
+import { createZip } from "../domain/zip";
 import { diffProjects, type ProjectSnapshot } from "../domain/projects";
 import type { ProjectDocument, TokenMode } from "../domain/tokens";
 import { createPreviewStyle, type PreviewStyle } from "../preview/style";
@@ -86,21 +97,79 @@ type ExportPanelProps = {
   onImport: (workspace: { document: ProjectDocument; snapshots: ProjectSnapshot[] }) => void;
 };
 
+const exportDetails: Record<string, { kind: string; description: string; icon: LucideIcon }> = {
+  "tokenlab.css": {
+    kind: "CSS",
+    description: "Custom properties for both modes, ready to import.",
+    icon: FileCode2,
+  },
+  "tokenlab.light.tokens.json": {
+    kind: "JSON",
+    description: "Light-mode tokens in the DTCG interchange format.",
+    icon: FileJson,
+  },
+  "tokenlab.dark.tokens.json": {
+    kind: "JSON",
+    description: "Dark-mode tokens in the DTCG interchange format.",
+    icon: FileJson,
+  },
+  "tokenlab.tailwind.css": {
+    kind: "CSS",
+    description: "The same variables plus a Tailwind v4 theme mapping.",
+    icon: Wind,
+  },
+  "tokenlab.project.json": {
+    kind: "JSON",
+    description: "Full project and baselines. Re-import it into TokenLab.",
+    icon: FileJson,
+  },
+  "tokenlab.design-system.md": {
+    kind: "Markdown",
+    description: "A readable handoff of tokens, contrast and components.",
+    icon: FileText,
+  },
+};
+
 export function ExportPanel({ document, snapshots, onClose, onImport }: ExportPanelProps) {
   const [error, setError] = useState("");
+  const [dragging, setDragging] = useState(false);
+  const [previewName, setPreviewName] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState("");
   const headingRef = useFocusedHeading();
   const artifacts = buildExports(document, snapshots, componentRegistry);
-  const importProject = async (event: ChangeEvent<HTMLInputElement>) => {
-    const input = event.currentTarget;
-    const file = input.files?.[0];
+  const previewed = artifacts.find((artifact) => artifact.filename === previewName) ?? artifacts[0];
+
+  const importFile = async (file: File | undefined) => {
     if (!file) return;
+    setError("");
     try {
       onImport(parseProjectFile(await file.text()));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Couldn't import this project.");
+    }
+  };
+  const importProject = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    try {
+      await importFile(file);
     } finally {
       input.value = "";
     }
+  };
+  const copyArtifact = async (artifact: ExportArtifact) => {
+    try {
+      await navigator.clipboard.writeText(artifact.content);
+      setCopyStatus(`Copied ${artifact.filename}`);
+    } catch {
+      setCopyStatus(`Couldn't copy ${artifact.filename}. Download it instead.`);
+    }
+  };
+  const downloadAll = () => {
+    const zip = createZip(
+      artifacts.map((artifact) => ({ name: artifact.filename, content: artifact.content })),
+    );
+    saveBlob(new Blob([zip], { type: "application/zip" }), "tokenlab-tokens.zip");
   };
 
   return (
@@ -113,40 +182,124 @@ export function ExportPanel({ document, snapshots, onClose, onImport }: ExportPa
           </h2>
           <p>Aliases and stable token ordering are preserved.</p>
         </div>
-        <button className={styles.secondaryButton} onClick={onClose}>
-          <ArrowLeft aria-hidden="true" />
-          Back to preview
-        </button>
+        <div className={styles.exportHeaderActions}>
+          <button className={styles.primaryStudioButton} onClick={downloadAll}>
+            <Archive aria-hidden="true" />
+            Download all (.zip)
+          </button>
+          <button className={styles.secondaryButton} onClick={onClose}>
+            <ArrowLeft aria-hidden="true" />
+            Back to preview
+          </button>
+        </div>
       </div>
       <div className={styles.exportBody}>
         <div className={styles.exportGrid}>
-          {artifacts.map((artifact) => (
-            <article className={styles.exportCard} key={artifact.filename}>
-              <code>{artifact.filename}</code>
-              <small>{formatBytes(artifact.content)}</small>
-              <button
-                aria-label={`Download ${artifact.filename}`}
-                onClick={() => downloadArtifact(artifact)}
+          {artifacts.map((artifact) => {
+            const details = exportDetails[artifact.filename];
+            const Icon = details?.icon ?? FileText;
+            const active = artifact.filename === previewed.filename;
+            return (
+              <article
+                className={`${styles.exportCard} ${active ? styles.exportCardActive : ""}`}
+                key={artifact.filename}
               >
-                <Download aria-hidden="true" />
-                <span aria-hidden="true">Download</span>
-              </button>
-            </article>
-          ))}
+                <span className={styles.exportIcon}>
+                  <Icon aria-hidden="true" />
+                </span>
+                <div className={styles.exportTitle}>
+                  <code>{artifact.filename}</code>
+                  <small>
+                    {details?.kind ?? "File"} · {formatBytes(artifact.content)}
+                  </small>
+                </div>
+                {details && <p>{details.description}</p>}
+                <div className={styles.exportActions}>
+                  <button
+                    className={styles.secondaryButton}
+                    aria-pressed={active}
+                    aria-label={`Preview ${artifact.filename}`}
+                    onClick={() => setPreviewName(artifact.filename)}
+                  >
+                    {active ? <Check aria-hidden="true" /> : <Eye aria-hidden="true" />}
+                    <span aria-hidden="true">{active ? "Previewing" : "Preview"}</span>
+                  </button>
+                  <button
+                    className={styles.secondaryButton}
+                    aria-label={`Copy ${artifact.filename}`}
+                    onClick={() => copyArtifact(artifact)}
+                  >
+                    <Copy aria-hidden="true" />
+                    <span aria-hidden="true">Copy</span>
+                  </button>
+                  <button
+                    className={styles.exportDownload}
+                    aria-label={`Download ${artifact.filename}`}
+                    onClick={() => downloadArtifact(artifact)}
+                  >
+                    <Download aria-hidden="true" />
+                    <span aria-hidden="true">Download</span>
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
+        <p className={styles.exportStatus} role="status">
+          {copyStatus}
+        </p>
+        <section className={styles.exportPreview} aria-labelledby="export-preview-title">
+          <header>
+            <h3 id="export-preview-title">Previewing {previewed.filename}</h3>
+          </header>
+          <pre tabIndex={0} aria-label={`Contents of ${previewed.filename}`}>
+            {previewed.content}
+          </pre>
+        </section>
         <div className={styles.usageExample}>
           <strong>CSS usage</strong>
           <code>{`.button { background: var(--action-primary-background); }`}</code>
         </div>
-        <label className={styles.importControl}>
-          Import TokenLab project
-          <input type="file" accept="application/json,.json" onChange={importProject} />
-        </label>
-        {error && (
-          <div className={styles.importError} role="alert">
-            {error}
+        <section className={styles.importSection} aria-labelledby="import-title">
+          <h3 id="import-title">Import a project</h3>
+          <div
+            className={`${styles.dropZone} ${dragging ? styles.dropZoneActive : ""}`}
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDragging(false);
+              void importFile(event.dataTransfer.files[0]);
+            }}
+          >
+            <Upload aria-hidden="true" />
+            <div>
+              <strong>Drop a tokenlab.project.json file here</strong>
+              <p>
+                Importing replaces the current project and its baselines. Only the .json file
+                exported above is accepted.
+              </p>
+            </div>
+            <label className={styles.secondaryButton}>
+              Choose file
+              <input
+                className={styles.srOnly}
+                type="file"
+                aria-label="Import TokenLab project"
+                accept="application/json,.json"
+                onChange={importProject}
+              />
+            </label>
           </div>
-        )}
+          {error && (
+            <div className={styles.importError} role="alert">
+              {error}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );
@@ -277,10 +430,14 @@ function ComparisonPreview({ label, style }: { label: string; style: PreviewStyl
 }
 
 function downloadArtifact(artifact: ExportArtifact) {
-  const url = URL.createObjectURL(new Blob([artifact.content], { type: artifact.mimeType }));
+  saveBlob(new Blob([artifact.content], { type: artifact.mimeType }), artifact.filename);
+}
+
+function saveBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = artifact.filename;
+  link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
 }

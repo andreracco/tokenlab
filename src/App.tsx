@@ -13,7 +13,7 @@ import {
   Sparkles,
   Undo2,
 } from "lucide-react";
-import { resolveCssValue, type TokenMode } from "./domain/tokens";
+import type { TokenMode } from "./domain/tokens";
 import { createStyleImportCommand, type StyleMapping } from "./domain/styleImport";
 import { checkContrast } from "./domain/contrast";
 import { useTokenLabStore } from "./app/store";
@@ -23,6 +23,7 @@ import { SystemPreview } from "./preview/SystemPreview";
 import { createPreviewStyle } from "./preview/style";
 import { getTokenGroupId, TokenLibrary, type TokenGroupId } from "./components/TokenLibrary";
 import { ComparisonView, ExportPanel, HistoryPanel } from "./components/WorkspacePanels";
+import { SpectrumPopover } from "./components/SpectrumPopover";
 import { TokenInspector } from "./components/TokenInspector";
 import { SelectControl } from "./components/SelectControl";
 import { StyleImportPanel } from "./components/StyleImportPanel";
@@ -103,9 +104,6 @@ export function App() {
   const contrastResults = checkContrast(document, mode);
   const contrastFailures = contrastResults.filter((result) => !result.passes).length;
   const tokenHealth = analyzeTokenHealth(document, componentRegistry);
-  const spectrum = document.tokens
-    .filter((token) => token.type === "color" && token.layer === "primitive")
-    .slice(0, 6);
   const focusedView = ["history", "comparison", "style-import", "export", "health"].includes(
     canvasScreen.type,
   );
@@ -151,21 +149,15 @@ export function App() {
                 <span>{document.name}</span>
               </div>
             </div>
-            <div
-              className={styles.tokenSpectrum}
-              aria-label={`Active palette for ${document.name}`}
-            >
-              <span>Active spectrum</span>
-              <div>
-                {spectrum.map((token) => (
-                  <i
-                    key={token.id}
-                    style={{ background: resolveCssValue(document, token.id, mode) }}
-                    title={`${token.path}: ${resolveCssValue(document, token.id, mode)}`}
-                  />
-                ))}
-              </div>
-            </div>
+            <SpectrumPopover
+              document={document}
+              mode={mode}
+              onSelectToken={(tokenId) => {
+                setCanvasScreen({ type: "preview" });
+                selectVisibleToken(tokenId);
+                setInspectorOpen(true);
+              }}
+            />
             <nav
               className={`${styles.viewTabs} ${styles.headerViewTabs}`}
               aria-label="Canvas views"

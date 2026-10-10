@@ -96,7 +96,8 @@
   align-items: center;
   gap: 10px;
 }
-.tokenSpectrum > span {
+.spectrumTrigger > span {
+  white-space: nowrap;
   color: #8d98a6;
   font:
     var(--studio-type-meta) ui-monospace,
@@ -109,7 +110,7 @@
 .headerActions {
   flex-shrink: 0;
 }
-.tokenSpectrum > div {
+.spectrumTrigger > div {
   min-width: 72px;
   flex: 0 1 168px;
   width: 168px;
@@ -127,6 +128,160 @@
 }
 .tokenSpectrum i:last-child {
   border-right: 0;
+}
+.tokenSpectrum {
+  position: relative;
+}
+.spectrumTrigger {
+  min-width: 0;
+  padding: 4px 6px 4px 0;
+  border: 0;
+  border-radius: var(--studio-radius-control);
+  background: transparent;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.spectrumTrigger:hover {
+  background: var(--studio-ink-raised);
+}
+.spectrumChevron {
+  width: 14px;
+  height: 14px;
+  color: var(--studio-ink-muted);
+  flex: 0 0 auto;
+}
+.spectrumTrigger[aria-expanded="true"] .spectrumChevron {
+  transform: rotate(180deg);
+}
+.spectrumPanel {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 12px;
+  z-index: 20;
+  width: min(540px, calc(100vw - 24px));
+  padding: 12px;
+  border: 1px solid var(--studio-border);
+  border-radius: var(--studio-radius-panel);
+  background: var(--studio-panel-strong);
+  color: var(--studio-text);
+  box-shadow: 0 18px 40px rgba(17, 23, 34, 0.28);
+}
+.spectrumPanel > header {
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+.spectrumToggle {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--studio-border);
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-well);
+}
+.spectrumToggle button {
+  min-height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--studio-radius-sm);
+  background: transparent;
+  font-size: var(--studio-type-meta);
+  font-weight: 650;
+  cursor: pointer;
+}
+.spectrumToggle button[aria-pressed="true"] {
+  background: var(--studio-ink);
+  color: var(--studio-on-ink);
+}
+.spectrumToggle small {
+  opacity: 0.75;
+  font-size: var(--studio-type-meta);
+}
+.spectrumList {
+  max-height: 340px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  list-style: none;
+}
+.spectrumList li {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--studio-radius-control);
+}
+.spectrumList li:hover {
+  border-color: var(--studio-border);
+  background: var(--studio-hover);
+}
+.spectrumSwatch {
+  min-width: 0;
+  min-height: 40px;
+  padding: 4px 6px;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+.spectrumSwatch i {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(17, 23, 34, 0.2);
+  border-radius: var(--studio-radius-sm);
+}
+.spectrumSwatch > span:not(.srOnly) {
+  min-width: 0;
+  display: grid;
+}
+.spectrumSwatch strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--studio-type-meta);
+}
+.spectrumSwatch code {
+  color: var(--studio-muted);
+  font-size: var(--studio-type-meta);
+}
+.spectrumCopy {
+  width: 28px;
+  min-height: 28px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: var(--studio-radius-sm);
+  background: transparent;
+  color: var(--studio-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.spectrumCopy svg {
+  width: 14px;
+  height: 14px;
+}
+.spectrumStatus {
+  min-height: 18px;
+  margin: 8px 0 0;
+  color: var(--studio-muted);
+  font-size: var(--studio-type-meta);
+}
+.spectrumEmpty {
+  margin: 8px 0;
+  color: var(--studio-muted);
+  font-size: var(--studio-type-meta);
 }
 .headerActions {
   gap: 6px;
@@ -3916,30 +4071,78 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
+.exportHeaderActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
 .exportCard {
   padding: 14px;
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 12px;
   align-items: center;
   border: 1px solid var(--studio-border);
   border-radius: var(--studio-radius-panel);
   background: var(--studio-panel);
 }
-.exportCard code {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-size: var(--studio-type-meta);
+.exportCardActive {
+  border-color: var(--studio-accent);
+  box-shadow: 0 0 0 1px var(--studio-accent);
 }
-.exportCard small {
+.exportIcon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: var(--studio-radius-control);
+  background: var(--studio-panel-strong);
+  color: var(--studio-muted);
+}
+.exportIcon svg {
+  width: 16px;
+  height: 16px;
+}
+.exportTitle {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.exportTitle code {
+  overflow-wrap: anywhere;
+  font-size: var(--studio-type-body);
+  font-weight: 700;
+}
+.exportTitle small {
   color: var(--studio-muted);
   font-size: var(--studio-type-meta);
-  white-space: nowrap;
 }
-.exportCard button {
+.exportCard p {
   grid-column: 1 / -1;
-  min-height: 34px;
-  border: 0;
+  margin: 0;
+  color: var(--studio-muted);
+  font-size: var(--studio-type-meta);
+  line-height: 1.45;
+}
+.exportActions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 6px;
+}
+.exportActions button {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.exportActions svg {
+  width: 14px;
+  height: 14px;
+}
+.exportDownload {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--studio-text);
   border-radius: var(--studio-radius-control);
   background: var(--studio-text);
   color: var(--studio-on-ink);
@@ -3947,11 +4150,42 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
+  font-size: var(--studio-type-meta);
+  font-weight: 650;
   cursor: pointer;
 }
-.exportCard button svg {
-  width: 13px;
-  height: 13px;
+.exportStatus {
+  min-height: 20px;
+  margin: 8px 0 0;
+  color: var(--studio-muted);
+  font-size: var(--studio-type-meta);
+}
+.exportPreview {
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: var(--studio-radius-panel);
+  background: var(--studio-panel-strong);
+}
+.exportPreview header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--studio-border);
+}
+.exportPreview h3 {
+  margin: 0;
+  font-size: var(--studio-type-body);
+}
+.exportPreview pre {
+  max-height: 320px;
+  margin: 0;
+  padding: 12px 14px;
+  overflow: auto;
+  background: var(--studio-well);
+  font:
+    var(--studio-type-meta)/1.6 ui-monospace,
+    SFMono-Regular,
+    monospace;
+  tab-size: 2;
 }
 .usageExample {
   margin-top: 16px;
@@ -3966,24 +4200,51 @@
 .usageExample code {
   padding: 10px;
   border-radius: var(--studio-radius-control);
-  background: #f0eee8;
+  background: var(--studio-well);
 }
-.importControl {
-  width: fit-content;
+.importSection {
   margin-top: 16px;
-  padding: 10px 12px;
-  display: block;
-  border: 1px solid var(--studio-border);
-  border-radius: var(--studio-radius-control);
+}
+.importSection h3 {
+  margin: 0 0 8px;
+  font-size: var(--studio-type-body);
+}
+.dropZone {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px dashed var(--studio-muted);
+  border-radius: var(--studio-radius-panel);
   background: var(--studio-panel-strong);
+}
+.dropZoneActive {
+  border-style: solid;
+  border-color: var(--studio-accent);
+  background: var(--studio-hover);
+}
+.dropZone > svg {
+  width: 22px;
+  height: 22px;
+  color: var(--studio-muted);
+}
+.dropZone strong {
+  font-size: var(--studio-type-body);
+}
+.dropZone p {
+  margin: 2px 0 0;
+  color: var(--studio-muted);
   font-size: var(--studio-type-meta);
-  font-weight: 700;
+  line-height: 1.45;
+}
+.dropZone label {
+  position: relative;
   cursor: pointer;
 }
-.importControl input {
-  display: block;
-  margin-top: 8px;
-  font-size: var(--studio-type-meta);
+.dropZone label:focus-within {
+  outline: 2px solid var(--studio-accent);
+  outline-offset: 2px;
 }
 .importError {
   min-height: 24px;
@@ -4596,7 +4857,7 @@
 }
 
 @media (max-width: 1366px) {
-  .tokenSpectrum > span {
+  .spectrumTrigger > span {
     display: none;
   }
 }
@@ -4609,7 +4870,7 @@
   .tokenSpectrum {
     padding-left: 16px;
   }
-  .tokenSpectrum > div {
+  .spectrumTrigger > div {
     min-width: 48px;
   }
   .contrastStatus {
@@ -4633,10 +4894,10 @@
   .tokenSpectrum {
     padding-left: 16px;
   }
-  .tokenSpectrum > div {
+  .spectrumTrigger > div {
     width: 120px;
   }
-  .tokenSpectrum > span {
+  .spectrumTrigger > span {
     display: none;
   }
   /* Reserve the longest status ("Loading local draft…") so the centered view tabs don't slide as it changes. */
@@ -4934,6 +5195,16 @@
   .exportHeader {
     flex-direction: column;
   }
+  .exportHeaderActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .dropZone {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .dropZone label {
+    grid-column: 1 / -1;
+  }
   .styleImportHeader {
     flex-direction: column;
   }
@@ -5007,6 +5278,9 @@
     gap: 4px;
   }
   .exportGrid {
+    grid-template-columns: 1fr;
+  }
+  .spectrumList {
     grid-template-columns: 1fr;
   }
   .previewStage {
