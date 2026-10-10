@@ -8,12 +8,18 @@ test("supports the core edit and dialog flow from the keyboard", async ({ page }
   await valueInput.focus();
   await valueInput.fill("#C2415D");
   await page.keyboard.press("Enter");
-  await expect(page.getByTestId("preview-root")).toHaveCSS("--tl-preview-action-primary-background", "#C2415D");
+  await expect(page.getByTestId("preview-root")).toHaveCSS(
+    "--tl-preview-action-primary-background",
+    "#C2415D",
+  );
 
   const undo = page.getByRole("button", { name: "Undo" });
   await undo.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByTestId("preview-root")).toHaveCSS("--tl-preview-action-primary-background", "#3157D5");
+  await expect(page.getByTestId("preview-root")).toHaveCSS(
+    "--tl-preview-action-primary-background",
+    "#3157D5",
+  );
 
   const inspect = page.getByRole("button", { name: "Inspect", exact: true });
   await inspect.focus();
@@ -35,6 +41,7 @@ test("supports the core edit and dialog flow from the keyboard", async ({ page }
 
 test("announces focused views and returns focus after overlays", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByRole("status").filter({ hasText: "Saved locally" })).toBeVisible();
 
   const history = page.getByRole("button", { name: "History" });
   await history.focus();
