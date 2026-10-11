@@ -599,6 +599,10 @@ export function App() {
                         setInspectorOpen(true);
                       }}
                       onSelectComponent={selectComponent}
+                      onToggleMode={() => {
+                        setMode(mode === "light" ? "dark" : "light");
+                        setContrastFocus(null);
+                      }}
                     />
                   )}
                 </m.div>

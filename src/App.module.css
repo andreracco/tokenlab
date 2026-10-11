@@ -2558,6 +2558,19 @@
   font-size: max(0.75rem, 0.65em);
   font-weight: 700;
   text-transform: capitalize;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.systemMode:hover {
+  border-color: var(--tl-preview-action-primary-background);
+  color: var(--forma-text);
+}
+.systemMode:focus-visible {
+  outline: 2px solid var(--tl-preview-action-primary-background);
+  outline-offset: 2px;
 }
 .systemMode svg {
   width: 12px;

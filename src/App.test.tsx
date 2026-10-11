@@ -49,6 +49,14 @@ describe("TokenLab first slice", () => {
     );
   });
 
+  it("toggles light and dark from the System header", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Switch to dark mode" }));
+    expect((screen.getByLabelText("Preview mode") as HTMLSelectElement).value).toBe("dark");
+    fireEvent.click(screen.getByRole("button", { name: "Switch to light mode" }));
+    expect((screen.getByLabelText("Preview mode") as HTMLSelectElement).value).toBe("light");
+  });
+
   it("edits the font family without an overlay menu", () => {
     useTokenLabStore.setState({ selectedTokenId: "font.family.ui" });
     render(<App />);

@@ -28,6 +28,7 @@ type SystemPreviewProps = {
   contrastResults: ReturnType<typeof checkContrast>;
   onSelectToken: (tokenId: string) => void;
   onSelectComponent: (key: ComponentKey) => void;
+  onToggleMode: () => void;
 };
 
 type FeedbackKind = "success" | "warning" | "error" | "info";
@@ -40,6 +41,7 @@ export function SystemPreview({
   contrastResults,
   onSelectToken,
   onSelectComponent,
+  onToggleMode,
 }: SystemPreviewProps) {
   const colors = document.tokens.filter(
     (token) => token.layer === "primitive" && token.type === "color",
@@ -92,10 +94,15 @@ export function SystemPreview({
             <span>Forma design system</span>
             <small>Active project · {mode} mode</small>
           </div>
-          <span className={styles.systemMode}>
+          <button
+            type="button"
+            className={styles.systemMode}
+            aria-label={`Switch to ${mode === "light" ? "dark" : "light"} mode`}
+            onClick={onToggleMode}
+          >
             {mode === "light" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
             {mode}
-          </span>
+          </button>
         </header>
 
         <section className={styles.systemHero} aria-labelledby="system-title">
