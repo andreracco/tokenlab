@@ -62,7 +62,7 @@ export function App() {
   const [inspectEnabled, setInspectEnabled] = useState(false);
   const [mode, setMode] = useState<TokenMode>("light");
   const [previewWidth, setPreviewWidth] = useState<720 | 960 | 1280>(1280);
-  const [canvasScreen, setCanvasScreen] = useState<CanvasScreen>({ type: "preview" });
+  const [canvasScreen, setCanvasScreen] = useState<CanvasScreen>({ type: "system" });
   const [contrastFocus, setContrastFocus] = useState<{ mode: TokenMode; pairId: string } | null>(
     null,
   );

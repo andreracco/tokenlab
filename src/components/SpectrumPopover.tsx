@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { AnimatePresence, m } from "framer-motion";
 import { Check, ChevronDown, Copy } from "lucide-react";
 import {
   resolveCssValue,
@@ -88,80 +89,90 @@ export function SpectrumPopover({ document, mode, onSelectToken }: SpectrumPopov
         </div>
         <ChevronDown className={styles.spectrumChevron} aria-hidden="true" />
       </button>
-      {open && (
-        <section id={panelId} className={styles.spectrumPanel} aria-label="Color palette">
-          <header>
-            <div className={styles.spectrumToggle} role="group" aria-label="Token layer">
-              {(["primitive", "semantic"] as const).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={layer === option}
-                  onClick={() => setLayer(option)}
-                >
-                  {option === "primitive" ? "Primitive" : "Semantic"}{" "}
-                  <small>{colors.filter((token) => token.layer === option).length}</small>
-                </button>
-              ))}
-            </div>
-            <div className={styles.spectrumToggle} role="group" aria-label="Mode">
-              {(["light", "dark"] as const).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={viewMode === option}
-                  onClick={() => setViewMode(option)}
-                >
-                  {option === "light" ? "Light" : "Dark"}
-                </button>
-              ))}
-            </div>
-          </header>
-          {shown.length === 0 ? (
-            <p className={styles.spectrumEmpty}>No {layer} colors in this project.</p>
-          ) : (
-            <ul className={styles.spectrumList}>
-              {shown.map((token) => {
-                const value = resolveCssValue(document, token.id, viewMode);
-                return (
-                  <li key={token.id}>
-                    <button
-                      type="button"
-                      className={styles.spectrumSwatch}
-                      onClick={() => {
-                        onSelectToken(token.id);
-                        setOpen(false);
-                      }}
-                    >
-                      <i style={{ background: value }} aria-hidden="true" />
-                      <span>
-                        <strong title={token.path}>{token.path.replace(/^color\./, "")}</strong>
-                        <code>{value}</code>
-                      </span>
-                      <span className={styles.srOnly}>Select token</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.spectrumCopy}
-                      aria-label={`Copy ${token.path} value`}
-                      onClick={() => copy(token)}
-                    >
-                      {copied === `Copied ${value}` ? (
-                        <Check aria-hidden="true" />
-                      ) : (
-                        <Copy aria-hidden="true" />
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          <p className={styles.spectrumStatus} role="status">
-            {copied}
-          </p>
-        </section>
-      )}
+      <AnimatePresence>
+        {open && (
+          <m.section
+            id={panelId}
+            className={styles.spectrumPanel}
+            aria-label="Color palette"
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <header>
+              <div className={styles.spectrumToggle} role="group" aria-label="Token layer">
+                {(["primitive", "semantic"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={layer === option}
+                    onClick={() => setLayer(option)}
+                  >
+                    {option === "primitive" ? "Primitive" : "Semantic"}{" "}
+                    <small>{colors.filter((token) => token.layer === option).length}</small>
+                  </button>
+                ))}
+              </div>
+              <div className={styles.spectrumToggle} role="group" aria-label="Mode">
+                {(["light", "dark"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={viewMode === option}
+                    onClick={() => setViewMode(option)}
+                  >
+                    {option === "light" ? "Light" : "Dark"}
+                  </button>
+                ))}
+              </div>
+            </header>
+            {shown.length === 0 ? (
+              <p className={styles.spectrumEmpty}>No {layer} colors in this project.</p>
+            ) : (
+              <ul className={styles.spectrumList}>
+                {shown.map((token) => {
+                  const value = resolveCssValue(document, token.id, viewMode);
+                  return (
+                    <li key={token.id}>
+                      <button
+                        type="button"
+                        className={styles.spectrumSwatch}
+                        onClick={() => {
+                          onSelectToken(token.id);
+                          setOpen(false);
+                        }}
+                      >
+                        <i style={{ background: value }} aria-hidden="true" />
+                        <span>
+                          <strong title={token.path}>{token.path.replace(/^color\./, "")}</strong>
+                          <code>{value}</code>
+                        </span>
+                        <span className={styles.srOnly}>Select token</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.spectrumCopy}
+                        aria-label={`Copy ${token.path} value`}
+                        onClick={() => copy(token)}
+                      >
+                        {copied === `Copied ${value}` ? (
+                          <Check className={styles.iconPop} aria-hidden="true" />
+                        ) : (
+                          <Copy aria-hidden="true" />
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <p className={styles.spectrumStatus} role="status">
+              {copied}
+            </p>
+          </m.section>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

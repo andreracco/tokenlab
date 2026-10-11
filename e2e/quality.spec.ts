@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { gotoPreview } from "./helpers";
 
 test("commits a preview edit within 100 ms", async ({ page }) => {
   await page.goto("/");
@@ -53,7 +54,7 @@ test("honors reduced-motion preference", async ({ page }) => {
 
 test("reduces the System reveal to a brief fade without staggered delays", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await gotoPreview(page);
 
   // The reveal lasts ~150ms, so record animations as they start instead of reading them afterwards.
   await page.evaluate(() => {
@@ -145,7 +146,7 @@ test("keeps tablet zoom layouts inside the viewport", async ({ page }) => {
 test("fits the preview to a phone-width canvas without horizontal scrolling", async ({ page }) => {
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
-    await page.goto("/");
+    await gotoPreview(page);
 
     const dimensions = await page.evaluate(() => {
       const stage = document.querySelector<HTMLElement>(
@@ -189,7 +190,7 @@ test("fits the preview to a phone-width canvas without horizontal scrolling", as
 });
 
 test("keeps project search and filters the same height across presets", async ({ page }) => {
-  await page.goto("/");
+  await gotoPreview(page);
 
   for (const preset of ["product", "editorial", "expressive"]) {
     await page.getByLabel("Starting system").selectOption(preset);

@@ -108,7 +108,7 @@ Lucide outlined icons use consistent 1.8px strokes. Ambiguous icon-only controls
 
 ### Motion
 
-Motion is short state feedback only: selection, hover, and preview-card lift. No ambient animation competes with visual evaluation, and reduced motion is respected globally.
+Motion is short and purposeful, never ambient. State feedback covers selection, hover, and preview-card lift. Content that mounts (System sections, export cards, history and health lists, import rows, project cards, the palette popover) rises in over about 0.25s with 30–50ms staggers; edits never replay it. Reduced motion collapses every reveal to a 150ms fade with no delay or movement.
 
 ### Content and data visualization
 

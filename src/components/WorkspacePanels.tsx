@@ -245,14 +245,18 @@ export function ExportPanel({ document, snapshots, onClose, onImport }: ExportPa
             );
           })}
         </div>
-        <p className={styles.exportStatus} role="status">
+        <p key={copyStatus} className={styles.exportStatus} role="status">
           {copyStatus}
         </p>
         <section className={styles.exportPreview} aria-labelledby="export-preview-title">
           <header>
             <h3 id="export-preview-title">Previewing {previewed.filename}</h3>
           </header>
-          <pre tabIndex={0} aria-label={`Contents of ${previewed.filename}`}>
+          <pre
+            key={previewed.filename}
+            tabIndex={0}
+            aria-label={`Contents of ${previewed.filename}`}
+          >
             {previewed.content}
           </pre>
         </section>

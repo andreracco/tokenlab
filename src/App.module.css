@@ -5308,6 +5308,256 @@
   }
 }
 
+/* Entrance reveals for focused views, lists and the preview. They play when content mounts (view or section changes), never on edits. */
+@keyframes swapIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes iconPop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.exportCard {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+}
+.exportCard:nth-child(2) {
+  animation-delay: 0.04s;
+}
+.exportCard:nth-child(3) {
+  animation-delay: 0.08s;
+}
+.exportCard:nth-child(4) {
+  animation-delay: 0.12s;
+}
+.exportCard:nth-child(5) {
+  animation-delay: 0.16s;
+}
+.exportCard:nth-child(6) {
+  animation-delay: 0.2s;
+}
+.exportPreview {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) 0.26s backwards;
+}
+.usageExample {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) 0.3s backwards;
+}
+.importSection {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) 0.34s backwards;
+}
+.exportPreview pre,
+.exportStatus:not(:empty) {
+  animation: swapIn 0.18s ease-out backwards;
+}
+.historyList article {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+}
+.historyList article:nth-child(2) {
+  animation-delay: 0.04s;
+}
+.historyList article:nth-child(3) {
+  animation-delay: 0.08s;
+}
+.historyList article:nth-child(4) {
+  animation-delay: 0.12s;
+}
+.historyList article:nth-child(5) {
+  animation-delay: 0.16s;
+}
+.historyList article:nth-child(6) {
+  animation-delay: 0.2s;
+}
+.historyList article:nth-child(7) {
+  animation-delay: 0.24s;
+}
+.historyList article:nth-child(8) {
+  animation-delay: 0.28s;
+}
+.historyEmpty,
+.healthSummary,
+.releaseReport {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+}
+.healthList > li {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+}
+.healthList > li:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.healthList > li:nth-child(3) {
+  animation-delay: 0.14s;
+}
+.healthList > li:nth-child(4) {
+  animation-delay: 0.18s;
+}
+.healthList > li:nth-child(5) {
+  animation-delay: 0.22s;
+}
+.healthList > li:nth-child(6) {
+  animation-delay: 0.26s;
+}
+.healthTokenList > li {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+}
+.healthTokenList > li:nth-child(2) {
+  animation-delay: 0.09s;
+}
+.healthTokenList > li:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.healthTokenList > li:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.healthTokenList > li:nth-child(5) {
+  animation-delay: 0.18s;
+}
+.healthTokenList > li:nth-child(6) {
+  animation-delay: 0.21s;
+}
+.comparisonGrid > * {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+}
+.comparisonGrid > *:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.comparisonGrid > *:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.comparisonGrid > *:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.diffTableFrame {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) 0.1s backwards;
+}
+.styleImportSummary,
+.styleImportFilters {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+}
+.styleImportFilters {
+  animation-delay: 0.05s;
+}
+.styleCandidateList > * {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+}
+.styleCandidateList > *:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.styleCandidateList > *:nth-child(3) {
+  animation-delay: 0.11s;
+}
+.styleCandidateList > *:nth-child(4) {
+  animation-delay: 0.14s;
+}
+.styleCandidateList > *:nth-child(5) {
+  animation-delay: 0.17s;
+}
+.styleCandidateList > *:nth-child(6) {
+  animation-delay: 0.2s;
+}
+.styleCandidateList > *:nth-child(7) {
+  animation-delay: 0.23s;
+}
+.styleCandidateList > *:nth-child(8) {
+  animation-delay: 0.26s;
+}
+.formaContent > * {
+  animation: fadeIn 0.22s ease-out backwards;
+}
+.formaContent > *:nth-child(2) {
+  animation-delay: 0.04s;
+}
+.formaContent > *:nth-child(3) {
+  animation-delay: 0.08s;
+}
+.formaContent > *:nth-child(4) {
+  animation-delay: 0.12s;
+}
+.formaContent > *:nth-child(5) {
+  animation-delay: 0.16s;
+}
+.formaContent > *:nth-child(6) {
+  animation-delay: 0.2s;
+}
+.projectGrid > .projectCard {
+  animation: systemReveal 0.24s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+}
+.projectGrid > .projectCard:nth-child(2) {
+  animation-delay: 0.04s;
+}
+.projectGrid > .projectCard:nth-child(3) {
+  animation-delay: 0.08s;
+}
+.projectGrid > .projectCard:nth-child(4) {
+  animation-delay: 0.12s;
+}
+.projectGrid > .projectCard:nth-child(5) {
+  animation-delay: 0.16s;
+}
+.projectGrid > .projectCard:nth-child(6) {
+  animation-delay: 0.2s;
+}
+.projectGrid > .projectCard:nth-child(7) {
+  animation-delay: 0.24s;
+}
+.projectGrid > .projectCard:nth-child(8) {
+  animation-delay: 0.28s;
+}
+.inspectorIdentity {
+  animation: swapIn 0.2s ease-out backwards;
+}
+.spectrumPanel {
+  transform-origin: top left;
+}
+.spectrumList li {
+  animation: swapIn 0.18s ease-out backwards;
+}
+.spectrumList li:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.spectrumList li:nth-child(3) {
+  animation-delay: 0.08s;
+}
+.spectrumList li:nth-child(4) {
+  animation-delay: 0.1s;
+}
+.spectrumList li:nth-child(5) {
+  animation-delay: 0.12s;
+}
+.spectrumList li:nth-child(6) {
+  animation-delay: 0.14s;
+}
+.spectrumList li:nth-child(7) {
+  animation-delay: 0.16s;
+}
+.spectrumList li:nth-child(8) {
+  animation-delay: 0.18s;
+}
+.iconPop {
+  animation: iconPop 0.16s ease-out;
+}
+.spectrumChevron {
+  transition: transform 0.18s ease;
+}
+
 /* Reduced motion keeps state feedback (fades, color) and drops movement, scale, blur, and staggered waits. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -5336,6 +5586,22 @@
     }
   }
   @keyframes flowNodeEnter {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes swapIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes iconPop {
     from {
       opacity: 0;
     }

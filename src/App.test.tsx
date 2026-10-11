@@ -7,6 +7,13 @@ import { App } from "./App";
 
 afterEach(cleanup);
 
+// The app opens on the System view; most tests exercise the editable preview.
+async function renderPreview() {
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+  await waitFor(() => expect(screen.queryByText("Forma design system")).toBeNull());
+}
+
 beforeEach(() => {
   localStorage.clear();
   useTokenLabStore.setState({
@@ -74,8 +81,8 @@ describe("TokenLab first slice", () => {
     expect(screen.getByLabelText("Starting system")).toHaveProperty("value", "product");
   });
 
-  it("groups tokens and filters them by path", () => {
-    render(<App />);
+  it("groups tokens and filters them by path", async () => {
+    await renderPreview();
     expect(screen.getByText("Foundations")).toBeTruthy();
     expect(screen.getByText("Semantic")).toBeTruthy();
     expect(screen.getByText("Feedback")).toBeTruthy();
@@ -92,8 +99,8 @@ describe("TokenLab first slice", () => {
     expect(screen.getByRole("button", { name: /color\.brand\.600/i })).toBeTruthy();
   });
 
-  it("defaults to interaction and clearly labels deliberate inspection", () => {
-    render(<App />);
+  it("defaults to interaction and clearly labels deliberate inspection", async () => {
+    await renderPreview();
     expect(screen.getByRole("button", { name: "Interact" }).getAttribute("aria-pressed")).toBe(
       "true",
     );
@@ -151,8 +158,8 @@ describe("TokenLab first slice", () => {
     ).toBe("720px");
   });
 
-  it("opens the create project dialog in the default interaction mode", () => {
-    render(<App />);
+  it("opens the create project dialog in the default interaction mode", async () => {
+    await renderPreview();
     expect(screen.getByRole("heading", { name: "Projects" })).toBeTruthy();
     const dialog = screen
       .getByRole("heading", { name: "Create project", hidden: true })
@@ -178,8 +185,8 @@ describe("TokenLab first slice", () => {
     expect(screen.getByRole("heading", { name: "Client portal" })).toBeTruthy();
   });
 
-  it("makes preview navigation, search, filters, and notifications interactive", () => {
-    render(<App />);
+  it("makes preview navigation, search, filters, and notifications interactive", async () => {
+    await renderPreview();
 
     fireEvent.click(screen.getByRole("button", { name: "Overview" }));
     expect(screen.getByRole("heading", { name: "Overview" })).toBeTruthy();
@@ -201,8 +208,8 @@ describe("TokenLab first slice", () => {
     expect(screen.getByText("Design system moved to review")).toBeTruthy();
   });
 
-  it("edits a dimension token and inspects registered card dependencies", () => {
-    render(<App />);
+  it("edits a dimension token and inspects registered card dependencies", async () => {
+    await renderPreview();
 
     fireEvent.click(screen.getByRole("button", { name: /space\.medium/i }));
     fireEvent.change(screen.getByLabelText("Light value"), { target: { value: "20px" } });
@@ -304,7 +311,7 @@ describe("TokenLab first slice", () => {
     fireEvent.click(within(panel).getByText("neutral.canvas"));
 
     expect(useTokenLabStore.getState().selectedTokenId).toBe("color.neutral.canvas");
-    expect(screen.queryByRole("region", { name: "Color palette" })).toBeNull();
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Color palette" })).toBeNull());
   });
 
   it("offers a zip download and previews a chosen export", async () => {

@@ -72,7 +72,7 @@ export function TokenInspector({
           <X aria-hidden="true" />
         </button>
         <span className={styles.eyebrow}>Selected token</span>
-        <div className={styles.inspectorIdentity}>
+        <div key={token.id} className={styles.inspectorIdentity}>
           {token.type === "color" ? (
             <span
               className={styles.inspectorSwatch}

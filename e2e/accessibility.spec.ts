@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { gotoPreview } from "./helpers";
 
 test("supports the core edit and dialog flow from the keyboard", async ({ page }) => {
-  await page.goto("/");
+  await gotoPreview(page);
   await expect(page.getByRole("status").filter({ hasText: "Saved locally" })).toBeVisible();
 
   const valueInput = page.getByRole("textbox", { name: "Light value" });

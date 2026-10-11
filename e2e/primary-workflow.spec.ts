@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { gotoPreview } from "./helpers";
 import { readFile } from "node:fs/promises";
 
 test("edits, compares, and exports a token system", async ({ page }) => {
@@ -67,7 +68,7 @@ test("edits, compares, and exports a token system", async ({ page }) => {
 });
 
 test("project creation uses the active system's error and success feedback", async ({ page }) => {
-  await page.goto("/");
+  await gotoPreview(page);
   await page.getByRole("button", { name: "Create project", exact: true }).click();
   await page.getByRole("button", { name: "Create project", exact: true }).last().click();
   await expect(page.getByRole("alert")).toHaveText("Enter a project name.");
@@ -145,6 +146,7 @@ test("project creation uses the active system's error and success feedback", asy
   await expect(confirmation).toHaveCount(0);
 
   await page.reload();
+  await page.getByRole("button", { name: "Preview", exact: true }).click();
   await preview.getByRole("button", { name: "Open project: Portfolio refresh" }).click();
   await expect(
     preview.getByRole("progressbar", { name: "Portfolio refresh progress" }),
