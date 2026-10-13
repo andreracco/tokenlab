@@ -2,6 +2,8 @@
 
 A design token studio. Change a token, see what it affects, and judge the result inside a realistic product.
 
+**[Live demo → tokenlab-iota.vercel.app](https://tokenlab-iota.vercel.app/)**
+
 ![TokenLab editing the Forma preview app](docs/preview.png)
 
 ## What it does
