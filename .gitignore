@@ -6,6 +6,7 @@ test-results
 *.local
 *.md
 !DESIGN.md
+!README.md
 .vercel
 
 # Local AI tooling
